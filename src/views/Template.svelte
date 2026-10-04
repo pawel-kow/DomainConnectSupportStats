@@ -1,0 +1,274 @@
+<script lang="ts">
+  import CardTitle from '../lib/components/CardTitle.svelte';
+  import DataTable from '../lib/components/DataTable.svelte';
+  import Layout from '../lib/components/Layout.svelte';
+  import LoadError from '../lib/components/LoadError.svelte';
+  import NotFound from '../lib/components/NotFound.svelte';
+  import Notes from '../lib/components/Notes.svelte';
+  import StatCard from '../lib/components/StatCard.svelte';
+  import TimeChart from '../lib/components/TimeChart.svelte';
+  import { defaultClient, NotFoundError } from '../lib/data/load';
+  import { findTable, oneRecord } from '../lib/data/tables';
+  import type { Column, ExportFile, Manifest, Row } from '../lib/data/types';
+  import { formatCount, formatDateTime, formatPct, UNKNOWN } from '../lib/format';
+  import { links, safeUrl } from '../lib/links';
+  import { textParam } from '../lib/params';
+  import { sweepSeries } from '../lib/series';
+  import {
+    historyDiffers,
+    OWN_COLUMN_KEYS,
+    recordDetails,
+    recordsTable,
+    RECORD_DETAILS_KEY,
+    recordValue,
+    tableTitle,
+  } from '../lib/templates';
+
+  const spid = textParam(window.location.search, 'spid');
+  const sid = textParam(window.location.search, 'sid');
+  const client = defaultClient();
+  let manifest = $state<Manifest | null>(null);
+
+  /** The card, or null when a parameter is missing or the template has no card (404). */
+  const loading: Promise<ExportFile | null> = client.manifest().then((m) => {
+    manifest = m;
+    if (spid === null || sid === null) return null;
+    return client.file('template', { service_provider_id: spid, service_id: sid }).then(
+      (file) => {
+        const name = text(oneRecord(findTable(file, 'metadata')), 'name');
+        if (name) document.title = `${name} - Template - Domain Connect Support Statistics`;
+        return file;
+      },
+      (e: unknown) => {
+        if (e instanceof NotFoundError) return null;
+        throw e;
+      },
+    );
+  });
+
+  function num(row: Row | null | undefined, key: string): number | null {
+    const v = row?.[key];
+    return typeof v === 'number' ? v : null;
+  }
+
+  function text(row: Row | undefined, key: string): string | null {
+    const v = row?.[key];
+    return typeof v === 'string' ? v : null;
+  }
+
+  function versionList(row: Row | undefined): string {
+    const v = row?.versions;
+    return Array.isArray(v) ? v.join(', ') : UNKNOWN;
+  }
+</script>
+
+{#snippet supporterCell(column: Column, row: Row)}
+  {@const id = num(row, 'dns_provider_id')}
+  {#if column.key === 'name'}
+    {#if id !== null}<a href={links.dnsProvider(id)}>{row.name ?? UNKNOWN}</a>{:else}{row.name ??
+        UNKNOWN}{/if}
+    <div class="mono muted host">{text(row, 'api_host') ?? UNKNOWN}</div>
+  {:else if column.key === 'provider_id'}
+    {@const s = text(row, 'provider_id')}
+    {#if s}<a href={links.stack(s)}>{s}</a>{:else}{UNKNOWN}{/if}
+  {/if}
+{/snippet}
+
+<Layout current="template" {manifest}>
+  {#await loading}
+    <p class="no-data">Loading…</p>
+  {:then file}
+    {#if !file}
+      <NotFound what="This template" backHref={links.templates()} backLabel="Templates" />
+    {:else}
+      {@const metadata = oneRecord(findTable(file, 'metadata'))}
+      {@const records = findTable(file, 'records')}
+      {@const supporters = findTable(file, 'supporters')}
+      {@const history = findTable(file, 'history')}
+      {@const serviceProviderId = text(metadata, 'service_provider_id') ?? spid!}
+      {@const serviceId = text(metadata, 'service_id') ?? sid!}
+      {@const templateName = text(metadata, 'name') ?? 'Unnamed template'}
+      {@const logoUrl = safeUrl(text(metadata, 'logo_url'))}
+      {@const total = supporters?.footer}
+
+      <CardTitle
+        name={templateName}
+        logo={Promise.resolve(logoUrl ? { url: logoUrl, alt: templateName } : null)}
+      >
+        Service provider
+        <a href={links.serviceProvider(serviceProviderId)} data-testid="service-provider-link"
+          >{text(metadata, 'service_provider_name') ?? serviceProviderId}</a
+        >
+        · <span class="mono">{serviceProviderId} / {serviceId}</span>
+      </CardTitle>
+
+      <section class="summary-stats" aria-label="Support and reach" data-testid="headline">
+        <StatCard
+          value={supporters ? formatCount(supporters.rows.length) : UNKNOWN}
+          label="Supporting DNS providers"
+          detail="any version, in the latest probes"
+        />
+        <StatCard
+          value={formatCount(num(total, 'domains'))}
+          label="Domains reached"
+          detail={num(total, 'domains') === null
+            ? 'no domain-share import'
+            : `${formatPct(num(total, 'reach_pct'))} of ${formatCount(manifest?.share_import?.scanned_domains ?? null)} scanned domains`}
+        />
+        <StatCard
+          value={num(metadata, 'version') === null ? UNKNOWN : `${num(metadata, 'version')}`}
+          label="Version"
+          detail={`stored versions: ${versionList(metadata)}`}
+        />
+      </section>
+
+      <section class="panel">
+        <h2>About</h2>
+        <dl class="record" data-testid="template-record">
+          <dt>Description</dt>
+          <dd class="multiline">{text(metadata, 'description') ?? UNKNOWN}</dd>
+          <dt>Variables</dt>
+          <dd class="multiline">{text(metadata, 'variable_description') ?? UNKNOWN}</dd>
+          <dt>Added</dt>
+          <dd>{formatDateTime(text(metadata, 'created_at'))}</dd>
+          <dt>Updated</dt>
+          <dd>{formatDateTime(text(metadata, 'updated_at'))}</dd>
+          <dt>Template SHA</dt>
+          <dd class="mono break">{text(metadata, 'template_sha') ?? UNKNOWN}</dd>
+        </dl>
+      </section>
+
+      {#if history}
+        <section class="panel">
+          <h2>Supporting DNS providers over time</h2>
+          {#if history.rows.length}
+            <TimeChart
+              label="Supporting DNS providers over time"
+              series={[
+                {
+                  label: 'Supporting DNS providers',
+                  points: sweepSeries(history.rows, 'supporting_providers'),
+                  stepped: true,
+                  tooltip: (p) => `Supporting DNS providers: ${p.y}`,
+                },
+              ]}
+              leftTitle="DNS providers"
+              formatLeft={(v) => (Number.isInteger(v) ? formatCount(v) : '')}
+            />
+            {#if supporters && historyDiffers(history.rows, supporters.rows.length)}
+              <p class="caveat" data-testid="history-caveat">
+                The latest point counts {formatCount(
+                  num(history.rows.at(-1), 'supporting_providers'),
+                )}
+                DNS providers, the latest probes {formatCount(supporters.rows.length)}: the history
+                keeps the support a DNS provider last had when its latest probe failed.
+              </p>
+            {/if}
+          {:else}
+            <p class="no-data">Not measured yet</p>
+          {/if}
+        </section>
+      {/if}
+
+      {#if supporters}
+        <section class="panel">
+          <h2>{tableTitle(supporters.title, serviceProviderId, serviceId)}</h2>
+          <DataTable
+            table={supporters}
+            keys={['name', 'provider_id', 'versions', 'domains', 'reach_pct']}
+            customKeys={['name', 'provider_id']}
+            phoneKeys={['name', 'domains', 'reach_pct']}
+            searchable
+            pageSize={20}
+            cell={supporterCell}
+            emptyText="No DNS provider supports it in the latest probes"
+          />
+        </section>
+      {/if}
+
+      {#if records}
+        {@const shown = recordsTable(records)}
+        <section class="panel">
+          <h2>Records</h2>
+          <DataTable
+            table={shown}
+            customKeys={[RECORD_DETAILS_KEY, ...OWN_COLUMN_KEYS]}
+            phoneKeys={['type', 'host', RECORD_DETAILS_KEY]}
+            emptyText="No records stored"
+          >
+            {#snippet cell(column: Column, row: Row)}
+              {#if column.key === RECORD_DETAILS_KEY}
+                <dl class="fields mono">
+                  {#each recordDetails(records.columns, row) as d (d.key)}
+                    <div class:phone-only={d.ownColumn}>
+                      <dt>{d.key}:</dt>
+                      <dd>{d.value}</dd>
+                    </div>
+                  {/each}
+                </dl>
+              {:else}
+                <span class="mono">{recordValue(row[column.key]) ?? UNKNOWN}</span>
+              {/if}
+            {/snippet}
+          </DataTable>
+        </section>
+      {/if}
+
+      {#if file.notes.length}
+        <section class="panel">
+          <h2>Notes</h2>
+          <Notes notes={file.notes} />
+        </section>
+      {/if}
+    {/if}
+  {:catch error}
+    <LoadError {error} />
+  {/await}
+</Layout>
+
+<style>
+  .multiline {
+    white-space: pre-line;
+  }
+
+  .break {
+    overflow-wrap: anywhere;
+  }
+
+  .host {
+    font-size: 0.8rem;
+    overflow-wrap: anywhere;
+  }
+
+  .caveat {
+    margin: var(--spacing-sm) 0 0;
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+  }
+
+  .fields {
+    margin: 0;
+    font-size: 0.85rem;
+  }
+
+  .fields div {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0 0.5rem;
+  }
+
+  .fields dt {
+    color: var(--text-secondary);
+  }
+
+  @media (min-width: 481px) {
+    .fields .phone-only {
+      display: none;
+    }
+  }
+
+  .fields dd {
+    margin: 0;
+    overflow-wrap: anywhere;
+  }
+</style>

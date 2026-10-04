@@ -93,7 +93,7 @@ The site shows the latest release the Scanner publishes and always states its ag
 | F-1.6  | `dns-provider.html?id=`                          | DNS provider card        | Layout F-1a; charts: domain share per import, supported templates per sweep; the stack's registry entry                                                                                                                                                                               |
 | F-1.7  | `stack.html?id=`                                 | Stack card               | Deployments; chart: share per import                                                                                                                                                                                                                                                  |
 | F-1.8  | `service-provider.html?id=`                      | Service provider card    | Templates; chart: supporting providers per template per sweep                                                                                                                                                                                                                         |
-| F-1.9  | `template.html?spid=&sid=`                       | Template card            | Records, supporters; chart: supporting DNS providers per sweep                                                                                                                                                                                                                        |
+| F-1.9  | `template.html?spid=&sid=`                       | Template card            | Layout F-1c; records, supporters; chart: supporting DNS providers per sweep                                                                                                                                                                                                           |
 | F-1.10 | Methodology page                                 | —                        | How the data comes about, what the numbers count, their limits                                                                                                                                                                                                                        |
 
 ### F-1a DNS provider and stack cards
@@ -130,6 +130,22 @@ times are not shown.
 - `?q=` and `&all=` follow the search box and toggle in the URL.
 - Footnotes: undetermined, `total` 1 without template versions, attributed domains only, statuses
   describe the last attempt.
+
+### F-1c Template card
+
+1. Title: template name and its logo (`logo_url`); service provider link and the ids in a small
+   line.
+2. Headline: supporting DNS providers, domains reached (% of scanned), version and stored
+   versions.
+3. About: description, variables, added, updated, template SHA.
+4. Supporting DNS providers over time (stepped); a caveat below when the latest point differs from
+   the current supporter count.
+5. Supporting DNS providers (current state): name (card link) with its API host below, stack, versions,
+   domains, reach; `TOTAL` footer. Phone width: name, domains, reach.
+6. Records: type, host, `groupId`, `ttl`, `essential` (when declared), and every other declared
+   field of the record as `key: value` in one cell, verbatim; unknown fields left out. Phone
+   width: type, host, and the rest in the one cell.
+7. Notes.
 
 ### F-2 Common behaviour
 
@@ -180,20 +196,20 @@ times are not shown.
 
 ## 2. Constraints
 
-| Id   | Constraint                                                                                                                                   |
-| ---- | -------------------------------------------------------------------------------------------------------------------------------------------- |
-| C-1  | Static and stateless: no backend, no write path, no state between pages beyond the URL                                                       |
-| C-2  | One HTML file per page (multi-page build)                                                                                                    |
-| C-3  | Built only from `contract/`, never from Scanner source                                                                                       |
-| C-4  | Unknown files, tables, columns and keys ignored; tables found by id                                                                          |
-| C-5  | `null` is unknown: `–`, a gap, sorted last, never 0                                                                                          |
-| C-6  | Third-party text escaped; data URLs pass `safeUrl` (e-mail addresses `safeMailto`) and open with `rel="nofollow noopener noreferrer"`        |
-| C-7  | No runtime requests to third-party hosts (bundled libraries, no CDN or fonts), except one cookieless analytics service without personal data |
-| C-8  | Look and feel of stats.domainconnect.org; navigation and URLs compatible with a merge                                                        |
-| C-9  | Works at phone width without horizontal page scroll                                                                                          |
-| C-10 | Only `format_version` `SUPPORTED_FORMAT_VERSION` is rendered; others fail loudly                                                             |
-| C-11 | WCAG 2.2 AA: contrast, keyboard use, screen-reader-usable tables; charts without data tables                                                 |
-| C-12 | User-facing texts translatable (not scattered through logic); English only                                                                   |
+| Id   | Constraint                                                                                                                                                                         |
+| ---- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| C-1  | Static and stateless: no backend, no write path, no state between pages beyond the URL                                                                                             |
+| C-2  | One HTML file per page (multi-page build)                                                                                                                                          |
+| C-3  | Built only from `contract/`, never from Scanner source                                                                                                                             |
+| C-4  | Unknown files, tables, columns and keys ignored; tables found by id                                                                                                                |
+| C-5  | `null` is unknown: `–`, a gap, sorted last, never 0                                                                                                                                |
+| C-6  | Third-party text escaped; data URLs pass `safeUrl` (e-mail addresses `safeMailto`) and open with `rel="nofollow noopener noreferrer"`                                              |
+| C-7  | No runtime requests to third-party hosts (bundled libraries, no CDN or fonts), except one cookieless analytics service without personal data and template logos (without referrer) |
+| C-8  | Look and feel of stats.domainconnect.org; navigation and URLs compatible with a merge                                                                                              |
+| C-9  | Works at phone width without horizontal page scroll                                                                                                                                |
+| C-10 | Only `format_version` `SUPPORTED_FORMAT_VERSION` is rendered; others fail loudly                                                                                                   |
+| C-11 | WCAG 2.2 AA: contrast, keyboard use, screen-reader-usable tables; charts without data tables                                                                                       |
+| C-12 | User-facing texts translatable (not scattered through logic); English only                                                                                                         |
 
 ## 3. Stack
 
@@ -210,4 +226,5 @@ Tracked and decided in GitHub issues:
 
 - **Analytics service** (C-7, P-8): #13
 - **Leaderboard data, "most improved" window** (F-4): #15, pawel-kow/DomainConnectScanner#219
+- **Template logos bundled into the deploy** (C-7): #25
 - **Methodology content and source** (F-1.10, P-6): #14, pawel-kow/DomainConnectScanner#218

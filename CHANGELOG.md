@@ -4,6 +4,17 @@ Changes per site version. Versions follow [SemVer](https://semver.org/): major f
 parameter removed or changed incompatibly, minor for new pages, features or content, patch for
 fixes, styling and dependencies.
 
+## [0.4.0] - 2026-10-04
+
+### Added
+
+- Template card: supporting DNS providers with links and total, reach, supporters over time with
+  a caveat when the history differs, description and versions, records, logo, notes.
+
+### Changed
+
+- Card logos that fail to load are hidden and requested without a referrer.
+
 ## [0.3.0] - 2026-10-04
 
 ### Added
