@@ -223,22 +223,9 @@
                 formatLeft={(v) => `${Number(v.toFixed(2))}%`}
               />
             {/await}
+          {:else}
+            <p class="no-data">Not measured yet</p>
           {/if}
-          <DataTable
-            table={shareHistory}
-            keys={[
-              'import_id',
-              'completed_at',
-              'status',
-              'domains',
-              'scanned_domains',
-              'share_pct',
-              'change_pct',
-              'rank',
-              'providers',
-            ]}
-            emptyText="Not measured yet"
-          />
         </section>
       {/if}
 
@@ -259,8 +246,9 @@
               leftTitle="Templates"
               formatLeft={(v) => (Number.isInteger(v) ? formatCount(v) : '')}
             />
+          {:else}
+            <p class="no-data">Not measured yet</p>
           {/if}
-          <DataTable table={supportHistory} emptyText="Not measured yet" />
         </section>
       {/if}
 

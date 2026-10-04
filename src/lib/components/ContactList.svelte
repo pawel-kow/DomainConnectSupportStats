@@ -1,5 +1,4 @@
 <script lang="ts">
-  import { UNKNOWN } from '../format';
   import { safeMailto, safeUrl } from '../links';
   import type { Contact } from '../registry/entry';
 
@@ -11,22 +10,18 @@
   }
 </script>
 
-{#if contacts.length}
-  <ul>
-    {#each contacts as c, i (i)}
-      {@const link = href(c)}
-      <li>
-        {#if link}
-          <a href={link} target="_blank" rel="nofollow noopener noreferrer">{c.label ?? c.value}</a>
-        {:else}
-          {c.label ? `${c.label}: ${c.value}` : c.value}
-        {/if}
-      </li>
-    {/each}
-  </ul>
-{:else}
-  {UNKNOWN}
-{/if}
+<ul>
+  {#each contacts as c, i (i)}
+    {@const link = href(c)}
+    <li>
+      {#if link}
+        <a href={link} target="_blank" rel="nofollow noopener noreferrer">{c.label ?? c.value}</a>
+      {:else}
+        {c.label ? `${c.label}: ${c.value}` : c.value}
+      {/if}
+    </li>
+  {/each}
+</ul>
 
 <style>
   ul {

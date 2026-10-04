@@ -41,12 +41,12 @@ test.describe('DNS provider card (dns-provider.html)', () => {
     await expect(page).toHaveURL(/service-provider\.html\?id=mail\.acme\.example$/);
   });
 
-  test('draws both charts over time and lists their data', async ({ page }) => {
+  test('draws both charts over time without data tables', async ({ page }) => {
     await page.goto('dns-provider.html?id=1');
     await expect(page.getByRole('img', { name: 'Supported templates over time' })).toBeVisible();
     await expect(page.getByRole('img', { name: 'Domain share over time' })).toBeVisible();
-    await expect(section(page, 'Domain share over time').locator('tbody tr')).toHaveCount(3);
-    await expect(section(page, 'Supported templates over time').locator('tbody tr')).toHaveCount(3);
+    await expect(section(page, 'Domain share over time').locator('table')).toHaveCount(0);
+    await expect(section(page, 'Supported templates over time').locator('table')).toHaveCount(0);
   });
 
   test('shows no stack link without a stack', async ({ page }) => {
@@ -116,11 +116,13 @@ test.describe('DNS provider card (dns-provider.html)', () => {
     expect(ys).toEqual([...ys].sort((x, y) => x - y));
   });
 
-  test('shows a migrated entry with unknown features', async ({ page }) => {
+  test('shows a migrated entry without its unknown values', async ({ page }) => {
     await page.goto('dns-provider.html?id=5');
     const registry = page.getByTestId('registry');
     await expect(registry.getByRole('heading', { name: 'Registry' })).toBeVisible();
     await expect(registry.getByTestId('registry-onboarding')).toContainText('On request');
+    await expect(registry.getByRole('heading', { name: 'Features' })).toHaveCount(0);
+    await expect(page.getByTestId('registry-contact')).not.toContainText('Technical contact');
     await expect(
       page
         .getByTestId('registry-contact')

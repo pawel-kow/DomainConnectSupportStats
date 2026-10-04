@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { formatFlag, UNKNOWN } from '../format';
+  import { formatFlag } from '../format';
   import { links } from '../links';
   import { FEATURES, type Flag, type RegistryEntry } from '../registry/entry';
   import ExternalLink from './ExternalLink.svelte';
@@ -20,76 +20,104 @@
     'on-request': 'On request',
   } as const;
 
-  const groups = [...new Set(FEATURES.map(([, , group]) => group))];
+  /** Onboarding flags with a known value. */
+  const flags = $derived(
+    (
+      [
+        ['Through a partner', onboarding.usesPartner],
+        ['Charged', onboarding.cost],
+        ['Signed templates only', onboarding.requirements.signedTemplatesOnly],
+        ['warnPhishing rejected', onboarding.requirements.warnPhishingRejected],
+        ['Signing key published', onboarding.requirements.signingKeyPublished],
+      ] as const
+    ).filter(([, value]) => value !== null),
+  );
+  const hasOnboarding = $derived(
+    onboarding.mode !== null ||
+      onboarding.partner !== null ||
+      flags.length > 0 ||
+      onboarding.notes !== null,
+  );
+
+  /** Feature groups with their features of known value; groups without any left out. */
+  const groups = $derived(
+    [...new Set(FEATURES.map(([, , group]) => group))]
+      .map((group) => ({
+        group,
+        rows: FEATURES.filter(([key, , g]) => g === group && entry.features[key] !== null),
+      }))
+      .filter(({ rows }) => rows.length > 0),
+  );
 </script>
 
 {#snippet flag(value: Flag)}
   <span class="flag">{formatFlag(value)}</span>
 {/snippet}
 
-<section class="panel" data-testid="registry">
-  <h2>
-    {#if stack}
-      Registry entry of stack <a href={links.stack(stack.id)}>{stack.name}</a>
-    {:else}
-      Registry
-    {/if}
-  </h2>
-
-  <h3>Onboarding</h3>
-  <dl class="record" data-testid="registry-onboarding">
-    <dt>Mode</dt>
-    <dd>{onboarding.mode ? MODES[onboarding.mode] : UNKNOWN}</dd>
-    <dt>Through a partner</dt>
-    <dd>
-      {@render flag(onboarding.usesPartner)}
-      {#if onboarding.partner}
-        (<ExternalLink url={onboarding.partner.url} text={onboarding.partner.name} />)
+{#if hasOnboarding || groups.length || entry.notes}
+  <section class="panel" data-testid="registry">
+    <h2>
+      {#if stack}
+        Registry entry of stack <a href={links.stack(stack.id)}>{stack.name}</a>
+      {:else}
+        Registry
       {/if}
-    </dd>
-    <dt>Charged</dt>
-    <dd>{@render flag(onboarding.cost)}</dd>
-    <dt>Signed templates only</dt>
-    <dd>{@render flag(onboarding.requirements.signedTemplatesOnly)}</dd>
-    <dt>warnPhishing rejected</dt>
-    <dd>{@render flag(onboarding.requirements.warnPhishingRejected)}</dd>
-    <dt>Signing key published</dt>
-    <dd>{@render flag(onboarding.requirements.signingKeyPublished)}</dd>
-    {#if onboarding.notes}
-      <dt>Notes</dt>
-      <dd class="verbatim">{onboarding.notes}</dd>
-    {/if}
-  </dl>
+    </h2>
 
-  <h3>Features</h3>
-  <div class="table-wrapper">
-    <table data-testid="registry-features">
-      <caption class="visually-hidden">Features</caption>
-      <tbody>
-        {#each groups as group (group)}
-          <tr class="group"><th colspan="2" scope="colgroup">{group}</th></tr>
-          {#each FEATURES.filter(([, , g]) => g === group) as [key, label] (key)}
-            <tr>
-              <th scope="row">{label}</th>
-              <td>{@render flag(entry.features[key])}</td>
-            </tr>
-          {/each}
+    {#if hasOnboarding}
+      <h3>Onboarding</h3>
+      <dl class="record" data-testid="registry-onboarding">
+        {#if onboarding.mode}
+          <dt>Mode</dt>
+          <dd>{MODES[onboarding.mode]}</dd>
+        {/if}
+        {#each flags as [label, value] (label)}
+          <dt>{label}</dt>
+          <dd>{@render flag(value)}</dd>
         {/each}
-      </tbody>
-    </table>
-  </div>
+        {#if onboarding.partner}
+          <dt>Partner</dt>
+          <dd><ExternalLink url={onboarding.partner.url} text={onboarding.partner.name} /></dd>
+        {/if}
+        {#if onboarding.notes}
+          <dt>Notes</dt>
+          <dd class="verbatim">{onboarding.notes}</dd>
+        {/if}
+      </dl>
+    {/if}
 
-  {#if entry.notes}
-    <h3>Notes</h3>
-    <p class="verbatim" data-testid="registry-notes">{entry.notes}</p>
-  {/if}
+    {#if groups.length}
+      <h3>Features</h3>
+      <div class="table-wrapper">
+        <table data-testid="registry-features">
+          <caption class="visually-hidden">Features</caption>
+          <tbody>
+            {#each groups as { group, rows } (group)}
+              <tr class="group"><th colspan="2" scope="colgroup">{group}</th></tr>
+              {#each rows as [key, label] (key)}
+                <tr>
+                  <th scope="row">{label}</th>
+                  <td>{@render flag(entry.features[key])}</td>
+                </tr>
+              {/each}
+            {/each}
+          </tbody>
+        </table>
+      </div>
+    {/if}
 
-  {#if fileUrl}
-    <p class="muted source">
-      <a href={fileUrl} target="_blank" rel="noopener">Entry in the registry repository</a>
-    </p>
-  {/if}
-</section>
+    {#if entry.notes}
+      <h3>Notes</h3>
+      <p class="verbatim" data-testid="registry-notes">{entry.notes}</p>
+    {/if}
+
+    {#if fileUrl}
+      <p class="muted source">
+        <a href={fileUrl} target="_blank" rel="noopener">Entry in the registry repository</a>
+      </p>
+    {/if}
+  </section>
+{/if}
 
 <style>
   h3 {

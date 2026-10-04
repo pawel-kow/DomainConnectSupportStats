@@ -14,7 +14,7 @@ const example = (path: string) =>
   parseEntry(JSON.parse(readFileSync(resolve(EXAMPLES, path), 'utf8')));
 
 function feature(label: string): string | null {
-  const row = within(screen.getByTestId('registry-features')).getByText(label).closest('tr');
+  const row = within(screen.getByTestId('registry-features')).queryByText(label)?.closest('tr');
   return row?.querySelector('td')?.textContent?.trim() ?? null;
 }
 
@@ -76,6 +76,23 @@ describe('RegistryContact', () => {
     expect(screen.getByText('a@b?x=<y>').closest('a')).toBeNull();
   });
 
+  it('leaves out unknown rows', () => {
+    render(RegistryContact, { entry: example('i/o/ionos.com.json'), stack: null });
+    expect(screen.getByText('Onboarding contact')).toBeInTheDocument();
+    expect(screen.queryByText('Documentation')).toBeNull();
+    expect(screen.queryByText('Technical contact')).toBeNull();
+    expect(screen.queryByText('Onboarding request form')).toBeNull();
+    expect(screen.queryByText('–')).toBeNull();
+  });
+
+  it('shows nothing for an entry without contact data', () => {
+    const { container } = render(RegistryContact, {
+      entry: parseEntry({ providerId: 'x', name: 'X' }),
+      stack: null,
+    });
+    expect(container.querySelector('section')).toBeNull();
+  });
+
   it('names and links the stack of several deployments', () => {
     render(RegistryContact, {
       entry: example('p/l/plesk.com.json'),
@@ -100,7 +117,8 @@ describe('Registry', () => {
     expect(screen.getByTestId('registry-onboarding')).toHaveTextContent('On request');
     expect(feature('Synchronous flow')).toBe('yes');
     expect(feature('Asynchronous flow (OAuth)')).toBe('no');
-    expect(feature('Revert in the asynchronous flow')).toBe('–');
+    expect(feature('Revert in the asynchronous flow')).toBeNull();
+    expect(screen.queryByText('–')).toBeNull();
     expect(screen.getByRole('link', { name: 'Entry in the registry repository' })).toHaveAttribute(
       'href',
       'https://github.com/o/r/blob/abc1234/providers/c/l/cloudflare.com.json',
@@ -118,7 +136,7 @@ describe('Registry', () => {
     expect(container.querySelector('script, b')).toBeNull();
   });
 
-  it('names the stack of several deployments; unknown values as –', () => {
+  it('names the stack of several deployments; leaves out unknown values', () => {
     render(Registry, {
       entry: example('p/l/plesk.com.json'),
       fileUrl: null,
@@ -129,6 +147,26 @@ describe('Registry', () => {
     ).toBeInTheDocument();
     expect(screen.queryByRole('link', { name: /registry repository/ })).toBeNull();
     expect(screen.getByTestId('registry-onboarding')).toHaveTextContent(/Automatic/);
-    expect(feature('SPFM')).toBe('–');
+    expect(screen.queryByText('Charged')).toBeNull();
+    expect(feature('Asynchronous flow (OAuth)')).toBe('yes');
+    expect(feature('SPFM')).toBeNull();
+    expect(screen.queryByText('Record types')).toBeNull();
+    expect(screen.queryByRole('heading', { name: 'Notes' })).toBeNull();
+  });
+
+  it('leaves out the Features heading when no feature is known', () => {
+    render(Registry, { entry: example('i/o/ionos.com.json'), fileUrl: null, stack: null });
+    expect(screen.getByTestId('registry-onboarding')).toHaveTextContent('On request');
+    expect(screen.queryByRole('heading', { name: 'Features' })).toBeNull();
+    expect(screen.queryByTestId('registry-features')).toBeNull();
+  });
+
+  it('shows nothing for an entry without known details, even with a repository link', () => {
+    const { container } = render(Registry, {
+      entry: parseEntry({ providerId: 'x', name: 'X', features: { syncFlow: null } }),
+      fileUrl: 'https://github.com/o/r/blob/abc1234/providers/x/x.json',
+      stack: null,
+    });
+    expect(container.querySelector('section')).toBeNull();
   });
 });
