@@ -110,7 +110,11 @@ Both cards share one layout, top to bottom:
 
 A deployment of a multi-deployment stack shows the stack's registry entry (logo, contact block,
 details), labelled as the stack's. Registry values that are unknown or empty are not shown; a
-block with nothing left is not shown.
+block with nothing left is not shown. No registry entry: no registry blocks; an entry that fails to
+load: a short error in their place.
+
+Settings show the URLs, name servers and first-seen time; probe statuses, errors and last-success
+times are not shown.
 
 ### F-2 Common behaviour
 
@@ -127,7 +131,8 @@ block with nothing left is not shown.
 - F-2.7 Every card has a "report a problem" link.
 - F-2.8 Caveats link to the methodology page.
 - F-2.9 Internal ids (`dns_provider_id`, `import_id`, `sweep_id`) are not shown: no columns, titles,
-  tooltips or messages. They stay in URLs and lookups. Public ids (`provider_id`,
+  tooltips or messages. They stay in URLs and lookups. Charts speak of time only: no "import" or
+  "sweep" in headings, labels or tooltips. Public ids (`provider_id`,
   `service_provider_id`, `service_id`) are shown. Export `notes` stay verbatim.
 
 ### F-3 Data and deployment
@@ -140,7 +145,8 @@ block with nothing left is not shown.
 - F-3.5 Only approved, tagged site versions are published.
 - F-3.6 The DNS provider registry (entries and logos, keyed by `provider_id`) is a separate public
   repository, validated against `registry/schema/` and published with every deploy under
-  `registry/`, with its repository and commit. Base URL: build time `VITE_REGISTRY_BASE_URL`,
+  `registry/`, with its repository and commit (no repository link and no footer commit when that
+  is missing). Base URL: build time `VITE_REGISTRY_BASE_URL`,
   runtime `config.js`, default `./registry/`. The footer shows the registry commit.
 
 ### F-4 Leaderboards
@@ -161,7 +167,7 @@ block with nothing left is not shown.
 | C-3  | Built only from `contract/`, never from Scanner source                                                                                       |
 | C-4  | Unknown files, tables, columns and keys ignored; tables found by id                                                                          |
 | C-5  | `null` is unknown: `–`, a gap, sorted last, never 0                                                                                          |
-| C-6  | Third-party text escaped; data URLs pass `safeUrl`                                                                                           |
+| C-6  | Third-party text escaped; data URLs pass `safeUrl` (e-mail addresses `safeMailto`) and open with `rel="nofollow noopener noreferrer"`        |
 | C-7  | No runtime requests to third-party hosts (bundled libraries, no CDN or fonts), except one cookieless analytics service without personal data |
 | C-8  | Look and feel of stats.domainconnect.org; navigation and URLs compatible with a merge                                                        |
 | C-9  | Works at phone width without horizontal page scroll                                                                                          |
