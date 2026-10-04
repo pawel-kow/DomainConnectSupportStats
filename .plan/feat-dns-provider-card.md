@@ -40,7 +40,7 @@ reset. Between steps keep `.agent-sync.yml` and stay on this branch.
   - [ ] ids stay in URLs (`?id=`) and in data lookups
   - [ ] tests: e2e/component assertions on ids (`share-import`, "DNS provider 999", card title); grep `src/` for any other id shown
   - [ ] REQUIREMENTS.md rule; screenshots desktop + phone (overview, cards 1, 4), commit, push
-- [ ] Step 4: deploy ( bundle writes `dist/registry/<a>/<b>/<encodeSegment(file)>` from `validateRegistry().entries` and `dist/registry/registry.json` `{repository, commit}`; footer reads `RegistryClient.source()`)
+- [ ] Step 4: deploy (bundle writes `dist/registry/<a>/<b>/<encodeSegment(file)>` from `validateRegistry().entries` and `dist/registry/registry.json` `{repository, commit}`; footer reads `RegistryClient.source()`)
   - [ ] `deploy.yml`: `REGISTRY_REPO` required (fails when unset), `REGISTRY_REF`; validate; bundle into `dist/registry/` with encoded file names
   - [ ] footer shows the registry commit
   - [ ] DEPLOYMENT.md
@@ -89,5 +89,4 @@ reset. Between steps keep `.agent-sync.yml` and stay on this branch.
 ## Open questions
 
 - Export `notes` (shown verbatim) contain import ids, e.g. "Domain share: import 1780272000 …": keep verbatim, or ask for a Scanner change?
-
 - Registry: repository owner/name, logo licence, entry maintenance, per-deployment entries (issue #7 "Open questions"); not blocking.
