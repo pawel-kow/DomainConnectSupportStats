@@ -13,12 +13,12 @@ reset. Between steps keep `.agent-sync.yml` and stay on this branch.
   - [x] `src/views/DnsProvider.svelte`: title + stack link, notes, headline (supported / not supported / not yet determined / domains / rank), settings record, supported templates (links), "Supported templates over time" chart + table, "Domain share over time" chart + table, owned URLs, not-found, load error
   - [x] e2e `tests/e2e/dns-provider.spec.ts` (cards 1, 4, 6; missing/blank/malformed/unknown id; no horizontal scroll)
   - [x] Draft PR #22
-- [~] Step 2: registry data in this repo
-  - [ ] `registry/schema/provider.schema.json` (draft 2020-12, from the issue's field table)
-  - [ ] `registry/examples/` (cloudflare, ionos, plesk; placeholder SVG logos)
-  - [ ] `registryPath()` helper `<a>/<b>/` (unit, TDD on the issue's examples)
-  - [ ] `scripts/validate-registry.ts`: schema, path from `providerId`, logo exists; CI step on `registry/examples/`
-- [ ] Step 3: registry on the site
+- [x] Step 2: registry data in this repo
+  - [x] `registry/schema/provider.schema.json` (draft 2020-12, from the issue's field table)
+  - [x] `registry/examples/` (cloudflare, ionos, plesk; placeholder SVG logos)
+  - [x] `registryPath()` in `src/lib/registry/path.ts` (`tests/unit/registry-path.test.ts`)
+  - [x] `scripts/registry.ts` (`validateRegistry()` → `{entries: {providerId, file, logo?}[], errors}`, `entryPath()`), CLI `scripts/validate-registry.ts`, `npm run validate:registry`, CI step; `tests/contract/example-registry.test.ts`
+- [~] Step 3: registry on the site (start here; `entries` of `validateRegistry()` feed the step 4 bundle)
   - [ ] registry base URL (runtime `registryBaseUrl`, `VITE_REGISTRY_BASE_URL`, `./registry/`), dev/preview `/registry/` from `REGISTRY_DIR`
   - [ ] loader: 404 → no section, other failure → section error; entry parsing, tri-state, unknown keys ignored
   - [ ] `Registry.svelte` section; "Registry entry of stack <name>" when the stack has several deployments
@@ -51,6 +51,7 @@ reset. Between steps keep `.agent-sync.yml` and stay on this branch.
 - Unknown id (`?id=999`): the browser logs the 404 as a console error; that e2e test opts into expected errors.
 - No last-contact box: settings/support status, errors and last-success times not shown (maintainer). `src/lib/status.ts` removed with it.
 - Charts speak of time only: no "import" or "sweep" in chart headings, labels or tooltips (maintainer).
+- Registry schema: `$id` `https://github.com/Domain-Connect/DnsProviders/schema/provider.schema.json` (proposed repo); unknown keys allowed; URLs `^https?://`; `logo` a file name ending `.svg|.png|.jpg`; email contacts need an `@`, url contacts a URL.
 - Settings URLs are links only through `safeUrl`, `rel="nofollow noopener noreferrer"`.
 
 ## Corrections
