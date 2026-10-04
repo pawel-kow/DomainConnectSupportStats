@@ -1,0 +1,37 @@
+import { describe, expect, it } from 'vitest';
+import { links, safeUrl } from '../../src/lib/links';
+
+describe('links', () => {
+  it('carries raw ids in query parameters, URL-encoded by URLSearchParams', () => {
+    expect(links.stack('plesk.com')).toBe('./stack.html?id=plesk.com');
+    expect(links.template('Acme.example', 'Mail & more')).toBe(
+      './template.html?spid=Acme.example&sid=Mail+%26+more',
+    );
+    expect(links.dnsProvider(42)).toBe('./dns-provider.html?id=42');
+  });
+
+  it('leaves out empty filters', () => {
+    expect(links.dnsProviders({ stack: null, q: '' })).toBe('./dns-providers.html');
+    expect(links.dnsProviders({ stack: 'plesk.com' })).toBe('./dns-providers.html?stack=plesk.com');
+  });
+});
+
+describe('safeUrl', () => {
+  it('accepts http and https URLs from the data', () => {
+    expect(safeUrl('https://example.com/logo.png')).toBe('https://example.com/logo.png');
+    expect(safeUrl('http://example.com/')).toBe('http://example.com/');
+  });
+
+  it('rejects other schemes, relative and malformed values', () => {
+    for (const value of [
+      'javascript:alert(1)',
+      'data:text/html,x',
+      ' JAVASCRIPT:alert(1)',
+      '/x',
+      'not a url',
+      null,
+    ]) {
+      expect(safeUrl(value)).toBeNull();
+    }
+  });
+});

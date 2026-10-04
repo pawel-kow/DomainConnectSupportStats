@@ -38,3 +38,18 @@ export const NAV = [
   { page: 'service-providers', label: 'Service providers', href: links.serviceProviders() },
   { page: 'templates', label: 'Templates', href: links.templates() },
 ] as const;
+
+/**
+ * A URL from the export (logo, API, control panel) usable as an `href`/`src`, or null. The values
+ * come from third parties: only absolute http(s) URLs pass, so a `javascript:` or `data:` value
+ * can never become a link.
+ */
+export function safeUrl(value: string | null | undefined): string | null {
+  if (!value) return null;
+  try {
+    const url = new URL(value.trim());
+    return url.protocol === 'https:' || url.protocol === 'http:' ? url.href : null;
+  } catch {
+    return null;
+  }
+}
