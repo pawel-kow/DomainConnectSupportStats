@@ -7,7 +7,9 @@ test.describe('overview (index.html)', () => {
 
   test('shows the release in the header', async ({ page }) => {
     await expect(page.getByTestId('generated-at')).toHaveText('01-10-2026 00:00 UTC');
-    await expect(page.getByTestId('share-import')).toHaveText('1780272000');
+    await expect(page.getByTestId('share-import')).toHaveText(
+      'scan completed 01-06-2026 07:00 UTC',
+    );
   });
 
   test('shows the latest values as headline numbers', async ({ page }) => {
@@ -22,6 +24,14 @@ test.describe('overview (index.html)', () => {
     const chart = page.getByRole('img', { name: /adoption per import and support per full sweep/ });
     await expect(chart).toBeVisible();
     await expect(chart.locator('canvas')).toBeVisible();
+  });
+
+  test('shows no internal id', async ({ page }) => {
+    await expect(page.getByTestId('headline')).toContainText('scan of 01-06-2026');
+    for (const header of ['IMPORT', 'SWEEP']) {
+      await expect(page.getByRole('columnheader', { name: header, exact: true })).toHaveCount(0);
+    }
+    await expect(page.locator('main')).not.toContainText('1780272000');
   });
 
   test('lists every import and every full sweep', async ({ page }) => {

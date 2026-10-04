@@ -31,16 +31,14 @@ reset. Between steps keep `.agent-sync.yml` and stay on this branch.
   - [x] `DnsProvider.svelte`: remove the `DataTable`s under "Domain share over time" and "Supported templates over time"; keep the empty-history text ("Not measured yet") when a history has no rows
   - [x] tests: component (`Registry.test.ts`: `–` assertions → rows absent; Plesk/IONOS sparse entries), e2e (`draws both charts…` row counts → charts only; IONOS/Plesk sections), CardTitle unchanged
   - [x] screenshots desktop + phone (cards 1, 2, 5), commit, push
-- [~] Step 3d: hide non-public ids (maintainer; start here)
-  - [ ] Non-public: `dns_provider_id`/`id` (DNS provider), `import_id`, `sweep_id`. Public, stay visible: `provider_id` (stack), `service_provider_id`, `service_id`
-  - [ ] DNS provider card: title line without "DNS provider {id}"; not-found text and name fallback without the id (`DnsProvider.svelte`)
-  - [ ] `Layout.svelte` banner: domain-share import by its completion time, not `import_id`
-  - [ ] `Overview.svelte`: chart tooltip and latest-import stat card without `import_id`
-  - [ ] tables: leave id columns out (`keys` on every `DataTable` showing `id`/`import_id`/`sweep_id`); `PLAIN_NUMBER_KEYS` (cells.ts) unchanged
-  - [ ] ids stay in URLs (`?id=`) and in data lookups
-  - [ ] tests: e2e/component assertions on ids (`share-import`, "DNS provider 999", card title); grep `src/` for any other id shown
-  - [ ] REQUIREMENTS.md rule; screenshots desktop + phone (overview, cards 1, 4), commit, push
-- [ ] Step 4: deploy (bundle writes `dist/registry/<a>/<b>/<encodeSegment(file)>` from `validateRegistry().entries` and `dist/registry/registry.json` `{repository, commit}`; footer reads `RegistryClient.source()`)
+- [x] Step 3d: hide non-public ids (maintainer)
+  - [x] `isPublicKey()` (cells.ts): `DataTable` never shows `id`, `dns_provider_id`, `import_id`, `sweep_id`, also when listed in `keys`
+  - [x] DNS provider card: title line "Stack …" only; not-found "This DNS provider"; name fallback "Unnamed DNS provider"
+  - [x] `Layout.svelte` banner: "scan completed <time>" from overview `adoption.completed_at` (prop `client`); "latest scan" while loading or when unknown
+  - [x] `Overview.svelte`: tooltips without import/sweep id; stat card "scan of <date>" (`started_at`, else `completed_at`)
+  - [x] tests: unit `isPublicKey`, component DataTable/Layout, e2e overview "shows no internal id", card title/not-found
+  - [x] REQUIREMENTS.md F-2.1, F-2.9; screenshots desktop + phone (overview, cards 1, 4, 999)
+- [~] Step 4: deploy (bundle writes `dist/registry/<a>/<b>/<encodeSegment(file)>` from `validateRegistry().entries` and `dist/registry/registry.json` `{repository, commit}`; footer reads `RegistryClient.source()`; start here)
   - [ ] `deploy.yml`: `REGISTRY_REPO` required (fails when unset), `REGISTRY_REF`; validate; bundle into `dist/registry/` with encoded file names
   - [ ] footer shows the registry commit
   - [ ] DEPLOYMENT.md
@@ -78,6 +76,9 @@ reset. Between steps keep `.agent-sync.yml` and stay on this branch.
 - Deployed registry layout as in the issue: `registry/<a>/<b>/<encoded file>` (no `providers/`); dev/preview map `/registry/<a>/<b>/<seg>` to `REGISTRY_DIR/providers/<a>/<b>/<decoded seg>`, `/registry/registry.json` to `REGISTRY_DIR/registry.json`.
 - Logo URL: `<a>/<b>/<encodeSegment(logo)>`, `<a>/<b>` from the providerId.
 - "Registry entry of stack <name>": stack card (`stack` kind, table `stack`, `deployments`, `name`) fetched only when an entry exists; `deployments > 1` → stack heading linking the stack card; fetch failure → stack heading with the `provider_id`.
+
+- Banner time: the manifest's `share_import` has no time; Layout fetches `overview.json` for the import's `completed_at` (one extra request per page).
+- C-11 ("every chart's data also as a table") conflicts with the card's charts without tables (step 3c): ask the maintainer before merge.
 
 ## Corrections
 

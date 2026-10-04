@@ -1,11 +1,18 @@
 <script lang="ts" generics="R extends Row">
   import type { Snippet } from 'svelte';
-  import { cellKind, compareCells, formatCell, isNumericKind, rowMatches } from '../cells';
+  import {
+    cellKind,
+    compareCells,
+    formatCell,
+    isNumericKind,
+    isPublicKey,
+    rowMatches,
+  } from '../cells';
   import type { Column, Row, Table } from '../data/types';
 
   interface Props {
     table: Table<R>;
-    /** Column keys to show, in order; default: every column of the table, in its order. */
+    /** Column keys to show, in order; default: every column of the table, in its order. Internal ids are never shown. */
     keys?: string[];
     /** Per-cell override, e.g. a link or a badge. Return nothing to use the default rendering. */
     cell?: Snippet<[Column, R]>;
@@ -32,7 +39,9 @@
   }: Props = $props();
 
   const columns = $derived(
-    keys ? keys.flatMap((k) => table.columns.filter((c) => c.key === k)) : table.columns,
+    (keys ? keys.flatMap((k) => table.columns.filter((c) => c.key === k)) : table.columns).filter(
+      (c) => isPublicKey(c.key),
+    ),
   );
 
   // `null` sort key = the export's own order, which is the meaningful default (by domains/reach).

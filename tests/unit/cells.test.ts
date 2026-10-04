@@ -3,6 +3,7 @@ import {
   cellKind,
   compareCells,
   formatCell,
+  isPublicKey,
   parseNameservers,
   rowMatches,
 } from '../../src/lib/cells';
@@ -66,6 +67,17 @@ describe('parseNameservers', () => {
   it('is null for null, malformed JSON or anything but an array of strings', () => {
     for (const value of [null, '', 'ns1.example.net', '{"a":1}', '[1, 2]', '"x"']) {
       expect(parseNameservers(value)).toBeNull();
+    }
+  });
+});
+
+describe('isPublicKey', () => {
+  it('hides internal ids and keeps public ones', () => {
+    for (const key of ['id', 'dns_provider_id', 'import_id', 'sweep_id']) {
+      expect(isPublicKey(key)).toBe(false);
+    }
+    for (const key of ['provider_id', 'service_provider_id', 'service_id', 'domains']) {
+      expect(isPublicKey(key)).toBe(true);
     }
   });
 });

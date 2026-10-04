@@ -16,6 +16,14 @@ const PLAIN_NUMBER_KEYS = new Set([
   'rank',
 ]);
 
+/** Internal ids of the Scanner's database: used in URLs and lookups, never shown. */
+const NON_PUBLIC_KEYS = new Set(['id', 'dns_provider_id', 'import_id', 'sweep_id']);
+
+/** Whether a column may be shown (internal ids are not). */
+export function isPublicKey(key: string): boolean {
+  return !NON_PUBLIC_KEYS.has(key);
+}
+
 export type CellKind = 'pct' | 'pp' | 'count' | 'plain' | 'timestamp' | 'versions' | 'text';
 
 export function cellKind(key: string, value: CellValue): CellKind {

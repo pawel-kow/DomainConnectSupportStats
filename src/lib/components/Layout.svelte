@@ -1,5 +1,7 @@
 <script lang="ts">
   import type { Snippet } from 'svelte';
+  import { defaultClient, type ExportClient } from '../data/load';
+  import { findTable } from '../data/tables';
   import type { Manifest } from '../data/types';
   import { formatCount, formatDateTime } from '../format';
   import { NAV } from '../links';
@@ -9,11 +11,26 @@
     current: string;
     /** The release's manifest once loaded; the header shows its facts on every page. */
     manifest?: Manifest | null;
+    /** Reads the domain-share import's completion time from `overview.json`. */
+    client?: ExportClient;
     children: Snippet;
   }
 
-  let { current, manifest = null, children }: Props = $props();
+  let { current, manifest = null, client = defaultClient(), children }: Props = $props();
   const share = $derived(manifest?.share_import ?? null);
+
+  /** The import's `completed_at` from the overview's `adoption` table; null when unknown. */
+  const completedAt = $derived(
+    share
+      ? client
+          .file('overview')
+          .then((f) => {
+            const row = findTable(f, 'adoption')?.rows.find((r) => r.import_id === share.import_id);
+            return typeof row?.completed_at === 'string' ? row.completed_at : null;
+          })
+          .catch(() => null)
+      : Promise.resolve(null),
+  );
   const version = `v${__APP_VERSION__}`;
 </script>
 
@@ -48,7 +65,11 @@
           >{formatDateTime(manifest.generated_at)}</span
         >
         {#if share}
-          · Domain share: import <span data-testid="share-import">{share.import_id}</span>
+          · Domain share: <span data-testid="share-import"
+            >{#await completedAt}latest scan{:then at}{at
+                ? `scan completed ${formatDateTime(at)}`
+                : 'latest scan'}{/await}</span
+          >
           ({share.status}, {share.source}), {formatCount(share.scanned_domains)} domains scanned
         {:else}
           · <span data-testid="share-import">No domain-share import</span>: domain and reach figures

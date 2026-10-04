@@ -15,6 +15,7 @@ test.describe('DNS provider card (dns-provider.html)', () => {
   test('shows the provider, its stack and its support', async ({ page }) => {
     await page.goto('dns-provider.html?id=1');
     await expect(page.getByTestId('card-title')).toContainText('Cloudflare');
+    await expect(page.getByTestId('card-title')).not.toContainText('DNS provider');
     await expect(page).toHaveTitle(/^Cloudflare - DNS provider/);
     await expect(page.getByTestId('stack-link')).toHaveAttribute(
       'href',
@@ -74,7 +75,8 @@ test.describe('DNS provider card (dns-provider.html)', () => {
 
     test('shows "not found" for an id without a card', async ({ page, consoleErrors }) => {
       await page.goto('dns-provider.html?id=999');
-      await expect(page.getByTestId('not-found')).toContainText('DNS provider 999');
+      await expect(page.getByTestId('not-found')).toContainText('This DNS provider');
+      await expect(page.getByTestId('not-found')).not.toContainText('999');
       expect(consoleErrors.every((e) => e.includes('404'))).toBe(true);
     });
   });

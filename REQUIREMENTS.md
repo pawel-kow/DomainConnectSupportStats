@@ -113,8 +113,8 @@ details), labelled as the stack's.
 
 ### F-2 Common behaviour
 
-- F-2.1 Every page shows the release's `generated_at` and domain-share import in its header, and
-  the site version in its footer.
+- F-2.1 Every page shows the release's `generated_at` and domain-share import (by its scan's
+  completion time) in its header, and the site version in its footer.
 - F-2.2 Lists: client-side sort, filter and search over all rows; default order is the export's.
 - F-2.3 Cross-links as plain `<a href>` page links: DNS provider ↔ stack, DNS provider ↔ template,
   template ↔ service provider, stack → its deployments (EXPORT_FORMAT.md "Cross-links").
@@ -125,6 +125,9 @@ details), labelled as the stack's.
   (N hidden)" toggle.
 - F-2.7 Every card has a "report a problem" link.
 - F-2.8 Caveats link to the methodology page.
+- F-2.9 Internal ids (`dns_provider_id`, `import_id`, `sweep_id`) are not shown: no columns, titles,
+  tooltips or messages. They stay in URLs and lookups. Public ids (`provider_id`,
+  `service_provider_id`, `service_id`) are shown. Export `notes` stay verbatim.
 
 ### F-3 Data and deployment
 

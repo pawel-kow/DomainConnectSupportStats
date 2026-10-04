@@ -129,7 +129,7 @@
   {:then file}
     {#if !file}
       <NotFound
-        what={id === null ? 'This DNS provider' : `DNS provider ${id}`}
+        what="This DNS provider"
         backHref={links.dnsProviders()}
         backLabel="DNS providers"
       />
@@ -143,7 +143,7 @@
       {@const shareHistory = findTable(file, 'share_history')}
       {@const stack = text(provider, 'provider_id')}
       {@const nameservers = parseNameservers(text(provider, 'nameservers'))}
-      {@const providerName = text(provider, 'name') ?? `DNS provider ${id}`}
+      {@const providerName = text(provider, 'name') ?? 'Unnamed DNS provider'}
       {@const reg = stack ? registryOf(stack) : Promise.resolve(null)}
 
       <CardTitle
@@ -153,7 +153,6 @@
           () => null,
         )}
       >
-        DNS provider {id} ·
         {#if stack}
           Stack <a href={links.stack(stack)} data-testid="stack-link"
             >{#await reg}{stack}{:then r}{r?.stack
