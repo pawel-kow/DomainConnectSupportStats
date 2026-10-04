@@ -14,7 +14,6 @@
   import { links, safeUrl } from '../lib/links';
   import { integerParam } from '../lib/params';
   import { importSeries, needsAdoption, sweepSeries } from '../lib/series';
-  import { statusLabel, statusTone } from '../lib/status';
 
   const id = integerParam(window.location.search, 'id');
   const client = defaultClient();
@@ -70,21 +69,6 @@
     ['async_url', 'Asynchronous flow URL'],
     ['control_panel_url', 'Control panel URL'],
     ['domain_connect_url', 'First Domain Connect URL'],
-  ] as const;
-
-  const PROBES = [
-    {
-      title: 'Settings request',
-      status: 'settings_last_status',
-      error: 'settings_last_error',
-      okAt: 'settings_last_seen_ok_at',
-    },
-    {
-      title: 'Support probe',
-      status: 'support_last_status',
-      error: 'support_last_error',
-      okAt: 'support_last_seen_ok_at',
-    },
   ] as const;
 </script>
 
@@ -175,29 +159,6 @@
       </section>
 
       <section class="panel">
-        <h2>Last contact</h2>
-        <div class="probes">
-          {#each PROBES as probe (probe.status)}
-            {@const status = text(provider, probe.status)}
-            {@const error = text(provider, probe.error)}
-            <div class="probe" data-testid={probe.status}>
-              <h3>{probe.title}</h3>
-              <p>
-                <span class="badge badge-{statusTone(status)}">{statusLabel(status)}</span>
-              </p>
-              <p>Last success: {formatDateTime(text(provider, probe.okAt))}</p>
-              {#if error}
-                <p>Last error: <span class="mono break">{error}</span></p>
-              {/if}
-            </div>
-          {/each}
-        </div>
-        <p class="muted small">
-          The status describes the last attempt, which may be days old; connection errors may heal.
-        </p>
-      </section>
-
-      <section class="panel">
         <h2>Settings</h2>
         <dl class="record" data-testid="provider-record">
           {#each URL_FIELDS as [key, label] (key)}
@@ -234,40 +195,40 @@
 
       {#if supportHistory}
         <section class="panel">
-          <h2>{supportHistory.title}</h2>
+          <h2>Supported templates over time</h2>
           {#if supportHistory.rows.length}
             <TimeChart
-              label="Supported templates per support sweep"
+              label="Supported templates over time"
               series={[
                 {
                   label: 'Supported templates',
                   points: sweepSeries(supportHistory.rows, 'supported_templates'),
                   stepped: true,
-                  tooltip: (p) => `Supported templates: ${p.y} (sweep ${p.row.sweep_id})`,
+                  tooltip: (p) => `Supported templates: ${p.y}`,
                 },
               ]}
               leftTitle="Templates"
               formatLeft={(v) => (Number.isInteger(v) ? formatCount(v) : '')}
             />
           {/if}
-          <DataTable table={supportHistory} emptyText="No sweep has re-probed its templates yet" />
+          <DataTable table={supportHistory} emptyText="Not measured yet" />
         </section>
       {/if}
 
       {#if shareHistory}
         <section class="panel">
-          <h2>{shareHistory.title}</h2>
+          <h2>Domain share over time</h2>
           {#if shareHistory.rows.length}
             {#await adoptionFor(shareHistory.rows) then adoption}
               <TimeChart
-                label="Domain share per import"
+                label="Domain share over time"
                 series={[
                   {
                     label: 'Share of scanned domains',
                     points: importSeries(shareHistory.rows, 'share_pct', adoption),
                     tooltip: (p) =>
                       `Share: ${formatPct(p.y, 2)} (${formatCount(num(p.row, 'domains'))} of ` +
-                      `${formatCount(num(p.row, 'scanned_domains'))} domains, import ${p.row.import_id})`,
+                      `${formatCount(num(p.row, 'scanned_domains'))} scanned domains)`,
                   },
                 ]}
                 leftTitle="% of scanned domains"
@@ -288,7 +249,7 @@
               'rank',
               'providers',
             ]}
-            emptyText="No import has measured it yet"
+            emptyText="Not measured yet"
           />
         </section>
       {/if}
@@ -316,16 +277,6 @@
     margin: 0;
   }
 
-  .probes {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-    gap: var(--spacing-md);
-  }
-
-  .probe p {
-    margin-bottom: var(--spacing-xs);
-  }
-
   .record {
     display: grid;
     grid-template-columns: max-content 1fr;
@@ -350,11 +301,6 @@
 
   .break {
     overflow-wrap: anywhere;
-  }
-
-  .small {
-    font-size: 0.8rem;
-    margin-top: var(--spacing-sm);
   }
 
   @media (max-width: 480px) {

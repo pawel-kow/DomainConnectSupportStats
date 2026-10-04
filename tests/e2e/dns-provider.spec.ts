@@ -34,29 +34,18 @@ test.describe('DNS provider card (dns-provider.html)', () => {
     await expect(page).toHaveURL(/service-provider\.html\?id=mail\.acme\.example$/);
   });
 
-  test('draws both charts and lists their data', async ({ page }) => {
+  test('draws both charts over time and lists their data', async ({ page }) => {
     await page.goto('dns-provider.html?id=1');
-    await expect(
-      page.getByRole('img', { name: 'Supported templates per support sweep' }),
-    ).toBeVisible();
-    await expect(page.getByRole('img', { name: 'Domain share per import' })).toBeVisible();
-    await expect(section(page, 'Domain share per import').locator('tbody tr')).toHaveCount(3);
-    await expect(
-      section(page, 'Supported templates per support sweep').locator('tbody tr'),
-    ).toHaveCount(3);
+    await expect(page.getByRole('img', { name: 'Supported templates over time' })).toBeVisible();
+    await expect(page.getByRole('img', { name: 'Domain share over time' })).toBeVisible();
+    await expect(section(page, 'Domain share over time').locator('tbody tr')).toHaveCount(3);
+    await expect(section(page, 'Supported templates over time').locator('tbody tr')).toHaveCount(3);
   });
 
-  test('shows errors with the last success, and no stack link without a stack', async ({
-    page,
-  }) => {
+  test('shows no stack link without a stack', async ({ page }) => {
     await page.goto('dns-provider.html?id=4');
     await expect(page.getByTestId('card-title')).toContainText('No stack');
     await expect(page.getByTestId('stack-link')).toHaveCount(0);
-    const settings = page.getByTestId('settings_last_status');
-    await expect(settings).toContainText('Connection error');
-    await expect(settings).toContainText('Last success: 02-06-2026 01:07 UTC');
-    await expect(settings).toContainText('ConnectTimeout: timed out');
-    await expect(page.getByTestId('support_last_status')).toContainText('Not checked yet');
     await expect(section(page, 'Supported templates (current state)')).toContainText(
       'No template supported in the latest probes',
     );
