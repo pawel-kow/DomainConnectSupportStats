@@ -63,7 +63,11 @@ export default defineConfig({
     emptyOutDir: true,
     rollupOptions: { input: pageEntries() },
   },
-  resolve: process.env.VITEST ? { conditions: ['browser'] } : undefined,
+  resolve: {
+    // Pages load `../entries/<page>.ts`; the dev server receives it as `/entries/...`, outside root.
+    alias: [{ find: /^\/entries\//, replacement: resolve(ROOT, 'src/entries') + '/' }],
+    ...(process.env.VITEST ? { conditions: ['browser'] } : {}),
+  },
   test: {
     root: ROOT,
     include: ['tests/{unit,contract,component}/**/*.test.ts'],
