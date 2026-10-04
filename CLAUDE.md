@@ -76,7 +76,7 @@ every view is a shareable link:
 | `dns-providers.html` (`?stack=`, `&q=`, `&all=`) | `dns-providers.json`                                | built       |
 | `stacks.html`                                    | `stacks.json`                                       | placeholder |
 | `service-providers.html`                         | `service-providers.json`                            | placeholder |
-| `templates.html` (`?spid=`)                      | `templates.json`                                    | placeholder |
+| `templates.html` (`?spid=`, `&q=`, `&all=`)      | `templates.json`                                    | built       |
 | `dns-provider.html?id=`                          | `dns-providers/{dns_provider_id}.json`, registry    | built       |
 | `stack.html?id=`                                 | `stacks/{provider_id}.json`                         | placeholder |
 | `service-provider.html?id=`                      | `service-providers/{service_provider_id}.json`      | placeholder |
@@ -171,6 +171,7 @@ Pushing `.github/workflows/` changes needs a token with the `workflow` scope.
 - `src/lib/registry/entry.ts`: `parseEntry()` (registry entry, unknown values as `null`), `parseSource()`, `FEATURES`
 - `src/lib/registry/load.ts`: `RegistryClient` (entry, logo URL, `registry.json` once), `entryFileUrl()`
 - `src/lib/dns-providers.ts`: DNS providers list (stack filter, rows hidden by default, undetermined count, status badges)
+- `src/lib/templates-list.ts`: templates list (service provider filter, never-probed rows hidden by default)
 - `src/lib/paging.ts`: page count, rows and range of a paginated table
 - `src/lib/templates.ts`: template card (records as type, host and details, history caveat, table titles)
 - `src/lib/format.ts`, `cells.ts`, `series.ts`, `links.ts`, `params.ts`: pure display/series/URL/query helpers (`safeUrl`, `safeMailto` for URLs from the data; `isPublicKey` hides internal ids)
