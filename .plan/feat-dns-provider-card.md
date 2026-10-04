@@ -26,7 +26,12 @@ reset. Between steps keep `.agent-sync.yml` and stay on this branch.
 - [x] Step 3b: card layout (maintainer)
   - [x] order: title (name, registry logo; small id/stack line), headline, contact block, domain share over time, supported templates over time, supported templates, registry details, settings, notes, owned URLs
   - [x] components `CardTitle`, `RegistryContact`, `Registry` (details), `ExternalLink`, `ContactList`; `.record`/`.plain` global; REQUIREMENTS.md F-1a; comment on #8
-- [~] Step 4: deploy (start here; bundle writes `dist/registry/<a>/<b>/<encodeSegment(file)>` from `validateRegistry().entries` and `dist/registry/registry.json` `{repository, commit}`; footer reads `RegistryClient.source()`)
+- [~] Step 3c: trim the card (maintainer; start here)
+  - [ ] Registry: hide every row whose value is unknown (null/absent/empty list) in `RegistryContact` and `Registry` (onboarding facts, features incl. tri-state `null`, partner, notes); hide a feature group with no rows, the Features/Onboarding sub-heading when empty, and the whole contact block / details section when nothing is left (the entry link alone does not keep the details section)
+  - [ ] `DnsProvider.svelte`: remove the `DataTable`s under "Domain share over time" and "Supported templates over time"; keep the empty-history text ("Not measured yet") when a history has no rows
+  - [ ] tests: component (`Registry.test.ts`: `–` assertions → rows absent; Plesk/IONOS sparse entries), e2e (`draws both charts…` row counts → charts only; IONOS/Plesk sections), CardTitle unchanged
+  - [ ] screenshots desktop + phone (cards 1, 2, 5), commit, push
+- [ ] Step 4: deploy (start here; bundle writes `dist/registry/<a>/<b>/<encodeSegment(file)>` from `validateRegistry().entries` and `dist/registry/registry.json` `{repository, commit}`; footer reads `RegistryClient.source()`)
   - [ ] `deploy.yml`: `REGISTRY_REPO` required (fails when unset), `REGISTRY_REF`; validate; bundle into `dist/registry/` with encoded file names
   - [ ] footer shows the registry commit
   - [ ] DEPLOYMENT.md
@@ -58,6 +63,8 @@ reset. Between steps keep `.agent-sync.yml` and stay on this branch.
 - Settings URLs are links only through `safeUrl`, `rel="nofollow noopener noreferrer"`.
 - Registry repository and commit: `registry/registry.json` `{repository, commit}` written by the bundle step; the site reads it for the entry's repository link (and the footer, step 4). Missing or invalid: no link (maintainer).
 - Card layout (REQUIREMENTS.md F-1a, also for the stack card #8): title with name and registry logo, id/stack small; headline; contact block (website, documentation, technical contact, onboarding contact, request form, process documentation); domain share over time; supported templates over time; supported templates; registry details (onboarding facts, features, notes, entry link); settings; notes; owned URLs (maintainer).
+- Registry entries: unknown or empty values are not shown; no `–` rows (maintainer).
+- History charts without their data tables (maintainer).
 - A deployment of a multi-deployment stack shows the stack's logo; title line "Stack Plesk (plesk.com)"; contact block "Contact of stack Plesk" (maintainer).
 - Deployed registry layout as in the issue: `registry/<a>/<b>/<encoded file>` (no `providers/`); dev/preview map `/registry/<a>/<b>/<seg>` to `REGISTRY_DIR/providers/<a>/<b>/<decoded seg>`, `/registry/registry.json` to `REGISTRY_DIR/registry.json`.
 - Logo URL: `<a>/<b>/<encodeSegment(logo)>`, `<a>/<b>` from the providerId.
