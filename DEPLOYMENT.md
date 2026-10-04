@@ -1,6 +1,7 @@
 # Deployment
 
-GitHub Pages, built from a tagged site release and the current export release from the data repo.
+GitHub Pages, built from a tagged site release, the current export release from the data repo and
+the DNS provider registry.
 
 ---
 
@@ -13,16 +14,22 @@ export.py → OUT_DIR/current/  ──push──▶  one release (manifest.json 
                               ──repository_dispatch (export-published)──▶ deploy.yml
                                                                           ├ pick site version (tag)
                                                                           ├ checkout tag + data repo
+                                                                          │   + registry repo
                                                                           ├ npm test, npm run build
                                                                           ├ validate release vs contract/
                                                                           ├ bundle into dist/data/
+                                                                          ├ validate registry vs registry/schema/
+                                                                          ├ bundle into dist/registry/
                                                                           └ publish dist/ to Pages
 ```
 
-- Site and data are published together as one Pages artifact.
+- Site, data and registry are published together as one Pages artifact.
 - Only tagged site versions are published. The deployed version is the **latest GitHub Release**.
 - A release that fails validation is not published; Pages keeps the last good deploy.
 - Only files reachable from the release's manifest are published (`scripts/bundle-data.ts`).
+- Only valid registry entries and their logos are published, at `registry/<a>/<b>/<encoded file
+name>`, with `registry/registry.json` `{repository, commit}` (`scripts/bundle-registry.ts`). An
+  invalid registry is not published.
 - No secrets, no backend.
 
 `.github/workflows/deploy.yml`:
@@ -49,11 +56,13 @@ one at a time (`concurrency: pages`).
 2. **Settings → Environments → New environment `release`** → Required reviewers: the maintainer.
 3. **Settings → Secrets and variables → Actions → Variables:**
 
-   | Variable    | Required | Default | Meaning                                            |
-   | ----------- | -------- | ------- | -------------------------------------------------- |
-   | `DATA_REPO` | yes      | —       | `owner/name` of the data repo                      |
-   | `DATA_REF`  | no       | `main`  | Branch or tag of the data repo                     |
-   | `DATA_PATH` | no       | `.`     | Directory in the data repo holding `manifest.json` |
+   | Variable        | Required | Default | Meaning                                            |
+   | --------------- | -------- | ------- | -------------------------------------------------- |
+   | `DATA_REPO`     | yes      | —       | `owner/name` of the data repo                      |
+   | `DATA_REF`      | no       | `main`  | Branch or tag of the data repo                     |
+   | `DATA_PATH`     | no       | `.`     | Directory in the data repo holding `manifest.json` |
+   | `REGISTRY_REPO` | yes      | —       | `owner/name` of the DNS provider registry (public) |
+   | `REGISTRY_REF`  | no       | `main`  | Branch or tag of the registry                      |
 
 4. **Secret `DATA_REPO_TOKEN`**, only for a private data repo: fine-grained token, _Contents:
    read_ on the data repo.
@@ -80,7 +89,14 @@ Created by the maintainer, any name (`DATA_REPO`), public recommended. With `DAT
 The contents of the Scanner's `OUT_DIR/current/` (one release, symlink resolved), replaced in full
 on every push. No workflows, no Pages.
 
-### 2.3 The Scanner side (publish step)
+### 2.3 The registry repo
+
+Public; one file per DNS provider stack, `providers/<a>/<b>/<providerId>.json`, valid against
+`registry/schema/provider.schema.json`, logos next to the entries (layout and folder rule:
+`registry/examples/`, `src/lib/registry/path.ts`). A registry change is published by the next
+deploy (daily, or Deploy by hand).
+
+### 2.4 The Scanner side (publish step)
 
 The Scanner host needs:
 
@@ -129,8 +145,9 @@ Pages read the release from `./data/`. A different data host, without rebuilding
 window.DC_STATS_CONFIG = { dataBaseUrl: 'https://data.example.org/current/' };
 ```
 
-Build time: `VITE_DATA_BASE_URL=… npm run build`. Precedence: runtime → build time → `./data/`. A
-cross-origin data host must send CORS headers.
+Build time: `VITE_DATA_BASE_URL=… npm run build`. Precedence: runtime → build time → `./data/`. The
+registry likewise: `registryBaseUrl`, `VITE_REGISTRY_BASE_URL`, `./registry/`. A cross-origin host
+must send CORS headers.
 
 ---
 
@@ -138,9 +155,9 @@ cross-origin data host must send CORS headers.
 
 ### 4.1 Checking a deploy
 
-The run summary lists the site version, site commit, data repo commit, the release's
-`generated_at` and the trigger. The page header shows `generated_at`; the footer shows the site
-version.
+The run summary lists the site version, site commit, data repo commit, registry commit, the
+release's `generated_at` and the trigger. The page header shows `generated_at`; the footer shows the
+site version and the registry commit.
 
 ### 4.2 Releasing a site version
 
@@ -149,15 +166,17 @@ Deploy run (Actions → Deploy → Review deployments).
 
 ### 4.3 When a deploy fails
 
-| Failure                                          | Meaning                                                            | Action                                                                                           |
-| ------------------------------------------------ | ------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------ |
-| `Require the data repo variable`                 | `DATA_REPO` unset                                                  | Set it (§2.1)                                                                                    |
-| `No site release yet`                            | Data deploy before the first approved site release                 | Release a site version (§4.2)                                                                    |
-| `Release notes`                                  | No CHANGELOG section for the version                               | Add it via PR with a patch bump                                                                  |
-| Data repo checkout                               | Wrong `DATA_REPO`/`DATA_REF`, or private without `DATA_REPO_TOKEN` | Fix variable/secret                                                                              |
-| `npm test`                                       | The tagged version is broken                                       | Fix via PR with a patch bump                                                                     |
-| `Validate and bundle the release`, schema errors | Format changed beyond the vendored contract, or a corrupt release  | Compare with `contract/`: new contract copy (contract/README.md), or re-publish from the Scanner |
-| … `missing` / `generated_at` errors              | Partial or mixed release pushed                                    | Re-run the Scanner's publish step                                                                |
+| Failure                                          | Meaning                                                             | Action                                                                                           |
+| ------------------------------------------------ | ------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------ |
+| `Require the data repo variable`                 | `DATA_REPO` unset                                                   | Set it (§2.1)                                                                                    |
+| `Require the registry repo variable`             | `REGISTRY_REPO` unset                                               | Set it (§2.1)                                                                                    |
+| `No site release yet`                            | Data deploy before the first approved site release                  | Release a site version (§4.2)                                                                    |
+| `Release notes`                                  | No CHANGELOG section for the version                                | Add it via PR with a patch bump                                                                  |
+| Data repo checkout                               | Wrong `DATA_REPO`/`DATA_REF`, or private without `DATA_REPO_TOKEN`  | Fix variable/secret                                                                              |
+| `npm test`                                       | The tagged version is broken                                        | Fix via PR with a patch bump                                                                     |
+| `Validate and bundle the release`, schema errors | Format changed beyond the vendored contract, or a corrupt release   | Compare with `contract/`: new contract copy (contract/README.md), or re-publish from the Scanner |
+| … `missing` / `generated_at` errors              | Partial or mixed release pushed                                     | Re-run the Scanner's publish step                                                                |
+| `Validate and bundle the registry`               | An entry fails the schema, sits at the wrong path or lacks its logo | Fix the entry in the registry repo, then run Deploy by hand                                      |
 
 The site keeps serving the last good deploy.
 
@@ -165,6 +184,8 @@ The site keeps serving the last good deploy.
 
 - **Site:** revert via PR with a patch bump; or mark the previous release as latest
   (`gh release edit v<previous> --latest`) and run Deploy by hand.
+- **Registry:** `git revert` the commit in the registry repo, or set `REGISTRY_REF` to a good tag,
+  then run Deploy by hand.
 - **Data:** `git revert` the release commit in the data repo (or push an older release), then run
   Deploy by hand.
 
