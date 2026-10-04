@@ -28,7 +28,7 @@
 
 - Logos: no logos until the contract carries `logo_url` in `templates.json` (Scanner issue); no per-row card fetch
 - Never probed (`total` 0): hidden by default, "show all (N hidden)" toggle, `&all=1`; shown as "Not probed yet"
-- Columns: template (card link) with service id below; service provider (card link); added; supported (of total, %); not supported (%); reach (domains, % of scanned). Phone: template, supported, reach
+- Columns: service provider (card link); template (card link) with service id below; added; supported (of total, %); not supported (%); reach (domains, % of scanned). Phone: service provider, template, supported, reach (maintainer review)
 - `?q=` and `&all=` follow the search box and toggle, as on DNS providers
 - Version: minor (new page) → 0.5.0
 
