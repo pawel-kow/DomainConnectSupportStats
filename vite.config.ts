@@ -54,6 +54,10 @@ export default defineConfig({
   base: './',
   define: { __APP_VERSION__: JSON.stringify(version) },
   plugins: [svelte({ configFile: resolve(ROOT, 'svelte.config.js') }), serveExportData()],
+  // All addresses: `localhost` may resolve to `::1` only, which a devcontainer port forward
+  // (IPv4) cannot reach.
+  server: { host: true },
+  preview: { host: true },
   build: {
     outDir: resolve(ROOT, 'dist'),
     emptyOutDir: true,
