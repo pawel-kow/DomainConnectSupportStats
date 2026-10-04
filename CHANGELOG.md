@@ -4,6 +4,22 @@ Changes per site version. Versions follow [SemVer](https://semver.org/): major f
 parameter removed or changed incompatibly, minor for new pages, features or content, patch for
 fixes, styling and dependencies.
 
+## [0.2.0] - 2026-10-04
+
+### Added
+
+- DNS provider card: support, domain share and supported templates over time, supported templates
+  with links, settings, notes, owned URLs.
+- DNS provider registry entry on the card: logo, contact block, onboarding facts, features.
+- Registry commit in the footer of every page.
+- Deploy validates and publishes the DNS provider registry with the data.
+
+### Changed
+
+- Header names the domain-share import by its scan's completion time.
+- Overview: chart without data tables; no internal ids in tooltips.
+- Tables never show internal ids.
+
 ## [0.1.0] - 2026-10-04
 
 ### Added

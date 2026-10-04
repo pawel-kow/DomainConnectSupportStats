@@ -5,7 +5,8 @@ providers hosting real domains: adoption among scanned domains, template support
 stack, service provider and template, and their history.
 
 Data: the static JSON export of the
-[Domain Connect Scanner](https://github.com/pawel-kow/DomainConnectScanner). Look: the Templates
+[Domain Connect Scanner](https://github.com/pawel-kow/DomainConnectScanner), and the DNS provider
+registry (logos, contacts, onboarding facts; schema in [`registry/`](registry/)). Look: the Templates
 statistics dashboard at [stats.domainconnect.org](https://stats.domainconnect.org).
 
 **Live:** https://pawel-kow.github.io/DomainConnectSupportStats/ · **Changes:**
@@ -13,11 +14,12 @@ statistics dashboard at [stats.domainconnect.org](https://stats.domainconnect.or
 
 ## Pages
 
-| Page                                                  | Shows                                                                       |
-| ----------------------------------------------------- | --------------------------------------------------------------------------- |
-| Overview (`index.html`)                               | Domain Connect support over time, latest headline numbers                   |
-| DNS providers, Stacks, Service providers, Templates   | Full lists with sort, filter and search _(in progress)_                     |
-| DNS provider, Stack, Service provider, Template cards | One entity's support, domain share, history and cross-links _(in progress)_ |
+| Page                                                | Shows                                                                       |
+| --------------------------------------------------- | --------------------------------------------------------------------------- |
+| Overview (`index.html`)                             | Domain Connect support over time, latest headline numbers                   |
+| DNS provider card (`dns-provider.html?id=`)         | Support, domain share over time, supported templates, registry entry        |
+| DNS providers, Stacks, Service providers, Templates | Full lists with sort, filter and search _(in progress)_                     |
+| Stack, Service provider, Template cards             | One entity's support, domain share, history and cross-links _(in progress)_ |
 
 Every view is a shareable link; query parameters carry only ids and filters.
 
@@ -31,7 +33,8 @@ npm run dev          # http://localhost:5173/ with the example data set
 npm run verify       # lint, type check, tests, build, e2e
 ```
 
-`DATA_DIR=<path to a release> npm run dev` renders a real export release. All commands:
+`DATA_DIR=<path to a release> npm run dev` renders a real export release,
+`REGISTRY_DIR=<registry checkout>` a real registry. All commands:
 [CLAUDE.md](CLAUDE.md#development-commands).
 
 ## Structure

@@ -90,7 +90,7 @@ The site shows the latest release the Scanner publishes and always states its ag
 | F-1.3  | `stacks.html`                           | `stacks.json`            | Every stack with its support distribution                                                                                                                                                                                                                                             |
 | F-1.4  | `service-providers.html`                | `service-providers.json` | Every service provider                                                                                                                                                                                                                                                                |
 | F-1.5  | `templates.html` (`?spid=`)             | `templates.json`         | Every template; filter by service provider                                                                                                                                                                                                                                            |
-| F-1.6  | `dns-provider.html?id=`                 | DNS provider card        | Charts: supported templates per sweep, domain share per import                                                                                                                                                                                                                        |
+| F-1.6  | `dns-provider.html?id=`                 | DNS provider card        | Layout F-1a; charts: domain share per import, supported templates per sweep; the stack's registry entry                                                                                                                                                                               |
 | F-1.7  | `stack.html?id=`                        | Stack card               | Deployments; chart: share per import                                                                                                                                                                                                                                                  |
 | F-1.8  | `service-provider.html?id=`             | Service provider card    | Templates; chart: supporting providers per template per sweep                                                                                                                                                                                                                         |
 | F-1.9  | `template.html?spid=&sid=`              | Template card            | Records, supporters; chart: supporting DNS providers per sweep                                                                                                                                                                                                                        |
@@ -109,7 +109,8 @@ Both cards share one layout, top to bottom:
 6. Settings, notes, owned URLs.
 
 A deployment of a multi-deployment stack shows the stack's registry entry (logo, contact block,
-details), labelled as the stack's.
+details), labelled as the stack's. Registry values that are unknown or empty are not shown; a
+block with nothing left is not shown.
 
 ### F-2 Common behaviour
 
@@ -137,6 +138,10 @@ details), labelled as the stack's.
 - F-3.3 A new data release is deployed without a code change ([DEPLOYMENT.md](DEPLOYMENT.md)).
 - F-3.4 A release that fails validation against the vendored contract is not published.
 - F-3.5 Only approved, tagged site versions are published.
+- F-3.6 The DNS provider registry (entries and logos, keyed by `provider_id`) is a separate public
+  repository, validated against `registry/schema/` and published with every deploy under
+  `registry/`, with its repository and commit. Base URL: build time `VITE_REGISTRY_BASE_URL`,
+  runtime `config.js`, default `./registry/`. The footer shows the registry commit.
 
 ### F-4 Leaderboards
 
