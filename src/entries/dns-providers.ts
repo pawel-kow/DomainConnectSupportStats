@@ -1,4 +1,4 @@
-import Placeholder from '../views/Placeholder.svelte';
+import DnsProviders from '../views/DnsProviders.svelte';
 import { mountPage } from '../lib/mount';
 
-mountPage(Placeholder, { page: 'dns-providers', title: 'DNS providers' });
+mountPage(DnsProviders, {});

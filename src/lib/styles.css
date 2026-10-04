@@ -281,6 +281,11 @@ th.num {
   color: var(--bg-white);
 }
 
+.badge-muted {
+  background-color: var(--border-color);
+  color: var(--text-primary);
+}
+
 .badge-error {
   background-color: var(--status-error);
   color: var(--bg-white);
