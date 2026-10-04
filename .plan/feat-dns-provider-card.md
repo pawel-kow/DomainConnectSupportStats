@@ -8,12 +8,12 @@ reset. Between steps keep `.agent-sync.yml` and stay on this branch.
 
 ## Tasks
 
-- [~] Step 1: card from the export
-  - [ ] `dnsProviderId()` param parsing, nameservers parsing (unit, TDD)
-  - [ ] `DnsProvider.svelte` view: header, stat cards, provider record (transposed), statuses with errors and last-success times, stack link, URLs, supported templates (links), two charts, history tables, notes, not-found, load error
-  - [ ] e2e spec `tests/e2e/dns-provider.spec.ts` (cards 1, 4, 6; missing/unknown id; mobile)
-  - [ ] Draft PR
-- [ ] Step 2: registry data in this repo
+- [x] Step 1: card from the export
+  - [x] `src/lib/params.ts` (`textParam`, `integerParam`), `src/lib/status.ts` (`statusLabel`, `statusTone`), `parseNameservers` (cells.ts), `needsAdoption` (series.ts); unit tests first
+  - [x] `src/views/DnsProvider.svelte`: title + stack link, notes, headline (supported / not supported / not yet determined / domains / rank), last contact (status badge, last success, last error), settings record, supported templates (links), support history chart + table, share history chart + table, owned URLs, not-found, load error
+  - [x] e2e `tests/e2e/dns-provider.spec.ts` (cards 1, 4, 6; missing/blank/malformed/unknown id; no horizontal scroll)
+  - [x] Draft PR #22
+- [~] Step 2: registry data in this repo
   - [ ] `registry/schema/provider.schema.json` (draft 2020-12, from the issue's field table)
   - [ ] `registry/examples/` (cloudflare, ionos, plesk; placeholder SVG logos)
   - [ ] `registryPath()` helper `<a>/<b>/` (unit, TDD on the issue's examples)
@@ -48,8 +48,14 @@ reset. Between steps keep `.agent-sync.yml` and stay on this branch.
 - Two charts: supported templates per sweep (stepped), domain share per import (`share_pct`, domains in the tooltip).
 - Overview fetched only when a `share_history` row has `completed_at: null`; if that fetch fails, fall back to `import_id` as Unix seconds.
 - Version bump: minor (new page content).
+- Unknown id (`?id=999`): the browser logs the 404 as a console error; that e2e test opts into expected errors.
+- Settings URLs are links only through `safeUrl`, `rel="nofollow noopener noreferrer"`.
 
 ## Corrections
+
+- Share axis ticks repeated "0.5%" (one-decimal rounding at small ranges): ticks now up to 2 decimals.
+- Share history table overflowed at 1280 px: `source` column not shown (status says pruned/completed).
+- `pkill -f` on the preview server killed the agent's own shell (pattern matched the command line): stop preview servers by PID from `ss -ltnp`.
 
 ## Open questions
 
