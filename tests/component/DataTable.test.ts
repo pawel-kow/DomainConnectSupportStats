@@ -93,3 +93,66 @@ describe('DataTable', () => {
     expect(bodyColumn(0)[0]).toBe('<img src=x onerror=alert(1)>');
   });
 });
+
+/** The example's stacks repeated to 45 rows, named `Stack 1` … `Stack 45` in export order. */
+function manyStacks(): Table {
+  const table = stacks();
+  const rows = Array.from({ length: 45 }, (_, i) => ({
+    ...table.rows[i % table.rows.length]!,
+    name: `Stack ${i + 1}`,
+  }));
+  return { ...table, rows };
+}
+
+describe('DataTable pagination', () => {
+  it('shows the first 20 rows and the range', () => {
+    render(DataTable, { table: manyStacks(), keys: ['name'], pageSize: 20 });
+    expect(bodyColumn(0)).toHaveLength(20);
+    expect(bodyColumn(0)[0]).toBe('Stack 1');
+    expect(screen.getByTestId('page-range')).toHaveTextContent('1–20 of 45');
+  });
+
+  it('pages forward and back', async () => {
+    render(DataTable, { table: manyStacks(), keys: ['name'], pageSize: 20 });
+    const prev = screen.getByRole('button', { name: /Previous/ });
+    const next = screen.getByRole('button', { name: /Next/ });
+    expect(prev).toBeDisabled();
+    await fireEvent.click(next);
+    await fireEvent.click(next);
+    expect(bodyColumn(0)).toEqual(['Stack 41', 'Stack 42', 'Stack 43', 'Stack 44', 'Stack 45']);
+    expect(screen.getByTestId('page-range')).toHaveTextContent('41–45 of 45');
+    expect(next).toBeDisabled();
+    await fireEvent.click(prev);
+    expect(bodyColumn(0)[0]).toBe('Stack 21');
+  });
+
+  it('changes the page size, All showing every row', async () => {
+    render(DataTable, { table: manyStacks(), keys: ['name'], pageSize: 20 });
+    const size = screen.getByRole('combobox', { name: /Rows per page/ });
+    await fireEvent.change(size, { target: { value: '50' } });
+    expect(bodyColumn(0)).toHaveLength(45);
+    await fireEvent.change(size, { target: { value: 'all' } });
+    expect(bodyColumn(0)).toHaveLength(45);
+  });
+
+  it('goes back to the first page when the search or sort changes', async () => {
+    render(DataTable, { table: manyStacks(), keys: ['name'], pageSize: 20, searchable: true });
+    await fireEvent.click(screen.getByRole('button', { name: /Next/ }));
+    await fireEvent.input(screen.getByRole('searchbox'), { target: { value: 'Stack 4' } });
+    expect(bodyColumn(0)).toEqual([
+      'Stack 4',
+      ...Array.from({ length: 6 }, (_, i) => `Stack ${40 + i}`),
+    ]);
+    await fireEvent.input(screen.getByRole('searchbox'), { target: { value: '' } });
+    await fireEvent.click(screen.getByRole('button', { name: /Next/ }));
+    await fireEvent.click(
+      screen.getByRole('columnheader', { name: /STACK/ }).querySelector('button')!,
+    );
+    expect(screen.getByTestId('page-range')).toHaveTextContent('1–20 of 45');
+  });
+
+  it('shows no pager when every row fits on one page', () => {
+    render(DataTable, { table: stacks(), pageSize: 20 });
+    expect(screen.queryByTestId('page-range')).not.toBeInTheDocument();
+  });
+});

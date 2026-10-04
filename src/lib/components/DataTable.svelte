@@ -1,5 +1,5 @@
 <script lang="ts" generics="R extends Row">
-  import type { Snippet } from 'svelte';
+  import { untrack, type Snippet } from 'svelte';
   import {
     cellKind,
     compareCells,
@@ -9,6 +9,8 @@
     rowMatches,
   } from '../cells';
   import type { Column, Row, Table } from '../data/types';
+  import { formatCount } from '../format';
+  import { clampPage, PAGE_SIZES, pageCount, pageRange, pageRows } from '../paging';
 
   interface Props {
     table: Table<R>;
@@ -24,6 +26,8 @@
     searchable?: boolean;
     /** Initial search text (e.g. from the page's `?q=`). */
     query?: string;
+    /** Paginate: initial rows per page, `null` for all; default: no pagination. */
+    pageSize?: number | null;
     /** Text shown when the table has no rows. */
     emptyText?: string;
     caption?: string;
@@ -37,6 +41,7 @@
     phoneKeys,
     searchable = false,
     query = $bindable(''),
+    pageSize,
     emptyText = 'No data available',
     caption,
   }: Props = $props();
@@ -59,6 +64,29 @@
           compareCells(a[sortKey!] ?? null, b[sortKey!] ?? null, sortDirection),
         ),
   );
+
+  const paged = $derived(pageSize !== undefined);
+  // The viewer changes the size from here on; `pageSize` is only the initial one.
+  let size = $state(untrack(() => pageSize ?? null));
+  let page = $state(1);
+  // Back to the first page whenever the rows or their order change.
+  $effect(() => {
+    void [table, query, sortKey, sortDirection, size];
+    page = 1;
+  });
+  const shownPage = $derived(clampPage(page, rows.length, size));
+  const shownRows = $derived(paged ? pageRows(rows, shownPage, size) : rows);
+  const range = $derived(pageRange(rows.length, shownPage, size));
+  const pages = $derived(pageCount(rows.length, size));
+  const smallestPage = PAGE_SIZES[0] ?? 20;
+
+  function sizeLabel(value: number | null): string {
+    return value === null ? 'all' : String(value);
+  }
+
+  function setSize(value: string) {
+    size = value === 'all' ? null : Number(value);
+  }
 
   function sampleValue(key: string) {
     return table.rows.find((r) => r[key] !== null && r[key] !== undefined)?.[key] ?? null;
@@ -102,7 +130,9 @@
       <span class="visually-hidden">Filter {table.title}</span>
       <input type="search" placeholder="Filter…" bind:value={query} />
     </label>
-    <span class="muted" data-testid="row-count">{rows.length} of {table.rows.length}</span>
+    <span class="muted" data-testid="row-count"
+      >{formatCount(rows.length)} of {formatCount(table.rows.length)}</span
+    >
   </div>
 {/if}
 
@@ -129,7 +159,7 @@
       </tr>
     </thead>
     <tbody>
-      {#each rows as row, i (i)}
+      {#each shownRows as row, i (i)}
         <tr>
           {#each columns as column (column.key)}
             {@const value = row[column.key] ?? null}
@@ -169,6 +199,29 @@
   </table>
 </div>
 
+{#if paged && rows.length > smallestPage}
+  <nav class="pager" aria-label="Pages of {caption ?? table.title}">
+    <span class="muted" data-testid="page-range"
+      >{formatCount(range.first)}–{formatCount(range.last)} of {formatCount(rows.length)}</span
+    >
+    <button type="button" disabled={shownPage <= 1} onclick={() => (page = shownPage - 1)}
+      >‹ Previous</button
+    >
+    <span>Page {shownPage} of {pages}</span>
+    <button type="button" disabled={shownPage >= pages} onclick={() => (page = shownPage + 1)}
+      >Next ›</button
+    >
+    <label>
+      Rows per page
+      <select value={sizeLabel(size)} onchange={(e) => setSize(e.currentTarget.value)}>
+        {#each PAGE_SIZES as option (sizeLabel(option))}
+          <option value={sizeLabel(option)}>{option === null ? 'All' : option}</option>
+        {/each}
+      </select>
+    </label>
+  </nav>
+{/if}
+
 <style>
   .table-tools {
     display: flex;
@@ -183,6 +236,31 @@
     border: 1px solid var(--border-color);
     border-radius: var(--radius-sm);
     min-width: 16rem;
+  }
+
+  .pager {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--spacing-xs) var(--spacing-sm);
+    margin-top: var(--spacing-sm);
+    font-size: 0.875rem;
+  }
+
+  .pager button,
+  .pager select {
+    font: inherit;
+    padding: 0.25rem 0.75rem;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-sm);
+    background-color: var(--bg-white);
+    color: var(--secondary-navy);
+    cursor: pointer;
+  }
+
+  .pager button:disabled {
+    color: var(--text-secondary);
+    cursor: default;
   }
 
   th button {
