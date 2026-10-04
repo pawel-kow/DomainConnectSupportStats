@@ -42,6 +42,9 @@ search, hide-by-default toggle, badges and caveats; tests, docs, version 0.3.0.
 
 ## Corrections
 
+- Maintainer: phone width shows only name, supported and domains (DataTable `phoneKeys`, hidden
+  below 480 px); status badges and stack stay on wide screens.
+
 - Desktop table overflowed the panel by 103 px (measured `.table-wrapper` scrollWidth 1191 vs
   1088): derived header shortened to "Undetermined", % moved under the count, badges and API hosts
   wrap on wide screens; now 1088 = 1088. Phones scroll inside the table.
