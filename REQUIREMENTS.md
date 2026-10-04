@@ -149,9 +149,9 @@ times are not shown.
 
 ### F-1d Templates list
 
-- Columns: template name (card link) with its service id below; service provider (card link);
+- Columns: service provider (card link); template name (card link) with its service id below;
   added; supported (of total, %); not supported (%); reach (domains, % of scanned). Sorted by the
-  counts. Phone width: template, supported and reach only. Paginated (F-2.10).
+  counts. Phone width: service provider, template, supported and reach. Paginated (F-2.10).
 - `?spid=` filters to one service provider's templates, titled with its name.
 - Hidden by default (F-2.6): never probed (`total` 0); shown, they read "Not probed yet" in
   supported and `–` in not supported. The toggle is `&all=1`; it applies after `?spid=`.

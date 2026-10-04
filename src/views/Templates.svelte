@@ -31,8 +31,8 @@
   if (spid) document.title = `${spid} - Templates - Domain Connect Support Statistics`;
 
   const KEYS = [
-    'service_name',
     'provider_name',
+    'service_name',
     'added_at',
     'supported_count',
     'unsupported_count',
@@ -76,7 +76,8 @@
       >{:else}{row.service_name ?? UNKNOWN}{/if}
     <div class="mono muted id">{sid ?? UNKNOWN}</div>
   {:else if column.key === 'provider_name'}
-    {#if spidOf}<a href={links.serviceProvider(spidOf)}>{row.provider_name ?? spidOf}</a
+    {#if spidOf}<a class="provider" href={links.serviceProvider(spidOf)}
+        >{row.provider_name ?? spidOf}</a
       >{:else}{row.provider_name ?? UNKNOWN}{/if}
   {:else if isNeverProbed(row) && column.key !== 'reach_domains'}
     {#if column.key === 'supported_count'}<span class="muted not-probed">Not probed yet</span
@@ -121,7 +122,7 @@
           table={list.table}
           keys={KEYS}
           customKeys={CUSTOM_KEYS}
-          phoneKeys={['service_name', 'supported_count', 'reach_domains']}
+          phoneKeys={['provider_name', 'service_name', 'supported_count', 'reach_domains']}
           cell={templateCell}
           searchable
           pageSize={20}
@@ -172,6 +173,11 @@
       white-space: normal;
       overflow-wrap: anywhere;
     }
+  }
+
+  /* Provider names fall back to their id, a host without spaces. */
+  .provider {
+    overflow-wrap: anywhere;
   }
 
   .caveats {

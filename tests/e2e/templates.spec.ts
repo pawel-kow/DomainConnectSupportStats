@@ -4,7 +4,7 @@ import { expect, test } from './fixtures';
 const LOGO = resolve(import.meta.dirname, '../../public/assets/DomainConnectBlackSmall.png');
 
 function names(page: import('@playwright/test').Page) {
-  return page.locator('tbody tr td:first-child a');
+  return page.locator('tbody tr td:nth-child(2) a');
 }
 
 /** The example export has no never-probed template: `template2` becomes one. */
@@ -44,16 +44,20 @@ test.describe('Templates list (templates.html)', () => {
     await expect(page.getByTestId('caveats')).toContainText('latest probe');
   });
 
-  test('shows the service provider, added date and not supported on wide screens', async ({
-    page,
-  }, testInfo) => {
-    test.skip(testInfo.project.name === 'mobile', 'columns hidden at phone width');
+  test('links the service provider first', async ({ page }) => {
     await page.goto('templates.html');
     const verify = page.locator('tbody tr', { hasText: 'Domain Verification' });
+    await expect(verify.locator('td').first().getByRole('link')).toHaveText('Acme Mail Inc.');
     await expect(verify.getByRole('link', { name: 'Acme Mail Inc.' })).toHaveAttribute(
       'href',
       './service-provider.html?id=mail.acme.example',
     );
+  });
+
+  test('shows the added date and not supported on wide screens', async ({ page }, testInfo) => {
+    test.skip(testInfo.project.name === 'mobile', 'columns hidden at phone width');
+    await page.goto('templates.html');
+    const verify = page.locator('tbody tr', { hasText: 'Domain Verification' });
     await expect(verify).toContainText('2026');
     await expect(verify).toContainText(/2\s*50.0%/);
   });
@@ -131,11 +135,11 @@ test.describe('Templates list (templates.html)', () => {
     });
   });
 
-  test('shows template, support and reach only at phone width', async ({ page }, testInfo) => {
+  test('shows provider, template, support and reach at phone width', async ({ page }, testInfo) => {
     await page.goto('templates.html');
     const headers = page.locator('thead th:visible');
     if (testInfo.project.name === 'mobile') {
-      await expect(headers).toHaveText([/TEMPLATE/, /SUPPORTED/, /REACH/]);
+      await expect(headers).toHaveText([/PROVIDER/, /TEMPLATE/, /SUPPORTED/, /REACH/]);
     } else {
       await expect(headers).toHaveCount(6);
     }
