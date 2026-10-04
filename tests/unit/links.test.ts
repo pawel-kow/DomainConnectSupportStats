@@ -21,6 +21,13 @@ describe('links', () => {
     );
     expect(links.dnsProviders({ all: false })).toBe('./dns-providers.html');
   });
+
+  it('carries the templates filters', () => {
+    expect(links.templates({ spid: 'mail.acme.example', q: 'mail', all: true })).toBe(
+      './templates.html?spid=mail.acme.example&q=mail&all=1',
+    );
+    expect(links.templates({ spid: null, q: '', all: false })).toBe('./templates.html');
+  });
 });
 
 describe('safeUrl', () => {

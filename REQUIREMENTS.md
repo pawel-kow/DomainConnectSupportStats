@@ -89,7 +89,7 @@ The site shows the latest release the Scanner publishes and always states its ag
 | F-1.2  | `dns-providers.html` (`?stack=`, `&q=`, `&all=`) | `dns-providers.json`     | Every DNS provider; filter by stack and search; layout F-1b                                                                                                                                                                                                                           |
 | F-1.3  | `stacks.html`                                    | `stacks.json`            | Every stack with its support distribution                                                                                                                                                                                                                                             |
 | F-1.4  | `service-providers.html`                         | `service-providers.json` | Every service provider                                                                                                                                                                                                                                                                |
-| F-1.5  | `templates.html` (`?spid=`)                      | `templates.json`         | Every template; filter by service provider                                                                                                                                                                                                                                            |
+| F-1.5  | `templates.html` (`?spid=`, `&q=`, `&all=`)      | `templates.json`         | Every template; filter by service provider and search; layout F-1d                                                                                                                                                                                                                    |
 | F-1.6  | `dns-provider.html?id=`                          | DNS provider card        | Layout F-1a; charts: domain share per import, supported templates per sweep; the stack's registry entry                                                                                                                                                                               |
 | F-1.7  | `stack.html?id=`                                 | Stack card               | Deployments; chart: share per import                                                                                                                                                                                                                                                  |
 | F-1.8  | `service-provider.html?id=`                      | Service provider card    | Templates; chart: supporting providers per template per sweep                                                                                                                                                                                                                         |
@@ -146,6 +146,18 @@ times are not shown.
    field of the record as `key: value` in one cell, verbatim; unknown fields left out. Phone
    width: type, host, and the rest in the one cell.
 7. Notes.
+
+### F-1d Templates list
+
+- Columns: service provider (card link); template name (card link) with its service id below;
+  added; supported (of total, %); not supported (%); reach (domains, % of scanned). Sorted by the
+  counts. Phone width: service provider, template, supported and reach. Paginated (F-2.10).
+- `?spid=` filters to one service provider's templates, titled with its name.
+- Hidden by default (F-2.6): never probed (`total` 0); shown, they read "Not probed yet" in
+  supported and `–` in not supported. The toggle is `&all=1`; it applies after `?spid=`.
+- `?q=` and `&all=` follow the search box and toggle in the URL.
+- No logos: `templates.json` carries no `logo_url`.
+- Footnotes: what supported counts (DNS provider and template version pairs), reach.
 
 ### F-2 Common behaviour
 
