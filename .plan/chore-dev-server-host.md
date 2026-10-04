@@ -6,9 +6,9 @@
 ## Tasks
 
 - [x] Investigate why the host browser gets no response
-- [~] Set `server.host` and `preview.host` in vite.config.ts
-- [ ] Verify IPv4 and IPv6 loopback, run verify
-- [ ] Promote findings, delete this file
+- [x] Set `server.host` and `preview.host` in vite.config.ts
+- [x] Verify IPv4 and IPv6 loopback, run verify
+- [~] Promote findings, delete this file
 
 ## Findings
 
@@ -20,6 +20,8 @@
 
 - `host: true` for dev and preview: listens on all addresses (IPv4 and IPv6).
 - No version bump: dev tooling only, the built site is unchanged.
+
+- Dev server: 127.0.0.1, [::1], localhost all 200 (curl); `npm run verify` passes, e2e runs preview with `host: true`.
 
 ## Corrections
 
