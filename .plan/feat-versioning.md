@@ -6,12 +6,12 @@ only approved tagged releases deployed.
 
 ## Tasks
 
-- [~] Writing rule in DEVELOPING.md; rewrite README, CLAUDE, DEVELOPING, TESTING, DEPLOYMENT, REQUIREMENTS
-- [ ] CHANGELOG.md, version 0.1.0, version check + release-notes script (TDD)
-- [ ] Footer shows the version (component test)
-- [ ] deploy.yml: tag on merge, `release` environment approval, data deploys use the latest release
-- [ ] ci.yml: version/CHANGELOG check
-- [ ] npm run verify, PR
+- [x] Writing rule in DEVELOPING.md; rewrite all docs
+- [x] CHANGELOG.md, version 0.1.0, version check + release-notes script (TDD)
+- [x] Footer shows the version (component test)
+- [x] deploy.yml: tag on merge, `release` environment approval, data deploys use the latest release
+- [x] ci.yml: version/CHANGELOG check
+- [~] npm run verify (green), PR
 - [ ] Remove plan
 
 ## Decisions (maintainer)
@@ -26,3 +26,5 @@ only approved tagged releases deployed.
 - All docs rewritten now; code comments fixed when touched.
 
 ## Open questions
+- Real-release check (DEVELOPING.md §3.6) not possible: no data repo yet.
+- Requirement ids (P-/F-/C-) kept as anchors (issues #13, #14 cite them); cross-references removed.
