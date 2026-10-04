@@ -37,7 +37,7 @@ All commands: [CLAUDE.md](CLAUDE.md#development-commands).
 ## How it fits together
 
 - **Svelte 5 + TypeScript, Vite multi-page build**: one HTML file per page, no backend.
-- **Chart.js** for charts, bundled (no CDN; pages make no third-party requests).
+- **Chart.js** for charts, bundled (no CDN; the only third-party request allowed is privacy-friendly analytics).
 - **[`contract/`](contract/)**: the Scanner's export format, schemas and example export, vendored
   verbatim. The site is built only against this contract.
 - **Deploy**: the Scanner pushes each release to a data repo and triggers this repo's GitHub

@@ -463,8 +463,10 @@ fast enough that you never want to skip it.
 - `dependencies` hold only what ships to the browser (today: `chart.js`); everything else is a
   `devDependency`. `package-lock.json` is committed; CI uses `npm ci`.
 - **No runtime requests to third-party hosts.** Libraries are bundled, not loaded from a CDN, and
-  pages load no external fonts, analytics or embeds: a visitor's browser talks only to the site's
-  own origin (and, if configured, the data host). The links in the footer are links, not loads.
+  pages load no external fonts or embeds: a visitor's browser talks only to the site's own origin
+  (and, if configured, the data host). The links in the footer are links, not loads. The one
+  exception is a single cookieless, privacy-friendly analytics service (REQUIREMENTS.md C-7),
+  not yet chosen.
 - Update deliberately, one PR, with `npm run verify`.
 
 ---
