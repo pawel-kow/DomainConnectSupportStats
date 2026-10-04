@@ -39,11 +39,12 @@ reset. Between steps keep `.agent-sync.yml` and stay on this branch.
   - [x] tests: unit `isPublicKey`, component DataTable/Layout, e2e overview "shows no internal id", card title/not-found
   - [x] overview: adoption and ecosystem tables removed (C-11 changed)
   - [x] REQUIREMENTS.md F-2.1, F-2.9; screenshots desktop + phone (overview, cards 1, 4, 999)
-- [~] Step 4: deploy (bundle writes `dist/registry/<a>/<b>/<encodeSegment(file)>` from `validateRegistry().entries` and `dist/registry/registry.json` `{repository, commit}`; footer reads `RegistryClient.source()`; start here)
-  - [ ] `deploy.yml`: `REGISTRY_REPO` required (fails when unset), `REGISTRY_REF`; validate; bundle into `dist/registry/` with encoded file names
-  - [ ] footer shows the registry commit
-  - [ ] DEPLOYMENT.md
-- [ ] Step 5: finish
+- [x] Step 4: deploy
+  - [x] `bundleRegistry()` (scripts/registry.ts), CLI `scripts/bundle-registry.ts <dir> <dist> <owner/name> <commit>`, `npm run bundle:registry`; contract tests
+  - [x] `deploy.yml`: `REGISTRY_REPO` required, `REGISTRY_REF`; checkout `registry-data`; validate + bundle into `dist/registry/`; run summary line
+  - [x] footer "Registry <short commit>" → `github.com/<repo>/tree/<commit>` (Layout prop `registry`; `RegistryClient.source()` fetched once; DnsProvider passes its client); e2e fixture routes `registry.json` for every page
+  - [x] DEPLOYMENT.md (§1, §2.1, new §2.3 registry repo, §3, §4)
+- [~] Step 5: finish (start here)
   - [ ] docs (CLAUDE.md page table + file reference, REQUIREMENTS.md, README, TESTING.md), version 0.2.0 + CHANGELOG
   - [ ] `npm run verify`; screenshots desktop + phone, maintainer acceptance
   - [ ] promote findings, `git rm -r .plan`, PR ready
@@ -77,6 +78,10 @@ reset. Between steps keep `.agent-sync.yml` and stay on this branch.
 - Deployed registry layout as in the issue: `registry/<a>/<b>/<encoded file>` (no `providers/`); dev/preview map `/registry/<a>/<b>/<seg>` to `REGISTRY_DIR/providers/<a>/<b>/<decoded seg>`, `/registry/registry.json` to `REGISTRY_DIR/registry.json`.
 - Logo URL: `<a>/<b>/<encodeSegment(logo)>`, `<a>/<b>` from the providerId.
 - "Registry entry of stack <name>": stack card (`stack` kind, table `stack`, `deployments`, `name`) fetched only when an entry exists; `deployments > 1` → stack heading linking the stack card; fetch failure → stack heading with the `provider_id`.
+
+- Footer registry commit on every page: one `registry.json` request per page; no link when missing or invalid.
+- Registry repo public: no token secret.
+- Registry changes deploy with the next data deploy (daily or by hand); no dispatch type for the registry.
 
 - Banner time: the manifest's `share_import` has no time; Layout fetches `overview.json` for the import's `completed_at` (one extra request per page).
 
