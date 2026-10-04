@@ -1,5 +1,4 @@
 <script lang="ts">
-  import DataTable from '../lib/components/DataTable.svelte';
   import Layout from '../lib/components/Layout.svelte';
   import LoadError from '../lib/components/LoadError.svelte';
   import Notes from '../lib/components/Notes.svelte';
@@ -28,6 +27,12 @@
     return total === null ? undefined : `of ${formatCount(total)}`;
   }
 
+  /** When the import's scan ran, e.g. "scan of 01-06-2026". */
+  function scanDate(row: Row | undefined): string | undefined {
+    const at = row?.started_at ?? row?.completed_at;
+    return typeof at === 'string' ? `scan of ${formatDate(at)}` : undefined;
+  }
+
   function chartSeries(adoption: Row[], ecosystem: Row[]): Series[] {
     return [
       {
@@ -35,7 +40,7 @@
         points: importSeries(adoption, 'dc_pct', adoption),
         tooltip: (p) =>
           `DC adoption: ${formatPct(p.y)} (${formatCount(num(p.row, 'dc_domains'))} of ` +
-          `${formatCount(num(p.row, 'scanned_domains'))} domains, import ${p.row.import_id})`,
+          `${formatCount(num(p.row, 'scanned_domains'))} domains)`,
       },
       {
         label: 'Supporting DNS providers',
@@ -43,7 +48,7 @@
         axis: 'right',
         stepped: true,
         tooltip: (p) =>
-          `Supporting DNS providers: ${p.y} of ${formatCount(num(p.row, 'known_dns_providers'))} known (sweep ${p.row.sweep_id})`,
+          `Supporting DNS providers: ${p.y} of ${formatCount(num(p.row, 'known_dns_providers'))} known`,
       },
       {
         label: 'Supporting stacks',
@@ -88,7 +93,7 @@
       <StatCard
         value={formatCount(num(latestImport, 'dns_providers'))}
         label="DNS providers with domains"
-        detail={latestImport ? `import ${latestImport.import_id}` : undefined}
+        detail={scanDate(latestImport)}
       />
       <StatCard
         value={formatCount(num(latestSweep, 'supporting_dns_providers'))}
@@ -129,20 +134,6 @@
         <p class="no-data">No data available</p>
       {/if}
     </section>
-
-    {#if adoption}
-      <section class="panel">
-        <h2>{adoption.title}</h2>
-        <DataTable table={adoption} emptyText="No import has data yet" />
-      </section>
-    {/if}
-
-    {#if ecosystem}
-      <section class="panel">
-        <h2>{ecosystem.title}</h2>
-        <DataTable table={ecosystem} emptyText="No full support sweep has recorded support yet" />
-      </section>
-    {/if}
 
     <section class="panel caveats">
       <h2>About these numbers</h2>

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { links, safeUrl } from '../../src/lib/links';
+import { links, safeMailto, safeUrl } from '../../src/lib/links';
 
 describe('links', () => {
   it('carries raw ids in query parameters, URL-encoded by URLSearchParams', () => {
@@ -33,5 +33,15 @@ describe('safeUrl', () => {
     ]) {
       expect(safeUrl(value)).toBeNull();
     }
+  });
+});
+
+describe('safeMailto', () => {
+  it('links a plain address', () => {
+    expect(safeMailto(' dc@host.example ')).toBe('mailto:dc@host.example');
+  });
+
+  it.each([null, '', 'no-at', 'a@b@c', 'a@b?cc=x@y', 'javascript:x@y'])('rejects %j', (v) => {
+    expect(safeMailto(v)).toBeNull();
   });
 });

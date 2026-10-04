@@ -16,6 +16,14 @@ const PLAIN_NUMBER_KEYS = new Set([
   'rank',
 ]);
 
+/** Internal ids of the Scanner's database: used in URLs and lookups, never shown. */
+const NON_PUBLIC_KEYS = new Set(['id', 'dns_provider_id', 'import_id', 'sweep_id']);
+
+/** Whether a column may be shown (internal ids are not). */
+export function isPublicKey(key: string): boolean {
+  return !NON_PUBLIC_KEYS.has(key);
+}
+
 export type CellKind = 'pct' | 'pp' | 'count' | 'plain' | 'timestamp' | 'versions' | 'text';
 
 export function cellKind(key: string, value: CellValue): CellKind {
@@ -73,4 +81,18 @@ export function rowMatches(row: Record<string, CellValue>, query: string): boole
     (v) =>
       (typeof v === 'string' || typeof v === 'number') && String(v).toLowerCase().includes(needle),
   );
+}
+
+/**
+ * A DNS provider's `nameservers`: a JSON array encoded inside a string, parsed a second time.
+ * Null when absent or not an array of strings.
+ */
+export function parseNameservers(value: string | null | undefined): string[] | null {
+  if (!value) return null;
+  try {
+    const parsed: unknown = JSON.parse(value);
+    return Array.isArray(parsed) && parsed.every((v) => typeof v === 'string') ? parsed : null;
+  } catch {
+    return null;
+  }
 }

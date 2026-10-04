@@ -90,16 +90,36 @@ The site shows the latest release the Scanner publishes and always states its ag
 | F-1.3  | `stacks.html`                           | `stacks.json`            | Every stack with its support distribution                                                                                                                                                                                                                                             |
 | F-1.4  | `service-providers.html`                | `service-providers.json` | Every service provider                                                                                                                                                                                                                                                                |
 | F-1.5  | `templates.html` (`?spid=`)             | `templates.json`         | Every template; filter by service provider                                                                                                                                                                                                                                            |
-| F-1.6  | `dns-provider.html?id=`                 | DNS provider card        | Charts: supported templates per sweep, domain share per import                                                                                                                                                                                                                        |
+| F-1.6  | `dns-provider.html?id=`                 | DNS provider card        | Layout F-1a; charts: domain share per import, supported templates per sweep; the stack's registry entry                                                                                                                                                                               |
 | F-1.7  | `stack.html?id=`                        | Stack card               | Deployments; chart: share per import                                                                                                                                                                                                                                                  |
 | F-1.8  | `service-provider.html?id=`             | Service provider card    | Templates; chart: supporting providers per template per sweep                                                                                                                                                                                                                         |
 | F-1.9  | `template.html?spid=&sid=`              | Template card            | Records, supporters; chart: supporting DNS providers per sweep                                                                                                                                                                                                                        |
 | F-1.10 | Methodology page                        | —                        | How the data comes about, what the numbers count, their limits                                                                                                                                                                                                                        |
 
+### F-1a DNS provider and stack cards
+
+Both cards share one layout, top to bottom:
+
+1. Title: name and the registry logo; the card's id and stack in a small line.
+2. Headline stat cards.
+3. Contact block from the registry: website, documentation, technical contact, onboarding contact,
+   request form, process documentation.
+4. Domain share over time; supported templates over time; supported templates.
+5. Registry details: onboarding facts, features, notes, link to the entry.
+6. Settings, notes, owned URLs.
+
+A deployment of a multi-deployment stack shows the stack's registry entry (logo, contact block,
+details), labelled as the stack's. Registry values that are unknown or empty are not shown; a
+block with nothing left is not shown. No registry entry: no registry blocks; an entry that fails to
+load: a short error in their place.
+
+Settings show the URLs, name servers and first-seen time; probe statuses, errors and last-success
+times are not shown.
+
 ### F-2 Common behaviour
 
-- F-2.1 Every page shows the release's `generated_at` and domain-share import in its header, and
-  the site version in its footer.
+- F-2.1 Every page shows the release's `generated_at` and domain-share import (by its scan's
+  completion time) in its header, and the site version in its footer.
 - F-2.2 Lists: client-side sort, filter and search over all rows; default order is the export's.
 - F-2.3 Cross-links as plain `<a href>` page links: DNS provider ↔ stack, DNS provider ↔ template,
   template ↔ service provider, stack → its deployments (EXPORT_FORMAT.md "Cross-links").
@@ -110,6 +130,10 @@ The site shows the latest release the Scanner publishes and always states its ag
   (N hidden)" toggle.
 - F-2.7 Every card has a "report a problem" link.
 - F-2.8 Caveats link to the methodology page.
+- F-2.9 Internal ids (`dns_provider_id`, `import_id`, `sweep_id`) are not shown: no columns, titles,
+  tooltips or messages. They stay in URLs and lookups. Charts speak of time only: no "import" or
+  "sweep" in headings, labels or tooltips. Public ids (`provider_id`,
+  `service_provider_id`, `service_id`) are shown. Export `notes` stay verbatim.
 
 ### F-3 Data and deployment
 
@@ -119,6 +143,11 @@ The site shows the latest release the Scanner publishes and always states its ag
 - F-3.3 A new data release is deployed without a code change ([DEPLOYMENT.md](DEPLOYMENT.md)).
 - F-3.4 A release that fails validation against the vendored contract is not published.
 - F-3.5 Only approved, tagged site versions are published.
+- F-3.6 The DNS provider registry (entries and logos, keyed by `provider_id`) is a separate public
+  repository, validated against `registry/schema/` and published with every deploy under
+  `registry/`, with its repository and commit (no repository link and no footer commit when that
+  is missing). Base URL: build time `VITE_REGISTRY_BASE_URL`,
+  runtime `config.js`, default `./registry/`. The footer shows the registry commit.
 
 ### F-4 Leaderboards
 
@@ -138,12 +167,12 @@ The site shows the latest release the Scanner publishes and always states its ag
 | C-3  | Built only from `contract/`, never from Scanner source                                                                                       |
 | C-4  | Unknown files, tables, columns and keys ignored; tables found by id                                                                          |
 | C-5  | `null` is unknown: `–`, a gap, sorted last, never 0                                                                                          |
-| C-6  | Third-party text escaped; data URLs pass `safeUrl`                                                                                           |
+| C-6  | Third-party text escaped; data URLs pass `safeUrl` (e-mail addresses `safeMailto`) and open with `rel="nofollow noopener noreferrer"`        |
 | C-7  | No runtime requests to third-party hosts (bundled libraries, no CDN or fonts), except one cookieless analytics service without personal data |
 | C-8  | Look and feel of stats.domainconnect.org; navigation and URLs compatible with a merge                                                        |
 | C-9  | Works at phone width without horizontal page scroll                                                                                          |
 | C-10 | Only `format_version` `SUPPORTED_FORMAT_VERSION` is rendered; others fail loudly                                                             |
-| C-11 | WCAG 2.2 AA: contrast, keyboard use, screen-reader-usable tables, every chart's data also as a table                                         |
+| C-11 | WCAG 2.2 AA: contrast, keyboard use, screen-reader-usable tables; charts without data tables                                                 |
 | C-12 | User-facing texts translatable (not scattered through logic); English only                                                                   |
 
 ## 3. Stack

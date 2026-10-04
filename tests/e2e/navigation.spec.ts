@@ -8,6 +8,7 @@ for (const name of PAGES) {
     ).toBeVisible();
     await expect(page.getByTestId('generated-at')).toHaveText('01-10-2026 00:00 UTC');
     await expect(page.getByRole('navigation', { name: 'Main' }).getByRole('link')).toHaveCount(5);
+    await expect(page.getByTestId('registry-commit')).toHaveText('Registry abc1234');
   });
 }
 

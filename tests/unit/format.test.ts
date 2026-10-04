@@ -3,6 +3,7 @@ import {
   formatCount,
   formatDate,
   formatDateTime,
+  formatFlag,
   formatPct,
   formatPp,
   parseTimestamp,
@@ -56,5 +57,13 @@ describe('date formatting', () => {
     expect(formatDate('2026-03-02 23:30:00')).toBe('02-03-2026');
     expect(formatDateTime('2026-10-01T00:00:00Z')).toBe('01-10-2026 00:00 UTC');
     expect(formatDate(null)).toBe(UNKNOWN);
+  });
+});
+
+describe('formatFlag', () => {
+  it('shows yes, no and unknown', () => {
+    expect(formatFlag(true)).toBe('yes');
+    expect(formatFlag(false)).toBe('no');
+    expect(formatFlag(null)).toBe('–');
   });
 });

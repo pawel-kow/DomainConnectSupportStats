@@ -7,7 +7,8 @@ Guidance for Claude Code (claude.ai/code) in this repository.
 **Static, stateless statistics site** on [Domain Connect](https://www.domainconnect.org/) support
 across the DNS providers hosting real domains. It renders the static JSON export of the Domain
 Connect Scanner (pawel-kow/DomainConnectScanner, `export.py`) and is published on GitHub Pages.
-Look and feel: the Templates statistics dashboard at https://stats.domainconnect.org.
+Look and feel: the Templates statistics dashboard at https://stats.domainconnect.org. DNS provider and stack cards also show
+the provider's entry in the DNS provider registry (`registry/`).
 
 No backend, no write path: every page is a static HTML file that fetches the export's JSON files.
 
@@ -45,18 +46,21 @@ reference for page work**), `contract/schemas/` (JSON Schemas), `contract/exampl
 ```
 src/pages/<page>.html      one HTML entry per page (Vite multi-page build)
 src/entries/<page>.ts      mounts the page's view into #app
-src/views/*.svelte         one view per page (Overview, Placeholder, ...)
+src/views/*.svelte         one view per page (Overview, DnsProvider, Placeholder, ...)
 src/lib/components/        shared UI: Layout (header/nav/footer), DataTable, TimeChart, StatCard,
-                           NotFound, LoadError, Notes
+                           NotFound, LoadError, Notes, CardTitle, RegistryContact, Registry,
+                           ContactList, ExternalLink
 src/lib/data/              the contract in code: types, id encoding, manifest paths, loader
-                           (ExportClient), table lookup, data base URL config
+                           (ExportClient), table lookup, data and registry base URL config
+src/lib/registry/          the registry in code: entry path, entry parsing, loader (RegistryClient)
 src/lib/*.ts               pure helpers: format (numbers, dates), cells (column formatting,
-                           sort, filter), series (two clocks), links (page URLs)
+                           sort, filter), series (two clocks), links (page URLs), params (query)
 src/lib/styles.css         global styles, brand tokens (from stats.domainconnect.org)
 public/                    copied as is: brand assets, config.js (runtime config)
-scripts/                   Node scripts (Node TS type stripping): release validation and
-                           bundling, version/CHANGELOG check, release notes
+scripts/                   Node scripts (Node TS type stripping): release and registry
+                           validation and bundling, version/CHANGELOG check, release notes
 contract/                  vendored export contract
+registry/                  registry entry schema (draft) and example entries with logos
 tests/                     unit/, contract/, component/ (Vitest), e2e/ (Playwright)
 ```
 
@@ -70,25 +74,31 @@ every view is a shareable link:
 | `stacks.html`                           | `stacks.json`                                       | placeholder |
 | `service-providers.html`                | `service-providers.json`                            | placeholder |
 | `templates.html` (`?spid=`)             | `templates.json`                                    | placeholder |
-| `dns-provider.html?id=`                 | `dns-providers/{dns_provider_id}.json`              | placeholder |
+| `dns-provider.html?id=`                 | `dns-providers/{dns_provider_id}.json`, registry    | built       |
 | `stack.html?id=`                        | `stacks/{provider_id}.json`                         | placeholder |
 | `service-provider.html?id=`             | `service-providers/{service_provider_id}.json`      | placeholder |
 | `template.html?spid=&sid=`              | `templates/{service_provider_id}/{service_id}.json` | placeholder |
 
 A card page with a missing parameter or a 404 shows `NotFound` linking to its list; any other load
-failure shows `LoadError`. Never a blank page.
+failure shows `LoadError`. Never a blank page. Card layout: REQUIREMENTS.md F-1a.
 
 **Data location.** Default `./data/`. Build time: `VITE_DATA_BASE_URL`. Runtime:
 `window.DC_STATS_CONFIG.dataBaseUrl` in `config.js` (`src/lib/data/config.ts`). `vite dev` and
 `vite preview` serve `/data/` from `DATA_DIR` (default: the contract's example export).
+
+**Registry location.** Default `./registry/`. Build time: `VITE_REGISTRY_BASE_URL`. Runtime:
+`window.DC_STATS_CONFIG.registryBaseUrl`. Entry `registry/<a>/<b>/<encoded providerId>.json`,
+logo next to it, `registry.json` `{repository, commit}` (footer, entry link). `vite dev` and
+`vite preview` serve `/registry/` from `REGISTRY_DIR` (default `registry/examples`).
 
 **Version.** `package.json` `version`, injected at build time as `__APP_VERSION__`, shown in the
 footer.
 
 **Deployment.** Merging a new version to `main` tags `v<version>`, waits for approval in
 environment `release`, then deploys. Data releases (`repository_dispatch` `export-published`,
-daily, manual) redeploy the latest GitHub Release with the current data. `deploy.yml` validates
-the release against `contract/schemas/export/` and bundles it into `dist/data/`.
+daily, manual) redeploy the latest GitHub Release with the current data and registry.
+`deploy.yml` validates the release against `contract/schemas/export/` and bundles it into
+`dist/data/`, and the registry (`REGISTRY_REPO`) into `dist/registry/`.
 [DEPLOYMENT.md](DEPLOYMENT.md).
 
 ## Development Commands
@@ -97,6 +107,7 @@ the release against `contract/schemas/export/` and bundles it into `dist/data/`.
 npm ci                                   # install (devcontainer postCreate does this)
 npm run dev                              # dev server on :5173 with the example export
 DATA_DIR=../data-repo npm run dev        # ... against a real release
+REGISTRY_DIR=../registry npm run dev     # ... against a registry checkout
 npm run build                            # dist/ (site only, no data)
 npm run preview                          # serve dist/ on :4173 with DATA_DIR under /data/
 
@@ -109,6 +120,8 @@ npm run verify                           # all of the above, the pre-PR gate
 
 npm run validate:export -- <releaseDir>  # validate a release against the vendored contract
 npm run bundle:data -- <releaseDir> dist # validate + copy a release into dist/data/
+npm run validate:registry -- <dir>       # validate a registry (default registry/examples)
+npm run bundle:registry -- <dir> dist <owner/name> <commit>  # validate + copy into dist/registry/
 npm run release:notes -- <version>       # print the CHANGELOG section of a version
 ```
 
@@ -148,10 +161,13 @@ Pushing `.github/workflows/` changes needs a token with the `workflow` scope.
 - `src/lib/data/encode.ts`: id ↔ path-segment encoding
 - `src/lib/data/manifest.ts`: `SUPPORTED_FORMAT_VERSION`, `filePath()` from manifest path templates
 - `src/lib/data/load.ts`: `ExportClient` (manifest once, files by kind + raw ids, `NotFoundError`, `ReleaseMismatchError`)
-- `src/lib/data/config.ts`: data base URL precedence (runtime → build time → `./data/`)
+- `src/lib/data/config.ts`: data and registry base URL precedence (runtime → build time → `./data/`, `./registry/`)
 - `src/lib/data/tables.ts`: `findTable()` by id (template-card suffix), `oneRecord()`
 - `src/lib/data/types.ts`: types of the export (only what the site reads)
-- `src/lib/format.ts`, `cells.ts`, `series.ts`, `links.ts`: pure display/series/URL helpers (`safeUrl` for URLs from the data)
+- `src/lib/registry/path.ts`: `registryPath()` (`<a>/<b>` folder), `entryPath()`
+- `src/lib/registry/entry.ts`: `parseEntry()` (registry entry, unknown values as `null`), `parseSource()`, `FEATURES`
+- `src/lib/registry/load.ts`: `RegistryClient` (entry, logo URL, `registry.json` once), `entryFileUrl()`
+- `src/lib/format.ts`, `cells.ts`, `series.ts`, `links.ts`, `params.ts`: pure display/series/URL/query helpers (`safeUrl`, `safeMailto` for URLs from the data; `isPublicKey` hides internal ids)
 - `src/lib/components/`: shared Svelte components
 - `src/lib/styles.css`: global styles, brand tokens
 - `src/views/`: page views; `src/pages/`: HTML entries; `src/entries/`: mount scripts
@@ -159,11 +175,13 @@ Pushing `.github/workflows/` changes needs a token with the `workflow` scope.
 - `public/config.js`: optional runtime config (`window.DC_STATS_CONFIG`)
 - `scripts/export-release.ts`: `validateRelease()` (schemas, one `generated_at`, counts, card presence)
 - `scripts/validate-export.ts`, `scripts/bundle-data.ts`: CLIs over it, used by CI and deploy
+- `scripts/registry.ts`: `validateRegistry()` (schema, entry path, logo), `bundleRegistry()`; CLIs `validate-registry.ts`, `bundle-registry.ts`
 - `scripts/changelog.ts`: CHANGELOG parsing; `scripts/check-version.ts`, `scripts/release-notes.ts`: CLIs over it
-- `vite.config.ts`: multi-page inputs, relative base, `__APP_VERSION__`, `/data/` dev/preview middleware, Vitest config
+- `vite.config.ts`: multi-page inputs, relative base, `__APP_VERSION__`, `/data/` and `/registry/` dev/preview middleware, Vitest config
 - `playwright.config.ts`: e2e against `vite preview`, desktop + mobile
 - `.github/workflows/ci.yml`: PR/push gates, `.plan/` merge gate
 - `.github/workflows/deploy.yml`: tag on merge, approval, Pages deploy
 - `contract/`: vendored export contract
+- `registry/schema/provider.schema.json`: registry entry schema; `registry/examples/`: example registry (dev, tests)
 - `CHANGELOG.md`: changes per version
 - `README.md`, `REQUIREMENTS.md`, `DEVELOPING.md`, `TESTING.md`, `DEPLOYMENT.md`

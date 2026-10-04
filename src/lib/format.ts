@@ -62,3 +62,10 @@ export function formatDateTime(value: Date | string | null | undefined): string 
   if (!date) return UNKNOWN;
   return `${formatDate(date)} ${pad(date.getUTCHours())}:${pad(date.getUTCMinutes())} UTC`;
 }
+
+/** A tri-state flag: yes, no, or unknown. */
+export function formatFlag(value: boolean | null | undefined): string {
+  if (value === true) return 'yes';
+  if (value === false) return 'no';
+  return UNKNOWN;
+}

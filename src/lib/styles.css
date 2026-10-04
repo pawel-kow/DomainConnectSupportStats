@@ -158,6 +158,41 @@ a:hover {
   font-size: 0.8rem;
 }
 
+/* A record shown transposed: label, value. One column on phones. */
+.record {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: var(--spacing-xs) var(--spacing-md);
+}
+
+.record dt {
+  font-weight: var(--font-weight-semibold);
+  color: var(--text-secondary);
+}
+
+.record dd {
+  margin: 0;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.plain {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+@media (max-width: 480px) {
+  .record {
+    grid-template-columns: 1fr;
+    gap: 0;
+  }
+
+  .record dd {
+    margin-bottom: var(--spacing-sm);
+  }
+}
+
 /* ===== Summary stats ===== */
 .summary-stats {
   display: grid;

@@ -1,19 +1,46 @@
 <script lang="ts">
   import type { Snippet } from 'svelte';
+  import { defaultClient, type ExportClient } from '../data/load';
+  import { findTable } from '../data/tables';
   import type { Manifest } from '../data/types';
   import { formatCount, formatDateTime } from '../format';
   import { NAV } from '../links';
+  import { defaultRegistryClient, type RegistryClient } from '../registry/load';
 
   interface Props {
     /** Page name (file name without `.html`), to mark the current navigation entry. */
     current: string;
     /** The release's manifest once loaded; the header shows its facts on every page. */
     manifest?: Manifest | null;
+    /** Reads the domain-share import's completion time from `overview.json`. */
+    client?: ExportClient;
+    /** Reads the repository and commit of the bundled DNS provider registry for the footer. */
+    registry?: RegistryClient;
     children: Snippet;
   }
 
-  let { current, manifest = null, children }: Props = $props();
+  let {
+    current,
+    manifest = null,
+    client = defaultClient(),
+    registry = defaultRegistryClient(),
+    children,
+  }: Props = $props();
+  const registrySource = $derived(registry.source());
   const share = $derived(manifest?.share_import ?? null);
+
+  /** The import's `completed_at` from the overview's `adoption` table; null when unknown. */
+  const completedAt = $derived(
+    share
+      ? client
+          .file('overview')
+          .then((f) => {
+            const row = findTable(f, 'adoption')?.rows.find((r) => r.import_id === share.import_id);
+            return typeof row?.completed_at === 'string' ? row.completed_at : null;
+          })
+          .catch(() => null)
+      : Promise.resolve(null),
+  );
   const version = `v${__APP_VERSION__}`;
 </script>
 
@@ -48,7 +75,11 @@
           >{formatDateTime(manifest.generated_at)}</span
         >
         {#if share}
-          · Domain share: import <span data-testid="share-import">{share.import_id}</span>
+          · Domain share: <span data-testid="share-import"
+            >{#await completedAt}latest scan{:then at}{at
+                ? `scan completed ${formatDateTime(at)}`
+                : 'latest scan'}{/await}</span
+          >
           ({share.status}, {share.source}), {formatCount(share.scanned_domains)} domains scanned
         {:else}
           · <span data-testid="share-import">No domain-share import</span>: domain and reach figures
@@ -85,6 +116,17 @@
         target="_blank"
         rel="noopener">{version}</a
       >
+      {#await registrySource then source}
+        {#if source}
+          ·
+          <a
+            href="https://github.com/{source.repository}/tree/{source.commit}"
+            target="_blank"
+            rel="noopener"
+            data-testid="registry-commit">Registry {source.commit.slice(0, 7)}</a
+          >
+        {/if}
+      {/await}
     </p>
   </div>
 </footer>

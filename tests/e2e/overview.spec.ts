@@ -7,7 +7,9 @@ test.describe('overview (index.html)', () => {
 
   test('shows the release in the header', async ({ page }) => {
     await expect(page.getByTestId('generated-at')).toHaveText('01-10-2026 00:00 UTC');
-    await expect(page.getByTestId('share-import')).toHaveText('1780272000');
+    await expect(page.getByTestId('share-import')).toHaveText(
+      'scan completed 01-06-2026 07:00 UTC',
+    );
   });
 
   test('shows the latest values as headline numbers', async ({ page }) => {
@@ -24,15 +26,14 @@ test.describe('overview (index.html)', () => {
     await expect(chart.locator('canvas')).toBeVisible();
   });
 
-  test('lists every import and every full sweep', async ({ page }) => {
-    const adoption = page.locator('section', {
-      has: page.getByRole('heading', { name: 'Adoption per import' }),
-    });
-    await expect(adoption.locator('tbody tr')).toHaveCount(3);
-    const ecosystem = page.locator('section', {
-      has: page.getByRole('heading', { name: 'Support ecosystem per full sweep' }),
-    });
-    await expect(ecosystem.locator('tbody tr')).toHaveCount(3);
+  test('shows no internal id', async ({ page }) => {
+    await expect(page.getByTestId('headline')).toContainText('scan of 01-06-2026');
+    await expect(page.locator('main')).not.toContainText('1780272000');
+  });
+
+  test('shows the chart without data tables', async ({ page }) => {
+    await expect(page.getByRole('img', { name: /adoption per import/ })).toBeVisible();
+    await expect(page.locator('table')).toHaveCount(0);
   });
 
   test('fits the screen without horizontal page scroll', async ({ page }) => {

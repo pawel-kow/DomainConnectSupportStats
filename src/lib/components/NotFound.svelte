@@ -1,6 +1,6 @@
 <script lang="ts">
   interface Props {
-    /** What was looked for, e.g. "DNS provider 42". */
+    /** What was looked for, e.g. "This DNS provider". */
     what: string;
     backHref: string;
     backLabel: string;

@@ -19,6 +19,13 @@ describe('DataTable', () => {
     expect(bodyColumn(0)).toEqual(['Cloudflare', 'IONOS', 'Plesk', 'Quiet Host']);
   });
 
+  it('never shows internal id columns, also when asked for', () => {
+    const table = exampleJson('overview.json').tables.ecosystem as Table;
+    render(DataTable, { table, keys: ['sweep_id', 'started_at'] });
+    expect(screen.queryByRole('columnheader', { name: /SWEEP/ })).not.toBeInTheDocument();
+    expect(screen.getAllByRole('columnheader')).toHaveLength(1);
+  });
+
   it('formats percentages and counts', () => {
     render(DataTable, { table: stacks(), keys: ['name', 'domains', 'domains_pct'] });
     expect(bodyColumn(1)[0]).toBe('4,000');
