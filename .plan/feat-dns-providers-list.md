@@ -7,11 +7,11 @@ DNS provider card's supported templates; screenshots accepted.
 ## Tasks
 
 - [x] List page, phone columns (accepted earlier in this PR)
-- [~] Pure pagination helper + tests (`src/lib/paging.ts`)
-- [ ] DataTable `pageSize` prop: pager, size selector, reset on filter/sort/data change; component tests
-- [ ] Apply: DNS providers list; card supported templates (paginated + searchable)
-- [ ] E2E (many rows via routed fixture), docs (REQUIREMENTS F-2.10, TESTING), CHANGELOG
-- [ ] verify, screenshots, acceptance
+- [x] Pure pagination helper + tests (`src/lib/paging.ts`)
+- [x] DataTable `pageSize` prop: pager, size selector, reset on filter/sort/data change; component tests
+- [x] Apply: DNS providers list; card supported templates (paginated + searchable)
+- [x] E2E (many rows via routed fixture), docs (REQUIREMENTS F-2.10, TESTING), CHANGELOG
+- [~] verify, screenshots, acceptance
 - [ ] Remove this file
 
 ## Decisions
@@ -24,6 +24,11 @@ DNS provider card's supported templates; screenshots accepted.
 
 ## Findings
 
+- `npm run verify` green: 186 Vitest, 105 Playwright (3 skipped: wide-only columns on mobile).
+- 1,000-row list (routed): 20 rows, "Page 1 of 50", pager fits Pixel 7 width.
+
 ## Corrections
+
+- Search row count showed `1000 of 1000`; now formatted (`1,000 of 1,000`).
 
 ## Open questions
