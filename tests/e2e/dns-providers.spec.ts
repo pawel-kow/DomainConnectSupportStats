@@ -114,6 +114,61 @@ test.describe('DNS providers list (dns-providers.html)', () => {
     await expect(row.locator('td').nth(1).getByRole('link')).toHaveCount(0);
   });
 
+  test.describe('a long list', () => {
+    // The example's rows repeated to 1,000 visible DNS providers, named `Provider 1` … in order.
+    test.beforeEach(async ({ page }) => {
+      await page.route('**/data/dns-providers.json', async (route) => {
+        const file = await (await route.fetch()).json();
+        const table = file.tables.dns_providers;
+        const visible = table.rows.filter(
+          (r: { dns_provider_id: number }) => r.dns_provider_id === 1,
+        );
+        table.rows = Array.from({ length: 1000 }, (_, i) => ({
+          ...visible[0],
+          dns_provider_id: i + 1,
+          name: `Provider ${i + 1}`,
+        }));
+        await route.fulfill({ json: file });
+      });
+    });
+
+    test('shows 20 rows per page and pages through them', async ({ page }) => {
+      await page.goto('dns-providers.html');
+      await expect(names(page)).toHaveCount(20);
+      await expect(page.getByTestId('page-range')).toHaveText('1–20 of 1,000');
+      await expect(page.getByTestId('row-count')).toHaveText('1,000 of 1,000');
+      await page.getByRole('button', { name: /Next/ }).click();
+      await expect(names(page).first()).toHaveText('Provider 21');
+      await expect(page.getByText('Page 2 of 50')).toBeVisible();
+    });
+
+    test('shows more rows per page on request', async ({ page }) => {
+      await page.goto('dns-providers.html');
+      const size = page.getByRole('combobox', { name: 'Rows per page' });
+      await size.selectOption('100');
+      await expect(names(page)).toHaveCount(100);
+      await size.selectOption('all');
+      await expect(names(page)).toHaveCount(1000);
+    });
+
+    test('goes back to the first page on search', async ({ page }) => {
+      await page.goto('dns-providers.html');
+      await page.getByRole('button', { name: /Next/ }).click();
+      await page.getByRole('searchbox').fill('Provider 1');
+      await expect(names(page).first()).toHaveText('Provider 1');
+      await expect(page.getByTestId('page-range')).toHaveText('1–20 of 112');
+    });
+
+    test('fits the pager to the screen', async ({ page }) => {
+      await page.goto('dns-providers.html');
+      await expect(page.getByTestId('page-range')).toBeVisible();
+      const overflow = await page.evaluate(
+        () => document.documentElement.scrollWidth - window.innerWidth,
+      );
+      expect(overflow).toBeLessThanOrEqual(0);
+    });
+  });
+
   test.describe('load failure', () => {
     test.use({ expectErrors: true });
 

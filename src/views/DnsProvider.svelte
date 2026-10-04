@@ -252,6 +252,8 @@
             keys={['service_provider_name', 'service_name', 'versions', 'since']}
             customKeys={['service_provider_name', 'service_name']}
             phoneKeys={['service_provider_name', 'service_name', 'since']}
+            searchable
+            pageSize={20}
             cell={templateCell}
             emptyText="No template supported in the latest probes"
           />

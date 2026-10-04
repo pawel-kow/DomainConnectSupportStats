@@ -125,6 +125,7 @@
           phoneKeys={['name', 'supported_count', 'domains']}
           cell={providerCell}
           searchable
+          pageSize={20}
           bind:query
           caption="DNS providers"
           emptyText={stack
