@@ -5,11 +5,13 @@
 
 function page(
   name: string,
-  params: Record<string, string | number | null | undefined> = {},
+  params: Record<string, string | number | boolean | null | undefined> = {},
 ): string {
   const query = new URLSearchParams();
   for (const [key, value] of Object.entries(params)) {
-    if (value !== null && value !== undefined && value !== '') query.set(key, String(value));
+    if (value === true) query.set(key, '1');
+    else if (value !== null && value !== undefined && value !== '' && value !== false)
+      query.set(key, String(value));
   }
   const qs = query.toString();
   return `./${name}.html${qs ? '?' + qs : ''}`;
@@ -17,7 +19,7 @@ function page(
 
 export const links = {
   overview: () => page('index'),
-  dnsProviders: (filters: { stack?: string | null; q?: string | null } = {}) =>
+  dnsProviders: (filters: { stack?: string | null; q?: string | null; all?: boolean } = {}) =>
     page('dns-providers', filters),
   stacks: () => page('stacks'),
   serviceProviders: () => page('service-providers'),

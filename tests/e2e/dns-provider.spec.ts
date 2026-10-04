@@ -183,6 +183,21 @@ test.describe('DNS provider card (dns-provider.html)', () => {
     });
   });
 
+  test('fits every table to the screen at phone width', async ({ page }, testInfo) => {
+    test.skip(testInfo.project.name !== 'mobile', 'phone width only');
+    await page.goto('dns-provider.html?id=1');
+    await expect(page.getByTestId('headline')).toBeVisible();
+    const templates = section(page, 'Supported templates (current state)');
+    await expect(templates.locator('thead th:visible')).toHaveText([
+      /SERVICE PROVIDER/,
+      /TEMPLATE/,
+      /SUPPORTED SINCE/,
+    ]);
+    for (const wrapper of await page.locator('.table-wrapper').all()) {
+      expect(await wrapper.evaluate((w) => w.scrollWidth - w.clientWidth)).toBeLessThanOrEqual(0);
+    }
+  });
+
   test('fits the screen without horizontal page scroll', async ({ page }) => {
     await page.goto('dns-provider.html?id=1');
     await expect(page.getByTestId('headline')).toBeVisible();

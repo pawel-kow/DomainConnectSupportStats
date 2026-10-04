@@ -4,6 +4,20 @@ Changes per site version. Versions follow [SemVer](https://semver.org/): major f
 parameter removed or changed incompatibly, minor for new pages, features or content, patch for
 fixes, styling and dependencies.
 
+## [0.3.0] - 2026-10-04
+
+### Added
+
+- DNS providers list: support, statuses and domains per DNS provider; search, sort, stack filter;
+  given-up, never-probed and zero-domain providers behind a "show all" toggle; caveats.
+
+### Changed
+
+- Tables show fewer columns at phone width to fit the screen; DNS provider card's supported
+  templates without versions.
+- Long tables in pages of 20 rows (50, 100 or all on request): DNS providers list, DNS provider
+  card's supported templates (now with a filter).
+
 ## [0.2.0] - 2026-10-04
 
 ### Added

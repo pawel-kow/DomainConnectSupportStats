@@ -39,7 +39,10 @@ reference for page work**), `contract/schemas/` (JSON Schemas), `contract/exampl
   - percentages arrive unrounded; round for display only;
   - text values come from third parties: never render them as HTML (`{@html}` is a lint error);
   - show `notes` verbatim; show `generated_at` and the domain-share import on every page;
-  - import series and sweep series run on two clocks (`src/lib/series.ts`).
+  - import series and sweep series run on two clocks (`src/lib/series.ts`);
+  - tables keep only the columns that fit at phone width (`phoneKeys`); ask the maintainer which
+    when not obvious;
+  - tables that can grow long have a filter and 20-row pages (`searchable`, `pageSize`).
 
 ## Architecture
 
@@ -67,17 +70,17 @@ tests/                     unit/, contract/, component/ (Vitest), e2e/ (Playwrig
 Pages and their data (EXPORT_FORMAT.md "Pages"). Query parameters carry raw ids and filters only;
 every view is a shareable link:
 
-| Page                                    | Data                                                | State       |
-| --------------------------------------- | --------------------------------------------------- | ----------- |
-| `index.html`                            | `overview.json`                                     | built       |
-| `dns-providers.html` (`?stack=`, `&q=`) | `dns-providers.json`                                | placeholder |
-| `stacks.html`                           | `stacks.json`                                       | placeholder |
-| `service-providers.html`                | `service-providers.json`                            | placeholder |
-| `templates.html` (`?spid=`)             | `templates.json`                                    | placeholder |
-| `dns-provider.html?id=`                 | `dns-providers/{dns_provider_id}.json`, registry    | built       |
-| `stack.html?id=`                        | `stacks/{provider_id}.json`                         | placeholder |
-| `service-provider.html?id=`             | `service-providers/{service_provider_id}.json`      | placeholder |
-| `template.html?spid=&sid=`              | `templates/{service_provider_id}/{service_id}.json` | placeholder |
+| Page                                             | Data                                                | State       |
+| ------------------------------------------------ | --------------------------------------------------- | ----------- |
+| `index.html`                                     | `overview.json`                                     | built       |
+| `dns-providers.html` (`?stack=`, `&q=`, `&all=`) | `dns-providers.json`                                | built       |
+| `stacks.html`                                    | `stacks.json`                                       | placeholder |
+| `service-providers.html`                         | `service-providers.json`                            | placeholder |
+| `templates.html` (`?spid=`)                      | `templates.json`                                    | placeholder |
+| `dns-provider.html?id=`                          | `dns-providers/{dns_provider_id}.json`, registry    | built       |
+| `stack.html?id=`                                 | `stacks/{provider_id}.json`                         | placeholder |
+| `service-provider.html?id=`                      | `service-providers/{service_provider_id}.json`      | placeholder |
+| `template.html?spid=&sid=`                       | `templates/{service_provider_id}/{service_id}.json` | placeholder |
 
 A card page with a missing parameter or a 404 shows `NotFound` linking to its list; any other load
 failure shows `LoadError`. Never a blank page. Card layout: REQUIREMENTS.md F-1a.
@@ -167,6 +170,8 @@ Pushing `.github/workflows/` changes needs a token with the `workflow` scope.
 - `src/lib/registry/path.ts`: `registryPath()` (`<a>/<b>` folder), `entryPath()`
 - `src/lib/registry/entry.ts`: `parseEntry()` (registry entry, unknown values as `null`), `parseSource()`, `FEATURES`
 - `src/lib/registry/load.ts`: `RegistryClient` (entry, logo URL, `registry.json` once), `entryFileUrl()`
+- `src/lib/dns-providers.ts`: DNS providers list (stack filter, rows hidden by default, undetermined count, status badges)
+- `src/lib/paging.ts`: page count, rows and range of a paginated table
 - `src/lib/format.ts`, `cells.ts`, `series.ts`, `links.ts`, `params.ts`: pure display/series/URL/query helpers (`safeUrl`, `safeMailto` for URLs from the data; `isPublicKey` hides internal ids)
 - `src/lib/components/`: shared Svelte components
 - `src/lib/styles.css`: global styles, brand tokens

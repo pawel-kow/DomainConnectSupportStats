@@ -12,6 +12,7 @@
   import TimeChart from '../lib/components/TimeChart.svelte';
   import { parseNameservers } from '../lib/cells';
   import { defaultClient, NotFoundError } from '../lib/data/load';
+  import { undeterminedCount } from '../lib/dns-providers';
   import { findTable, oneRecord } from '../lib/data/tables';
   import type { Column, ExportFile, Manifest, Row } from '../lib/data/types';
   import { formatCount, formatDateTime, formatPct, UNKNOWN } from '../lib/format';
@@ -96,14 +97,6 @@
     return typeof v === 'string' ? v : null;
   }
 
-  /** `total - supported - unsupported`: never probed, being retried or failed. */
-  function undetermined(support: Row | undefined): number | null {
-    const total = num(support, 'total');
-    const yes = num(support, 'supported_count');
-    const no = num(support, 'unsupported_count');
-    return total === null || yes === null || no === null ? null : total - yes - no;
-  }
-
   const URL_FIELDS = [
     ['api_url', 'API URL'],
     ['sync_url', 'Synchronous flow URL'],
@@ -176,7 +169,7 @@
           detail={formatPct(num(support, 'unsupported_pct'))}
         />
         <StatCard
-          value={formatCount(undetermined(support))}
+          value={formatCount(undeterminedCount(support))}
           label="Not yet determined"
           detail="never probed, retried or failed"
         />
@@ -258,6 +251,9 @@
             table={templates}
             keys={['service_provider_name', 'service_name', 'versions', 'since']}
             customKeys={['service_provider_name', 'service_name']}
+            phoneKeys={['service_provider_name', 'service_name', 'since']}
+            searchable
+            pageSize={20}
             cell={templateCell}
             emptyText="No template supported in the latest probes"
           />

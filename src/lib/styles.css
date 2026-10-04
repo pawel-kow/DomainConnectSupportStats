@@ -281,6 +281,11 @@ th.num {
   color: var(--bg-white);
 }
 
+.badge-muted {
+  background-color: var(--border-color);
+  color: var(--text-primary);
+}
+
 .badge-error {
   background-color: var(--status-error);
   color: var(--bg-white);
@@ -335,6 +340,12 @@ th.num {
   tbody td,
   tfoot td {
     padding: var(--spacing-xs);
+  }
+
+  /* Columns a table leaves out at phone width (DataTable `phoneKeys`). */
+  th.wide-only,
+  td.wide-only {
+    display: none;
   }
 }
 

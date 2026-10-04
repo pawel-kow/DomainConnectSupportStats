@@ -14,6 +14,13 @@ describe('links', () => {
     expect(links.dnsProviders({ stack: null, q: '' })).toBe('./dns-providers.html');
     expect(links.dnsProviders({ stack: 'plesk.com' })).toBe('./dns-providers.html?stack=plesk.com');
   });
+
+  it('carries the show-all toggle only when on', () => {
+    expect(links.dnsProviders({ q: 'plesk', all: true })).toBe(
+      './dns-providers.html?q=plesk&all=1',
+    );
+    expect(links.dnsProviders({ all: false })).toBe('./dns-providers.html');
+  });
 });
 
 describe('safeUrl', () => {

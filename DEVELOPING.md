@@ -264,6 +264,7 @@ When code and docs disagree, fix both.
 - The PR that changes the site bumps the version (`npm version <level> --no-git-tag-version`) and
   adds its section to [CHANGELOG.md](CHANGELOG.md). Agents ask the maintainer when the level is not
   obvious.
+- **Long tables.** A table that can grow long gets a filter and pages (F-2.10).
 - Merging a new version to `main` tags `v<version>`, creates a prerelease and waits for manual
   approval; after deploy it becomes the latest release ([DEPLOYMENT.md](DEPLOYMENT.md)).
 - Rollback: revert via PR with a patch bump, or mark the previous release as latest and run the
@@ -358,6 +359,9 @@ check, build, Playwright (desktop + mobile), `.plan/` gate. Never merge red.
 
 ## 6. Project conventions
 
+- **Phone columns.** Every table chooses the columns it keeps at phone width
+  ([REQUIREMENTS.md](REQUIREMENTS.md) F-2.9). Agents ask the maintainer when the choice is not
+  obvious.
 - **Presentation integrity first.** Every number states what it counts and of what (attributed
   domains of the _scanned_ domains, supporting providers of the _known_ ones). `null` is "not
   measured": `–`, a gap, sorted last, never 0. History and current state are labelled as such.
