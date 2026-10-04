@@ -16,3 +16,8 @@ export function integerParam(search: string, name: string): number | null {
   const value = textParam(search, name);
   return value !== null && DECIMAL.test(value) ? Number(value) : null;
 }
+
+/** A toggle: on only for `1`. */
+export function flagParam(search: string, name: string): boolean {
+  return new URLSearchParams(search).get(name) === '1';
+}
