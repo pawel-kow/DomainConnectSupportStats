@@ -16,9 +16,11 @@
   import { sweepSeries } from '../lib/series';
   import {
     historyDiffers,
+    OWN_COLUMN_KEYS,
     recordDetails,
     recordsTable,
     RECORD_DETAILS_KEY,
+    recordValue,
     tableTitle,
   } from '../lib/templates';
 
@@ -188,17 +190,24 @@
         {@const shown = recordsTable(records)}
         <section class="panel">
           <h2>Records</h2>
-          <DataTable table={shown} customKeys={[RECORD_DETAILS_KEY]} emptyText="No records stored">
+          <DataTable
+            table={shown}
+            customKeys={[RECORD_DETAILS_KEY, ...OWN_COLUMN_KEYS]}
+            phoneKeys={['type', 'host', RECORD_DETAILS_KEY]}
+            emptyText="No records stored"
+          >
             {#snippet cell(column: Column, row: Row)}
               {#if column.key === RECORD_DETAILS_KEY}
                 <dl class="fields mono">
                   {#each recordDetails(records.columns, row) as d (d.key)}
-                    <div>
+                    <div class:phone-only={d.ownColumn}>
                       <dt>{d.key}:</dt>
                       <dd>{d.value}</dd>
                     </div>
                   {/each}
                 </dl>
+              {:else}
+                <span class="mono">{recordValue(row[column.key]) ?? UNKNOWN}</span>
               {/if}
             {/snippet}
           </DataTable>
@@ -250,6 +259,12 @@
 
   .fields dt {
     color: var(--text-secondary);
+  }
+
+  @media (min-width: 481px) {
+    .fields .phone-only {
+      display: none;
+    }
   }
 
   .fields dd {

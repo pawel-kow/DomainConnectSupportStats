@@ -18,17 +18,21 @@ describe('recordDetails', () => {
 
   it('lists every field but type and host, in column order, skipping unknown ones', () => {
     expect(recordDetails(table.columns, table.rows[2]!)).toEqual([
-      { key: 'groupId', value: 'verify' },
-      { key: 'data', value: 'acme-verification=%token%' },
-      { key: 'ttl', value: '300' },
-      { key: 'txtConflictMatchingMode', value: 'Prefix' },
-      { key: 'txtConflictMatchingPrefix', value: 'acme-verification=' },
+      { key: 'groupId', value: 'verify', ownColumn: true },
+      { key: 'data', value: 'acme-verification=%token%', ownColumn: false },
+      { key: 'ttl', value: '300', ownColumn: true },
+      { key: 'txtConflictMatchingMode', value: 'Prefix', ownColumn: false },
+      { key: 'txtConflictMatchingPrefix', value: 'acme-verification=', ownColumn: false },
     ]);
   });
 
   it('keeps numbers verbatim, without thousands separators', () => {
     const srv = records('unnamed.example/x');
-    expect(recordDetails(srv.columns, srv.rows[0]!)).toContainEqual({ key: 'port', value: '5060' });
+    expect(recordDetails(srv.columns, srv.rows[0]!)).toContainEqual({
+      key: 'port',
+      value: '5060',
+      ownColumn: false,
+    });
   });
 
   it('ignores a field the columns do not declare', () => {
@@ -38,15 +42,39 @@ describe('recordDetails', () => {
 });
 
 describe('recordsTable', () => {
-  it('has type, host and one details column', () => {
+  it('has type, host, the declared ones of groupId, ttl and essential, and details', () => {
     const t = recordsTable(records('exampleservice.domainconnect.org/template1'));
-    expect(t.columns.map((c) => c.key)).toEqual(['type', 'host', RECORD_DETAILS_KEY]);
+    expect(t.columns.map((c) => c.key)).toEqual(['type', 'host', 'ttl', RECORD_DETAILS_KEY]);
+    expect(recordsTable(records('mail.acme.example/mail')).columns.map((c) => c.key)).toEqual([
+      'type',
+      'host',
+      'groupId',
+      'ttl',
+      RECORD_DETAILS_KEY,
+    ]);
     expect(t.columns[0]!.header).toBe('type');
     expect(t.rows[0]![RECORD_DETAILS_KEY]).toBe('pointsTo: %ip%\nttl: 3600');
     expect(t.rows[0]!.pointsTo).toBe('%ip%');
   });
 
-  it('puts type or host in the details when the table lacks the other', () => {
+  it('keeps essential in its own column', () => {
+    const source: Table = {
+      title: 'Records',
+      columns: [
+        { key: 'essential', header: 'essential' },
+        { key: 'type', header: 'type' },
+      ],
+      rows: [{ essential: 'OnApply', type: 'A' }],
+      footer: null,
+    };
+    expect(recordsTable(source).columns.map((c) => c.key)).toEqual([
+      'type',
+      'essential',
+      RECORD_DETAILS_KEY,
+    ]);
+  });
+
+  it('leaves out type or host when the table lacks it', () => {
     const source: Table = {
       title: 'Records',
       columns: [

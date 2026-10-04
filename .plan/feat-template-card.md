@@ -25,7 +25,7 @@
 
 - Logo: `<img>` from `logo_url` (safeUrl, no referrer), exception to C-7 until #25 bundles logos
 - Order: title → headline → about (description, variables, versions, dates, SHA) → chart → supporters → records → notes
-- Records: three columns at every width: type, host, every other non-null field as `key: value` in one cell, verbatim
+- Records: type, host, groupId, ttl, essential (when declared), details (`key: value`, verbatim); phone: type, host, details with all fields (maintainer review)
 - Caveat footnote under the chart only when the last history value differs from the supporter count
 - Version: minor (new page) → 0.4.0
 

@@ -10,31 +10,48 @@ export const RECORD_DETAILS_KEY = 'record_details';
 
 const LEAD_KEYS = ['type', 'host'];
 
+/** Fields with their own column on wide screens, in the details at phone width. */
+export const OWN_COLUMN_KEYS = ['groupId', 'ttl', 'essential'];
+
 /** A record value as written in the template file: numbers without separators. */
-function verbatim(value: CellValue): string {
+export function recordValue(value: CellValue | undefined): string | null {
+  if (value === null || value === undefined) return null;
   return Array.isArray(value) ? value.join(', ') : String(value);
 }
 
+export interface RecordDetail {
+  key: string;
+  value: string;
+  /** Shown in its own column on wide screens. */
+  ownColumn: boolean;
+}
+
 /** The record's declared fields other than type and host, in column order; unknown ones left out. */
-export function recordDetails(columns: Column[], row: Row): { key: string; value: string }[] {
+export function recordDetails(columns: Column[], row: Row): RecordDetail[] {
   return columns
     .filter((c) => !LEAD_KEYS.includes(c.key))
     .flatMap((c) => {
-      const value = row[c.key];
-      return value === null || value === undefined ? [] : [{ key: c.key, value: verbatim(value) }];
+      const value = recordValue(row[c.key]);
+      return value === null
+        ? []
+        : [{ key: c.key, value, ownColumn: OWN_COLUMN_KEYS.includes(c.key) }];
     });
 }
 
 /**
- * The records as type, host and one details column, so a template's varying fields fit any
- * screen. Rows keep their own fields for rendering; the details column holds their text for sort
- * and filter.
+ * The records as type, host, the declared ones of `OWN_COLUMN_KEYS` and one details column, so a
+ * template's varying fields fit any screen. Rows keep their own fields for rendering; the details
+ * column holds their text for sort and filter.
  */
 export function recordsTable(source: Table): Table {
-  const lead = source.columns.filter((c) => LEAD_KEYS.includes(c.key));
+  const byKey = (keys: string[]) => keys.flatMap((k) => source.columns.filter((c) => c.key === k));
   return {
     title: source.title,
-    columns: [...lead, { key: RECORD_DETAILS_KEY, header: 'Details' }],
+    columns: [
+      ...byKey(LEAD_KEYS),
+      ...byKey(OWN_COLUMN_KEYS),
+      { key: RECORD_DETAILS_KEY, header: 'Details' },
+    ],
     rows: source.rows.map((row) => ({
       ...row,
       [RECORD_DETAILS_KEY]: recordDetails(source.columns, row)

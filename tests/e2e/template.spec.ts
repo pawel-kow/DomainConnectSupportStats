@@ -66,6 +66,29 @@ test.describe('Template card (template.html)', () => {
     await expect(row).toContainText(/target:\s*sip\.unnamed\.example/);
   });
 
+  test('shows groupId and ttl in their own columns on wide screens only', async ({
+    page,
+  }, testInfo) => {
+    await page.goto('template.html?spid=mail.acme.example&sid=mail');
+    const records = section(page, 'Records');
+    const txt = records.locator('tbody tr').nth(2);
+    if (testInfo.project.name === 'mobile') {
+      await expect(records.locator('thead th:visible')).toHaveText([/type/i, /host/i, /details/i]);
+      await expect(txt.locator('td:visible').last()).toContainText(/ttl:\s*300/);
+    } else {
+      await expect(records.locator('thead th')).toHaveText([
+        /type/i,
+        /host/i,
+        /groupId/i,
+        /ttl/i,
+        /details/i,
+      ]);
+      await expect(txt.locator('td').nth(3)).toHaveText('300');
+      await expect(txt.locator('td').last().locator('div', { hasText: 'ttl:' })).toBeHidden();
+      await expect(txt.locator('td').last()).toContainText(/data:\s*acme-verification/);
+    }
+  });
+
   test('leaves unknown record fields out', async ({ page }) => {
     await page.goto('template.html?spid=mail.acme.example&sid=mail');
     const mx = section(page, 'Records').locator('tbody tr').first();

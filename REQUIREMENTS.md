@@ -142,8 +142,9 @@ times are not shown.
    the current supporter count.
 5. Supporting DNS providers (current state): name (card link) with its API host below, stack, versions,
    domains, reach; `TOTAL` footer. Phone width: name, domains, reach.
-6. Records: type, host, and every other declared field of the record as `key: value` in one cell,
-   verbatim; unknown fields left out.
+6. Records: type, host, `groupId`, `ttl`, `essential` (when declared), and every other declared
+   field of the record as `key: value` in one cell, verbatim; unknown fields left out. Phone
+   width: type, host, and the rest in the one cell.
 7. Notes.
 
 ### F-2 Common behaviour
