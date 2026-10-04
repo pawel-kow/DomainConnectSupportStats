@@ -10,7 +10,9 @@ export default ts.config(
   ...ts.configs.recommended,
   ...svelte.configs.recommended,
   {
-    languageOptions: { globals: { ...globals.browser, ...globals.node } },
+    languageOptions: {
+      globals: { ...globals.browser, ...globals.node, __APP_VERSION__: 'readonly' },
+    },
   },
   {
     files: ['**/*.svelte', '**/*.svelte.ts'],

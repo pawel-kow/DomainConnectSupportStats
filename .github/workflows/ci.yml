@@ -1,4 +1,4 @@
-# Every PR and push to main: the gates of DEVELOPING.md §3.6 / TESTING.md §7.
+# Every PR and push to main: the gates of TESTING.md §7.
 name: CI
 
 on:
@@ -31,6 +31,8 @@ jobs:
         run: npm test
       - name: Example export is valid against the vendored contract
         run: npm run validate:export
+      - name: Version has a CHANGELOG section
+        run: npm run check:version
       - name: Build
         run: npm run build
       - name: Install Playwright Chromium
@@ -45,8 +47,7 @@ jobs:
           path: playwright-report/
           retention-days: 7
 
-  # DEVELOPING.md §3.8 rule 7: iteration plans are committed while work is in progress but
-  # never merged.
+  # Iteration plans are committed during work, never merged (DEVELOPING.md §3.11).
   no-plan-files:
     if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
