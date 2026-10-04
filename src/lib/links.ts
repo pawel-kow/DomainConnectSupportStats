@@ -23,7 +23,8 @@ export const links = {
     page('dns-providers', filters),
   stacks: () => page('stacks'),
   serviceProviders: () => page('service-providers'),
-  templates: (filters: { spid?: string | null } = {}) => page('templates', filters),
+  templates: (filters: { spid?: string | null; q?: string | null; all?: boolean } = {}) =>
+    page('templates', filters),
   dnsProvider: (dnsProviderId: number) => page('dns-provider', { id: dnsProviderId }),
   stack: (providerId: string) => page('stack', { id: providerId }),
   serviceProvider: (serviceProviderId: string) =>
