@@ -4,14 +4,7 @@ function section(page: import('@playwright/test').Page, heading: string) {
   return page.locator('section', { has: page.getByRole('heading', { name: heading }) });
 }
 
-const SOURCE = { repository: 'Domain-Connect/DnsProviders', commit: 'abc1234' };
-
 test.describe('DNS provider card (dns-provider.html)', () => {
-  // The deploy writes registry.json; the example registry has none.
-  test.beforeEach(async ({ page }) => {
-    await page.route('**/registry/registry.json', (route) => route.fulfill({ json: SOURCE }));
-  });
-
   test('shows the provider, its stack and its support', async ({ page }) => {
     await page.goto('dns-provider.html?id=1');
     await expect(page.getByTestId('card-title')).toContainText('Cloudflare');
@@ -146,7 +139,9 @@ test.describe('DNS provider card (dns-provider.html)', () => {
   test('requests no registry entry without a stack', async ({ page }) => {
     const requested: string[] = [];
     page.on('request', (r) => {
-      if (r.url().includes('/registry/')) requested.push(r.url());
+      const url = r.url();
+      // registry.json is the footer's; entries and logos are not requested.
+      if (url.includes('/registry/') && !url.endsWith('/registry.json')) requested.push(url);
     });
     await page.goto('dns-provider.html?id=4');
     await expect(page.getByTestId('headline')).toBeVisible();

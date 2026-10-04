@@ -123,7 +123,7 @@
   {/if}
 {/snippet}
 
-<Layout current="dns-provider" {manifest}>
+<Layout current="dns-provider" {manifest} {registry}>
   {#await loading}
     <p class="no-data">Loading…</p>
   {:then file}

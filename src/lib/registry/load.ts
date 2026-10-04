@@ -9,6 +9,8 @@ import { parseEntry, parseSource, type RegistryEntry, type RegistrySource } from
  * logos next to them, and `registry.json` naming the repository and commit.
  */
 export class RegistryClient {
+  private sourceLoad: Promise<RegistrySource | null> | null = null;
+
   constructor(
     readonly baseUrl: string,
     private readonly fetchFn: Fetch = (input) => fetch(input),
@@ -32,8 +34,12 @@ export class RegistryClient {
     return entry.logo ? this.url(entry.providerId, entry.logo) : null;
   }
 
-  /** The repository and commit the registry was bundled from, or null when unknown. */
-  async source(): Promise<RegistrySource | null> {
+  /** The repository and commit the registry was bundled from, or null when unknown. Fetched once. */
+  source(): Promise<RegistrySource | null> {
+    return (this.sourceLoad ??= this.loadSource());
+  }
+
+  private async loadSource(): Promise<RegistrySource | null> {
     try {
       const response = await this.fetchFn(new URL('registry.json', this.baseUrl).href);
       return response.ok ? parseSource(await response.json()) : null;

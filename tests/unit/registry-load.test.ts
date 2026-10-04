@@ -52,6 +52,13 @@ describe('RegistryClient', () => {
       client({ [`${BASE}registry.json`]: new Response('not json') }).source(),
     ).resolves.toBeNull();
   });
+
+  it('fetches the source once', async () => {
+    const requested: string[] = [];
+    const c = client({}, requested);
+    await Promise.all([c.source(), c.source()]);
+    expect(requested).toEqual([`${BASE}registry.json`]);
+  });
 });
 
 describe('entryFileUrl', () => {

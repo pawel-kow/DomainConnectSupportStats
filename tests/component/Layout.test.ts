@@ -5,6 +5,7 @@ import { describe, expect, it } from 'vitest';
 import pkg from '../../package.json';
 import Layout from '../../src/lib/components/Layout.svelte';
 import { ExportClient } from '../../src/lib/data/load';
+import { RegistryClient } from '../../src/lib/registry/load';
 import { exampleJson, exampleManifest } from '../fixtures';
 
 /** A client over the example export; `overview: false` makes overview.json fail. */
@@ -15,6 +16,13 @@ function client({ overview = true } = {}) {
       return Promise.resolve(new Response('', { status: 500 }));
     return Promise.resolve(Response.json(exampleJson(rel)));
   });
+}
+
+/** A registry whose `registry.json` holds `source`; 404 without one. */
+function registry(source?: unknown) {
+  return new RegistryClient('https://stats.example/registry/', () =>
+    Promise.resolve(source ? Response.json(source) : new Response('', { status: 404 })),
+  );
 }
 
 const children = createRawSnippet(() => ({ render: () => '<p>page body</p>' }));
@@ -66,5 +74,33 @@ describe('Layout', () => {
       'href',
       `https://github.com/pawel-kow/DomainConnectSupportStats/releases/tag/v${pkg.version}`,
     );
+  });
+
+  it('shows the bundled registry commit in the footer, linked to the repository', async () => {
+    const commit = '0123456789abcdef0123456789abcdef01234567';
+    render(Layout, {
+      current: 'index',
+      manifest: null,
+      client: client(),
+      registry: registry({ repository: 'Domain-Connect/DnsProviders', commit }),
+      children,
+    });
+    const link = await screen.findByRole('link', { name: 'Registry 0123456' });
+    expect(link).toHaveAttribute(
+      'href',
+      `https://github.com/Domain-Connect/DnsProviders/tree/${commit}`,
+    );
+  });
+
+  it('shows no registry commit when registry.json is missing', async () => {
+    render(Layout, {
+      current: 'index',
+      manifest: null,
+      client: client(),
+      registry: registry(),
+      children,
+    });
+    await new Promise((r) => setTimeout(r, 0));
+    expect(screen.queryByTestId('registry-commit')).toBeNull();
   });
 });

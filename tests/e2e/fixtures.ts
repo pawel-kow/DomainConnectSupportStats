@@ -1,11 +1,27 @@
 import { test as base, expect } from '@playwright/test';
 
+/** The deploy writes `registry/registry.json`; the example registry has none, so it is routed. */
+export const REGISTRY_SOURCE = { repository: 'Domain-Connect/DnsProviders', commit: 'abc1234' };
+
 /**
  * Every page test fails on an uncaught page error or a console error. A test that provokes an
  * error on purpose sets `expectErrors` to true.
  */
-export const test = base.extend<{ expectErrors: boolean; consoleErrors: string[] }>({
+export const test = base.extend<{
+  expectErrors: boolean;
+  consoleErrors: string[];
+  registrySource: void;
+}>({
   expectErrors: [false, { option: true }],
+  registrySource: [
+    async ({ page }, use) => {
+      await page.route('**/registry/registry.json', (route) =>
+        route.fulfill({ json: REGISTRY_SOURCE }),
+      );
+      await use();
+    },
+    { auto: true },
+  ],
   consoleErrors: [
     async ({ page, expectErrors }, use) => {
       const errors: string[] = [];
