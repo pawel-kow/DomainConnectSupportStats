@@ -1,16 +1,16 @@
-# Build the site, bundle the current export release from the data repo, publish to GitHub Pages.
-# See DEPLOYMENT.md. Repository variables: DATA_REPO (required, "owner/name"), DATA_REF (default
-# main), DATA_PATH (release directory inside the data repo, default "."). Secret DATA_REPO_TOKEN
-# only if the data repo is private.
+# Publish a tagged site version with the current export release to GitHub Pages. DEPLOYMENT.md.
+# Variables: DATA_REPO (required, "owner/name"), DATA_REF (default main), DATA_PATH (default ".").
+# Secret DATA_REPO_TOKEN only for a private data repo. Environment `release`: required reviewers.
 name: Deploy
 
 on:
+  # A new package.json version on main: tag, approve, deploy.
   push:
     branches: [main]
-  # Sent by the Scanner's publish step after it pushed a new release to the data repo.
+  # The Scanner pushed a new data release.
   repository_dispatch:
     types: [export-published]
-  # Fallback in case a dispatch was lost: the data repo's current state is redeployed daily.
+  # Covers a lost dispatch.
   schedule:
     - cron: '30 7 * * *'
   workflow_dispatch:
@@ -18,13 +18,71 @@ on:
 permissions:
   contents: read
 
-# One deploy at a time; a newer trigger waits instead of cancelling a deploy in flight.
 concurrency:
   group: pages
   cancel-in-progress: false
 
 jobs:
+  version:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    outputs:
+      tag: ${{ steps.pick.outputs.tag }}
+      new: ${{ steps.pick.outputs.new }}
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+      - name: Pick the site version
+        id: pick
+        run: |
+          if [ "${{ github.event_name }}" = push ]; then
+            tag="v$(node -p "require('./package.json').version")"
+            if git rev-parse -q --verify "refs/tags/$tag" >/dev/null; then
+              echo "$tag already released; nothing to deploy" | tee -a "$GITHUB_STEP_SUMMARY"
+              exit 0
+            fi
+            echo "tag=$tag" >> "$GITHUB_OUTPUT"
+            echo "new=true" >> "$GITHUB_OUTPUT"
+          else
+            tag=$(gh release view --json tagName -q .tagName 2>/dev/null || true)
+            if [ -z "$tag" ]; then
+              echo "::error::No site release yet. Release a site version first (DEPLOYMENT.md)."
+              exit 1
+            fi
+            echo "tag=$tag" >> "$GITHUB_OUTPUT"
+          fi
+      - name: Release notes
+        if: steps.pick.outputs.new == 'true'
+        run: npm run -s release:notes > "$RUNNER_TEMP/notes.md"
+      - name: Tag and create the prerelease
+        if: steps.pick.outputs.new == 'true'
+        run: |
+          tag="${{ steps.pick.outputs.tag }}"
+          git tag "$tag" "$GITHUB_SHA"
+          git push origin "$tag"
+          gh release create "$tag" --verify-tag --prerelease --title "$tag" \
+            --notes-file "$RUNNER_TEMP/notes.md"
+
+  approve:
+    needs: version
+    if: needs.version.outputs.new == 'true'
+    runs-on: ubuntu-latest
+    environment: release
+    steps:
+      - run: echo "Approved ${{ needs.version.outputs.tag }}"
+
   build:
+    needs: [version, approve]
+    if: >-
+      always() && needs.version.result == 'success' && needs.version.outputs.tag != '' &&
+      (needs.approve.result == 'success' || needs.approve.result == 'skipped')
     runs-on: ubuntu-latest
     steps:
       - name: Require the data repo variable
@@ -33,6 +91,8 @@ jobs:
           echo "::error::Repository variable DATA_REPO (owner/name of the export data repo) is not set. See DEPLOYMENT.md."
           exit 1
       - uses: actions/checkout@v7
+        with:
+          ref: ${{ needs.version.outputs.tag }}
       - name: Check out the export release
         uses: actions/checkout@v7
         with:
@@ -56,7 +116,7 @@ jobs:
         run: |
           {
             echo "### Deployed"
-            echo "- Site: \`${GITHUB_SHA}\`"
+            echo "- Site: \`${{ needs.version.outputs.tag }}\` @ \`$(git rev-parse HEAD)\`"
             echo "- Data: \`${{ vars.DATA_REPO }}\` @ \`$(git -C export-data rev-parse HEAD)\`"
             echo "- Release generated_at: \`$(node -p "require('./dist/data/manifest.json').generated_at")\`"
             echo "- Trigger: \`${{ github.event_name }}\`"
@@ -67,7 +127,8 @@ jobs:
           path: dist
 
   deploy:
-    needs: build
+    needs: [version, build]
+    if: always() && needs.build.result == 'success'
     runs-on: ubuntu-latest
     permissions:
       pages: write
@@ -78,3 +139,17 @@ jobs:
     steps:
       - id: deployment
         uses: actions/deploy-pages@v5
+
+  publish-release:
+    needs: [version, deploy]
+    if: always() && needs.deploy.result == 'success' && needs.version.outputs.new == 'true'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - name: Mark the release as latest
+        run: |
+          gh release edit "${{ needs.version.outputs.tag }}" --repo "$GITHUB_REPOSITORY" \
+            --prerelease=false --latest
