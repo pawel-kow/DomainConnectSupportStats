@@ -1,0 +1,12 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/pawel-kow/DomainConnectScanner/docs/schemas/export/stacks.schema.json",
+  "title": "export.py stacks.json",
+  "description": "The static export's stack list: report.py stacks' JSON with every row (no --limit), for the manifest's share_import. The report has no internal columns, so the file is exactly that report plus the release's generated_at (the manifest's). Each row's provider_id names its card, stacks/{provider_id}.json.",
+  "$ref": "../common.schema.json#/$defs/exportFile",
+  "properties": {
+    "notes": { "$ref": "../stacks.schema.json#/properties/notes" },
+    "tables": { "$ref": "../stacks.schema.json#/properties/tables" }
+  },
+  "unevaluatedProperties": false
+}

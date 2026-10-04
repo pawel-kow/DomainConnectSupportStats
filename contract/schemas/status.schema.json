@@ -1,0 +1,117 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/pawel-kow/DomainConnectScanner/docs/schemas/status.schema.json",
+  "title": "report.py status --output-mode json",
+  "description": "Post-processing job queue and table counts as one record: one table, one row, one column per metric (rows[0].settings_jobs_pending, ...), always these columns in this order; each job status is a column of its own, 0 when it has no jobs. txt/markdown show the table transposed, one labelled line per metric.",
+  "$ref": "common.schema.json#/$defs/report",
+  "properties": {
+    "notes": { "const": [] },
+    "tables": {
+      "properties": {
+        "status": {
+          "properties": {
+            "title": { "type": "string" },
+            "columns": {
+              "prefixItems": [
+                { "properties": { "key": { "const": "settings_jobs_pending" } } },
+                { "properties": { "key": { "const": "settings_jobs_processing" } } },
+                { "properties": { "key": { "const": "settings_jobs_done" } } },
+                { "properties": { "key": { "const": "settings_jobs_failed" } } },
+                { "properties": { "key": { "const": "settings_jobs_eligible" } } },
+                { "properties": { "key": { "const": "settings_jobs_in_backoff" } } },
+                { "properties": { "key": { "const": "support_probe_jobs_pending" } } },
+                { "properties": { "key": { "const": "support_probe_jobs_processing" } } },
+                { "properties": { "key": { "const": "support_probe_jobs_due_for_recheck" } } },
+                { "properties": { "key": { "const": "support_probe_jobs_in_cooldown" } } },
+                { "properties": { "key": { "const": "dns_providers" } } },
+                { "properties": { "key": { "const": "scan_pending_support_sweep" } } },
+                { "properties": { "key": { "const": "templates_last_synced_at" } } },
+                { "properties": { "key": { "const": "templates_last_synced_commit" } } },
+                { "properties": { "key": { "const": "service_providers" } } },
+                { "properties": { "key": { "const": "services" } } },
+                { "properties": { "key": { "const": "support" } } }
+              ],
+              "minItems": 17,
+              "items": false
+            },
+            "rows": { "$ref": "common.schema.json#/$defs/oneRow", "items": { "$ref": "#/$defs/row" } },
+            "footer": { "type": "null" }
+          }
+        }
+      },
+      "required": ["status"],
+      "additionalProperties": false
+    }
+  },
+  "$defs": {
+    "row": {
+      "type": "object",
+      "properties": {
+        "settings_jobs_pending": {
+          "description": "settings_jobs rows with status 'pending'; 0 when there are none.",
+          "$ref": "common.schema.json#/$defs/count"
+        },
+        "settings_jobs_processing": {
+          "description": "settings_jobs rows with status 'processing'; 0 when there are none.",
+          "$ref": "common.schema.json#/$defs/count"
+        },
+        "settings_jobs_done": { "description": "settings_jobs rows with status 'done'; 0 when there are none.", "$ref": "common.schema.json#/$defs/count" },
+        "settings_jobs_failed": { "description": "settings_jobs rows with status 'failed'; 0 when there are none.", "$ref": "common.schema.json#/$defs/count" },
+        "settings_jobs_eligible": { "description": "Pending settings jobs whose next_retry_at has passed.", "$ref": "common.schema.json#/$defs/count" },
+        "settings_jobs_in_backoff": { "description": "Pending settings jobs still waiting for next_retry_at.", "$ref": "common.schema.json#/$defs/count" },
+        "support_probe_jobs_pending": {
+          "description": "Outstanding support_probe_jobs rows with status 'pending' (settled probes leave the queue, GitHub issue #139); 0 when there are none.",
+          "$ref": "common.schema.json#/$defs/count"
+        },
+        "support_probe_jobs_processing": {
+          "description": "Outstanding support_probe_jobs rows with status 'processing' (settled probes leave the queue, GitHub issue #139); 0 when there are none.",
+          "$ref": "common.schema.json#/$defs/count"
+        },
+        "support_probe_jobs_due_for_recheck": {
+          "description": "support_probe_results rows whose next_eligible_at is unset or has passed.",
+          "$ref": "common.schema.json#/$defs/count"
+        },
+        "support_probe_jobs_in_cooldown": {
+          "description": "support_probe_results rows whose next_eligible_at is still in the future.",
+          "$ref": "common.schema.json#/$defs/count"
+        },
+        "dns_providers": { "description": "dns_providers rows.", "$ref": "common.schema.json#/$defs/count" },
+        "scan_pending_support_sweep": {
+          "description": "Id of the newest processed settings scan (settings_job_generator_runs) not yet followed by a support sweep; null when there is none.",
+          "oneOf": [{ "$ref": "common.schema.json#/$defs/id" }, { "type": "null" }]
+        },
+        "templates_last_synced_at": {
+          "description": "Last successful templates sync; null if templates were never synced.",
+          "$ref": "common.schema.json#/$defs/nullableTimestamp"
+        },
+        "templates_last_synced_commit": {
+          "description": "Templates repo HEAD SHA at the last successful sync; null if never synced.",
+          "type": ["string", "null"]
+        },
+        "service_providers": { "description": "service_providers rows.", "$ref": "common.schema.json#/$defs/count" },
+        "services": { "description": "services rows.", "$ref": "common.schema.json#/$defs/count" },
+        "support": { "description": "support rows.", "$ref": "common.schema.json#/$defs/count" }
+      },
+      "required": [
+        "settings_jobs_pending",
+        "settings_jobs_processing",
+        "settings_jobs_done",
+        "settings_jobs_failed",
+        "settings_jobs_eligible",
+        "settings_jobs_in_backoff",
+        "support_probe_jobs_pending",
+        "support_probe_jobs_processing",
+        "support_probe_jobs_due_for_recheck",
+        "support_probe_jobs_in_cooldown",
+        "dns_providers",
+        "scan_pending_support_sweep",
+        "templates_last_synced_at",
+        "templates_last_synced_commit",
+        "service_providers",
+        "services",
+        "support"
+      ],
+      "additionalProperties": false
+    }
+  }
+}

@@ -1,0 +1,241 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/pawel-kow/DomainConnectScanner/docs/schemas/export/manifest.schema.json",
+  "title": "export.py manifest.json",
+  "description": "The static export's index, written last into each release (one line, no whitespace): what was exported, for which import, and where every file is. Each file kind's path is a template: a card's {placeholder} is filled with the id from the list row's column named in keys, encoded as described in id_encoding.",
+  "type": "object",
+  "properties": {
+    "format_version": {
+      "description": "Bumped only by a breaking change to the export's shape; added files, tables or columns keep it.",
+      "const": 1
+    },
+    "generated_at": {
+      "description": "When the export ran, UTC, to the second; also names the release directory (releases/YYYYMMDDTHHMMSSZ), and every other file of the release carries the same value.",
+      "$ref": "../common.schema.json#/$defs/exportGeneratedAt"
+    },
+    "schema_version": {
+      "description": "The database schema version (SCHEMA.md) the export was read from.",
+      "type": "integer",
+      "minimum": 1
+    },
+    "share_import": {
+      "description": "The import every file's domain/reach columns describe (resolved once for the whole export); null when no import has a domain share.",
+      "oneOf": [
+        { "type": "null" },
+        {
+          "type": "object",
+          "properties": {
+            "import_id": { "$ref": "../common.schema.json#/$defs/importId" },
+            "status": {
+              "description": "The import's status, or 'pruned' once hygiene has reduced it to its snapshot.",
+              "anyOf": [
+                { "$ref": "../common.schema.json#/$defs/importStatus" },
+                { "const": "pruned" }
+              ]
+            },
+            "source": { "$ref": "../common.schema.json#/$defs/shareSource" },
+            "scanned_domains": { "$ref": "../common.schema.json#/$defs/count" }
+          },
+          "required": ["import_id", "status", "source", "scanned_domains"],
+          "additionalProperties": false
+        }
+      ]
+    },
+    "id_encoding": {
+      "description": "How an id becomes a path segment, in words (docs/EXPORT_FORMAT.md).",
+      "type": "string",
+      "minLength": 1
+    },
+    "files": {
+      "description": "Every file kind, keyed by kind, in write order.",
+      "type": "object",
+      "properties": {
+        "overview": {
+          "description": "The support-overview report.",
+          "type": "object",
+          "properties": {
+            "path": { "const": "overview.json" },
+            "report": { "const": "support-overview" },
+            "rows": {
+              "description": "Rows written per table id.",
+              "type": "object",
+              "properties": {
+                "adoption": { "$ref": "../common.schema.json#/$defs/count" },
+                "ecosystem": { "$ref": "../common.schema.json#/$defs/count" }
+              },
+              "required": ["adoption", "ecosystem"],
+              "additionalProperties": false
+            }
+          },
+          "required": ["path", "report", "rows"],
+          "additionalProperties": false
+        },
+        "dns_providers": {
+          "description": "The dns-providers list; its rows name the dns_provider cards.",
+          "type": "object",
+          "properties": {
+            "path": { "const": "dns-providers.json" },
+            "report": { "const": "dns-providers" },
+            "rows": {
+              "description": "Rows written per table id.",
+              "type": "object",
+              "properties": {
+                "dns_providers": { "$ref": "../common.schema.json#/$defs/count" }
+              },
+              "required": ["dns_providers"],
+              "additionalProperties": false
+            }
+          },
+          "required": ["path", "report", "rows"],
+          "additionalProperties": false
+        },
+        "dns_provider": {
+          "description": "One dns-provider-summary file per distinct id of the dns_providers list's dns_providers table.",
+          "type": "object",
+          "properties": {
+            "path": { "const": "dns-providers/{dns_provider_id}.json" },
+            "report": { "const": "dns-provider-summary" },
+            "list": { "const": "dns_providers" },
+            "table": { "const": "dns_providers" },
+            "keys": {
+              "const": {
+                "dns_provider_id": "dns_provider_id"
+              }
+            },
+            "files": {
+              "description": "Card files written - one per list row.",
+              "$ref": "../common.schema.json#/$defs/count"
+            }
+          },
+          "required": ["path", "report", "list", "table", "keys", "files"],
+          "additionalProperties": false
+        },
+        "stacks": {
+          "description": "The stacks list; its rows name the stack cards.",
+          "type": "object",
+          "properties": {
+            "path": { "const": "stacks.json" },
+            "report": { "const": "stacks" },
+            "rows": {
+              "description": "Rows written per table id.",
+              "type": "object",
+              "properties": {
+                "stacks": { "$ref": "../common.schema.json#/$defs/count" }
+              },
+              "required": ["stacks"],
+              "additionalProperties": false
+            }
+          },
+          "required": ["path", "report", "rows"],
+          "additionalProperties": false
+        },
+        "stack": {
+          "description": "One stack-summary file per distinct id of the stacks list's stacks table.",
+          "type": "object",
+          "properties": {
+            "path": { "const": "stacks/{provider_id}.json" },
+            "report": { "const": "stack-summary" },
+            "list": { "const": "stacks" },
+            "table": { "const": "stacks" },
+            "keys": {
+              "const": {
+                "provider_id": "provider_id"
+              }
+            },
+            "files": {
+              "description": "Card files written - one per list row.",
+              "$ref": "../common.schema.json#/$defs/count"
+            }
+          },
+          "required": ["path", "report", "list", "table", "keys", "files"],
+          "additionalProperties": false
+        },
+        "service_providers": {
+          "description": "The service-providers list; its rows name the service_provider cards.",
+          "type": "object",
+          "properties": {
+            "path": { "const": "service-providers.json" },
+            "report": { "const": "service-providers" },
+            "rows": {
+              "description": "Rows written per table id.",
+              "type": "object",
+              "properties": {
+                "service_providers": { "$ref": "../common.schema.json#/$defs/count" }
+              },
+              "required": ["service_providers"],
+              "additionalProperties": false
+            }
+          },
+          "required": ["path", "report", "rows"],
+          "additionalProperties": false
+        },
+        "service_provider": {
+          "description": "One service-provider-summary file per distinct id of the service_providers list's service_providers table.",
+          "type": "object",
+          "properties": {
+            "path": { "const": "service-providers/{service_provider_id}.json" },
+            "report": { "const": "service-provider-summary" },
+            "list": { "const": "service_providers" },
+            "table": { "const": "service_providers" },
+            "keys": {
+              "const": {
+                "service_provider_id": "service_provider_id"
+              }
+            },
+            "files": {
+              "description": "Card files written - one per list row.",
+              "$ref": "../common.schema.json#/$defs/count"
+            }
+          },
+          "required": ["path", "report", "list", "table", "keys", "files"],
+          "additionalProperties": false
+        },
+        "templates": {
+          "description": "The service-templates list; its rows name the template cards.",
+          "type": "object",
+          "properties": {
+            "path": { "const": "templates.json" },
+            "report": { "const": "service-templates" },
+            "rows": {
+              "description": "Rows written per table id.",
+              "type": "object",
+              "properties": {
+                "service_templates": { "$ref": "../common.schema.json#/$defs/count" }
+              },
+              "required": ["service_templates"],
+              "additionalProperties": false
+            }
+          },
+          "required": ["path", "report", "rows"],
+          "additionalProperties": false
+        },
+        "template": {
+          "description": "One template-summary file per distinct id of the templates list's service_templates table.",
+          "type": "object",
+          "properties": {
+            "path": { "const": "templates/{service_provider_id}/{service_id}.json" },
+            "report": { "const": "template-summary" },
+            "list": { "const": "templates" },
+            "table": { "const": "service_templates" },
+            "keys": {
+              "const": {
+                "service_provider_id": "provider_id",
+                "service_id": "service_id"
+              }
+            },
+            "files": {
+              "description": "Card files written - one per list row.",
+              "$ref": "../common.schema.json#/$defs/count"
+            }
+          },
+          "required": ["path", "report", "list", "table", "keys", "files"],
+          "additionalProperties": false
+        }
+      },
+      "required": ["overview", "dns_providers", "dns_provider", "stacks", "stack", "service_providers", "service_provider", "templates", "template"],
+      "additionalProperties": false
+    }
+  },
+  "required": ["format_version", "generated_at", "schema_version", "share_import", "id_encoding", "files"],
+  "additionalProperties": false
+}

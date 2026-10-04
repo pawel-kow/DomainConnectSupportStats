@@ -1,0 +1,155 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/pawel-kow/DomainConnectScanner/docs/schemas/support-overview.schema.json",
+  "title": "report.py support-overview --output-mode json",
+  "description": "Domain Connect adoption and support over time (GitHub issue #211): two time series, oldest first. 'adoption' has one row per import (completed and hygiene-pruned ones; in-progress ones too with --include-incomplete); 'ecosystem' has one row per full support sweep. Stacks are counted by each DNS provider's current providerId; a provider declaring none is in no stack.",
+  "$ref": "common.schema.json#/$defs/report",
+  "properties": {
+    "notes": { "const": [] },
+    "tables": {
+      "properties": {
+        "adoption": {
+          "properties": {
+            "title": { "type": "string" },
+            "columns": {
+              "prefixItems": [
+                { "properties": { "key": { "const": "import_id" } } },
+                { "properties": { "key": { "const": "status" } } },
+                { "properties": { "key": { "const": "source" } } },
+                { "properties": { "key": { "const": "started_at" } } },
+                { "properties": { "key": { "const": "completed_at" } } },
+                { "properties": { "key": { "const": "scanned_domains" } } },
+                { "properties": { "key": { "const": "dc_domains" } } },
+                { "properties": { "key": { "const": "dc_pct" } } },
+                { "properties": { "key": { "const": "dc_domains_total" } } },
+                { "properties": { "key": { "const": "dc_total_pct" } } },
+                { "properties": { "key": { "const": "dns_providers" } } },
+                { "properties": { "key": { "const": "stacks" } } }
+              ],
+              "minItems": 12,
+              "items": false
+            },
+            "rows": {
+              "description": "Ordered by import_id ascending. An import with neither live data nor a snapshot has no row.",
+              "items": { "$ref": "#/$defs/adoptionRow" }
+            },
+            "footer": { "type": "null" }
+          }
+        },
+        "ecosystem": {
+          "properties": {
+            "title": { "type": "string" },
+            "columns": {
+              "prefixItems": [
+                { "properties": { "key": { "const": "sweep_id" } } },
+                { "properties": { "key": { "const": "started_at" } } },
+                { "properties": { "key": { "const": "supporting_dns_providers" } } },
+                { "properties": { "key": { "const": "supporting_stacks" } } },
+                { "properties": { "key": { "const": "supported_templates" } } },
+                { "properties": { "key": { "const": "supported_combinations" } } },
+                { "properties": { "key": { "const": "known_dns_providers" } } },
+                { "properties": { "key": { "const": "published_templates" } } }
+              ],
+              "minItems": 8,
+              "items": false
+            },
+            "rows": {
+              "description": "One row per full support sweep (no DNS-provider, service-provider or service scope and no template-age window), oldest first. Support observed during the scoped and propagation runs in between counts towards the preceding full sweep. Full sweeps before the first support event have no row.",
+              "items": { "$ref": "#/$defs/ecosystemRow" }
+            },
+            "footer": { "type": "null" }
+          }
+        }
+      },
+      "required": ["adoption", "ecosystem"],
+      "additionalProperties": false
+    }
+  },
+  "$defs": {
+    "adoptionRow": {
+      "type": "object",
+      "properties": {
+        "import_id": { "$ref": "common.schema.json#/$defs/importId" },
+        "status": {
+          "description": "imports.status, or 'pruned' once hygiene has deleted the import's rows and only its snapshot remains.",
+          "enum": ["completed", "in_progress", "pruned"]
+        },
+        "source": { "$ref": "common.schema.json#/$defs/shareSource" },
+        "started_at": {
+          "description": "imports.created_at. For an import pruned before per-import snapshots existed, inferred from the import_id (an epoch timestamp); null when that is not a plausible date.",
+          "$ref": "common.schema.json#/$defs/nullableTimestamp"
+        },
+        "completed_at": {
+          "description": "imports.completed_at; null while the import is in progress, or when an import pruned before per-import snapshots existed didn't keep it.",
+          "$ref": "common.schema.json#/$defs/nullableTimestamp"
+        },
+        "scanned_domains": { "description": "imports.domains_processed.", "$ref": "common.schema.json#/$defs/count" },
+        "dc_domains": {
+          "description": "Scanned domains whose Domain Connect URL is attributed to a DNS provider (the sum of the import's domain share). null when the import has no share data.",
+          "$ref": "common.schema.json#/$defs/nullableCount"
+        },
+        "dc_pct": {
+          "description": "dc_domains / scanned_domains, as a percentage; null when either is unknown or nothing was scanned.",
+          "$ref": "common.schema.json#/$defs/nullableBoundedPercentage"
+        },
+        "dc_domains_total": {
+          "description": "Every scanned domain with a Domain Connect URL, attributed to a DNS provider or not (at least dc_domains). null for an import pruned before per-import snapshots existed.",
+          "$ref": "common.schema.json#/$defs/nullableCount"
+        },
+        "dc_total_pct": {
+          "description": "dc_domains_total / scanned_domains, as a percentage; null when either is unknown or nothing was scanned.",
+          "$ref": "common.schema.json#/$defs/nullableBoundedPercentage"
+        },
+        "dns_providers": {
+          "description": "DNS providers with at least one attributed domain in the import; null when the import has no share data.",
+          "$ref": "common.schema.json#/$defs/nullableCount"
+        },
+        "stacks": {
+          "description": "Distinct current providerIds of those DNS providers; null when the import has no share data.",
+          "$ref": "common.schema.json#/$defs/nullableCount"
+        }
+      },
+      "required": [
+        "import_id", "status", "source", "started_at", "completed_at", "scanned_domains", "dc_domains", "dc_pct",
+        "dc_domains_total", "dc_total_pct", "dns_providers", "stacks"
+      ],
+      "additionalProperties": false
+    },
+    "ecosystemRow": {
+      "type": "object",
+      "properties": {
+        "sweep_id": { "description": "support_probe_job_generator_runs.id.", "$ref": "common.schema.json#/$defs/id" },
+        "started_at": { "$ref": "common.schema.json#/$defs/timestamp" },
+        "supporting_dns_providers": {
+          "description": "DNS providers supporting at least one template version once the sweep had run.",
+          "$ref": "common.schema.json#/$defs/count"
+        },
+        "supporting_stacks": {
+          "description": "Distinct current providerIds of those DNS providers.",
+          "$ref": "common.schema.json#/$defs/count"
+        },
+        "supported_templates": {
+          "description": "Templates (service provider, service) supported by at least one DNS provider, in any version.",
+          "$ref": "common.schema.json#/$defs/count"
+        },
+        "supported_combinations": {
+          "description": "Distinct (DNS provider, template) pairs with support, versions folded together.",
+          "$ref": "common.schema.json#/$defs/count"
+        },
+        "known_dns_providers": {
+          "description": "DNS providers first seen at or before the sweep's start (current dns_providers rows).",
+          "$ref": "common.schema.json#/$defs/count"
+        },
+        "published_templates": {
+          "description": "Stored templates whose first version was added at or before the sweep's start.",
+          "$ref": "common.schema.json#/$defs/count"
+        }
+      },
+      "required": [
+        "sweep_id", "started_at", "supporting_dns_providers", "supporting_stacks", "supported_templates",
+        "supported_combinations", "known_dns_providers", "published_templates"
+      ],
+      "additionalProperties": false
+    }
+  }
+}

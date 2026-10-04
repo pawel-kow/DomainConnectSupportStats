@@ -1,0 +1,12 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/pawel-kow/DomainConnectScanner/docs/schemas/export/service-providers.schema.json",
+  "title": "export.py service-providers.json",
+  "description": "The static export's service provider list: report.py service-providers' JSON with every row (no --limit), for the manifest's share_import. The report has no internal columns, so the file is exactly that report plus the release's generated_at (the manifest's). Each row's service_provider_id names its card, service-providers/{service_provider_id}.json.",
+  "$ref": "../common.schema.json#/$defs/exportFile",
+  "properties": {
+    "notes": { "$ref": "../service-providers.schema.json#/properties/notes" },
+    "tables": { "$ref": "../service-providers.schema.json#/properties/tables" }
+  },
+  "unevaluatedProperties": false
+}

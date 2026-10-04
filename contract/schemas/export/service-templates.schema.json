@@ -1,0 +1,48 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/pawel-kow/DomainConnectScanner/docs/schemas/export/service-templates.schema.json",
+  "title": "export.py templates.json",
+  "description": "The static export's template list: report.py service-templates' JSON with every row (no --limit), for the manifest's share_import, redacted - the internal pending/failed support buckets are left out (total - supported - unsupported is not yet determined). Each row's provider_id (the service provider) and service_id name its card, templates/{service_provider_id}/{service_id}.json. Like every export file, it starts with the release's generated_at (the manifest's).",
+  "$ref": "../common.schema.json#/$defs/exportFile",
+  "properties": {
+    "notes": { "$ref": "../common.schema.json#/$defs/shareNotes" },
+    "tables": {
+      "properties": {
+        "service_templates": {
+          "properties": {
+            "title": { "type": "string" },
+            "columns": {
+              "prefixItems": [
+                { "properties": { "key": { "const": "provider_name" } } },
+                { "properties": { "key": { "const": "provider_id" } } },
+                { "properties": { "key": { "const": "service_name" } } },
+                { "properties": { "key": { "const": "service_id" } } },
+                { "properties": { "key": { "const": "added_at" } } },
+                { "properties": { "key": { "const": "total" } } },
+                { "properties": { "key": { "const": "supported_count" } } },
+                { "properties": { "key": { "const": "supported_pct" } } },
+                { "properties": { "key": { "const": "unsupported_count" } } },
+                { "properties": { "key": { "const": "unsupported_pct" } } },
+                { "properties": { "key": { "const": "reach_domains" } } },
+                { "properties": { "key": { "const": "reach_pct" } } }
+              ],
+              "minItems": 12,
+              "items": false
+            },
+            "rows": {
+              "description": "Ordered by reach_domains (descending) when a domain share is selected, otherwise by supported_count descending. Empty when there are none.",
+              "items": {
+                "$ref": "../service-templates.schema.json#/$defs/publicRow",
+                "unevaluatedProperties": false
+              }
+            },
+            "footer": { "type": "null" }
+          }
+        }
+      },
+      "required": ["service_templates"],
+      "additionalProperties": false
+    }
+  },
+  "unevaluatedProperties": false
+}

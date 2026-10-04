@@ -1,0 +1,12 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/pawel-kow/DomainConnectScanner/docs/schemas/export/support-overview.schema.json",
+  "title": "export.py overview.json",
+  "description": "The static export's overview: report.py support-overview's JSON (with --include-incomplete when export.py ran with it). The report has no internal columns, so the file is exactly that report plus the release's generated_at (the manifest's).",
+  "$ref": "../common.schema.json#/$defs/exportFile",
+  "properties": {
+    "notes": { "$ref": "../support-overview.schema.json#/properties/notes" },
+    "tables": { "$ref": "../support-overview.schema.json#/properties/tables" }
+  },
+  "unevaluatedProperties": false
+}

@@ -1,0 +1,203 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/pawel-kow/DomainConnectScanner/docs/schemas/service-provider-summary.schema.json",
+  "title": "report.py service-provider-summary --output-mode json",
+  "description": "One service provider's summary (--service-provider-id; GitHub issue #211) as four tables keyed by id (service_provider, support, templates, support_history; emitted in that order); no tables, and a second note, when there is no such service_providers row. Support is current state; reach describes the selected import (--import-id, default the newest completed one), named in the first note. Every per-template number equals that template's report.py template-summary.",
+  "$ref": "common.schema.json#/$defs/report",
+  "properties": {
+    "notes": {
+      "type": "array",
+      "prefixItems": [{ "type": "string" }],
+      "items": { "type": "string" },
+      "minItems": 1,
+      "maxItems": 2
+    },
+    "tables": {
+      "oneOf": [
+        { "maxProperties": 0 },
+        {
+          "properties": {
+            "service_provider": { "$ref": "#/$defs/metadataTable" },
+            "support": { "$ref": "#/$defs/supportTable" },
+            "templates": { "$ref": "#/$defs/templatesTable" },
+            "support_history": { "$ref": "#/$defs/historyTable" }
+          },
+          "required": ["service_provider", "support", "templates", "support_history"],
+          "additionalProperties": false
+        }
+      ]
+    }
+  },
+  "$defs": {
+    "metadataTable": {
+      "description": "The stored service_providers row with its templates' dates, as one record (txt/markdown show it transposed).",
+      "properties": {
+        "title": { "type": "string" },
+        "columns": {
+          "prefixItems": [
+            { "properties": { "key": { "const": "service_provider_id" } } },
+            { "properties": { "key": { "const": "name" } } },
+            { "properties": { "key": { "const": "first_added_at" } } },
+            { "properties": { "key": { "const": "last_updated_at" } } }
+          ],
+          "minItems": 4,
+          "items": false
+        },
+        "rows": {
+          "$ref": "common.schema.json#/$defs/oneRow",
+          "items": {
+            "type": "object",
+            "properties": {
+              "service_provider_id": { "type": "string" },
+              "name": { "description": "Stored name; null when the provider declares none.", "$ref": "common.schema.json#/$defs/nullableString" },
+              "first_added_at": {
+                "description": "Earliest created_at of its stored templates; null without templates or when unknown.",
+                "$ref": "common.schema.json#/$defs/nullableTimestamp"
+              },
+              "last_updated_at": {
+                "description": "Latest updated_at of its stored templates; null without templates or when unknown.",
+                "$ref": "common.schema.json#/$defs/nullableTimestamp"
+              }
+            },
+            "required": ["service_provider_id", "name", "first_added_at", "last_updated_at"],
+            "additionalProperties": false
+          }
+        },
+        "footer": { "type": "null" }
+      }
+    },
+    "supportTable": {
+      "description": "Its template support and reach: one row, the same values as its report.py service-providers row.",
+      "properties": {
+        "title": { "type": "string" },
+        "columns": {
+          "prefixItems": [
+            { "properties": { "key": { "const": "templates" } } },
+            { "properties": { "key": { "const": "supported_templates" } } },
+            { "properties": { "key": { "const": "supporting_dns_providers" } } },
+            { "properties": { "key": { "const": "reach_domains" } } },
+            { "properties": { "key": { "const": "reach_pct" } } }
+          ],
+          "minItems": 5,
+          "items": false
+        },
+        "rows": {
+          "$ref": "common.schema.json#/$defs/oneRow",
+          "items": {
+            "type": "object",
+            "properties": {
+              "templates": { "$ref": "common.schema.json#/$defs/count" },
+              "supported_templates": {
+                "description": "Templates at least one DNS provider supports (any version).",
+                "$ref": "common.schema.json#/$defs/count"
+              },
+              "supporting_dns_providers": {
+                "description": "DNS providers supporting at least one of its templates, each counted once.",
+                "$ref": "common.schema.json#/$defs/count"
+              },
+              "reach_domains": {
+                "description": "Domains behind the supporting_dns_providers in the selected import; null without a domain share.",
+                "$ref": "common.schema.json#/$defs/nullableCount"
+              },
+              "reach_pct": { "$ref": "common.schema.json#/$defs/nullablePercentage" }
+            },
+            "required": ["templates", "supported_templates", "supporting_dns_providers", "reach_domains", "reach_pct"],
+            "additionalProperties": false
+          }
+        },
+        "footer": { "type": "null" }
+      }
+    },
+    "templatesTable": {
+      "description": "One row per stored template (service id, every version together).",
+      "properties": {
+        "title": { "type": "string" },
+        "columns": {
+          "prefixItems": [
+            { "properties": { "key": { "const": "name" } } },
+            { "properties": { "key": { "const": "service_id" } } },
+            { "properties": { "key": { "const": "version" } } },
+            { "properties": { "key": { "const": "versions" } } },
+            { "properties": { "key": { "const": "added_at" } } },
+            { "properties": { "key": { "const": "updated_at" } } },
+            { "properties": { "key": { "const": "supporting_providers" } } },
+            { "properties": { "key": { "const": "reach_domains" } } },
+            { "properties": { "key": { "const": "reach_pct" } } }
+          ],
+          "minItems": 9,
+          "items": false
+        },
+        "rows": {
+          "description": "Ordered by reach_domains (descending) when a domain share is selected, otherwise by supporting_providers descending; ties by service id. Empty for a service provider without templates.",
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": { "description": "The newest stored version's name, falling back to the service id.", "type": "string" },
+              "service_id": { "type": "string" },
+              "version": { "description": "Newest stored version.", "type": "integer", "minimum": 0 },
+              "versions": {
+                "description": "Every stored version, newest first.",
+                "$ref": "common.schema.json#/$defs/versions"
+              },
+              "added_at": {
+                "description": "Earliest created_at of the stored versions (report.py service-templates' added_at); null when unknown.",
+                "$ref": "common.schema.json#/$defs/nullableTimestamp"
+              },
+              "updated_at": {
+                "description": "The newest stored version's updated_at; null when unknown.",
+                "$ref": "common.schema.json#/$defs/nullableTimestamp"
+              },
+              "supporting_providers": {
+                "description": "DNS providers currently supporting any version (the row count of its template-summary supporters table).",
+                "$ref": "common.schema.json#/$defs/count"
+              },
+              "reach_domains": {
+                "description": "Domains behind those providers in the selected import; null without a domain share.",
+                "$ref": "common.schema.json#/$defs/nullableCount"
+              },
+              "reach_pct": { "$ref": "common.schema.json#/$defs/nullablePercentage" }
+            },
+            "required": ["name", "service_id", "version", "versions", "added_at", "updated_at",
+                         "supporting_providers", "reach_domains", "reach_pct"],
+            "additionalProperties": false
+          }
+        },
+        "footer": { "type": "null" }
+      }
+    },
+    "historyTable": {
+      "description": "Long format: one row per (support sweep covering a template, template) - each template's template-summary history without its change column.",
+      "properties": {
+        "title": { "type": "string" },
+        "columns": {
+          "prefixItems": [
+            { "properties": { "key": { "const": "sweep_id" } } },
+            { "properties": { "key": { "const": "started_at" } } },
+            { "properties": { "key": { "const": "service_id" } } },
+            { "properties": { "key": { "const": "supporting_providers" } } }
+          ],
+          "minItems": 4,
+          "items": false
+        },
+        "rows": {
+          "description": "Oldest sweep first, then by service id. A template's rows are the sweeps that re-probed it on every DNS provider (see template-summary's history).",
+          "items": {
+            "type": "object",
+            "properties": {
+              "sweep_id": { "$ref": "common.schema.json#/$defs/id" },
+              "started_at": { "$ref": "common.schema.json#/$defs/timestamp" },
+              "service_id": { "type": "string" },
+              "supporting_providers": {
+                "description": "DNS providers supporting any version of the template once that sweep had run.",
+                "$ref": "common.schema.json#/$defs/count"
+              }
+            },
+            "required": ["sweep_id", "started_at", "service_id", "supporting_providers"],
+            "additionalProperties": false
+          }
+        },
+        "footer": { "type": "null" }
+      }
+    }
+  }
+}

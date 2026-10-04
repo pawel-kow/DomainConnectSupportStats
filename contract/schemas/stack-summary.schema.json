@@ -1,0 +1,230 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/pawel-kow/DomainConnectScanner/docs/schemas/stack-summary.schema.json",
+  "title": "report.py stack-summary --output-mode json",
+  "description": "One DNS provider stack's summary (--provider-id, the provider_id of a report.py stacks row) as four tables keyed by id (stack, deployments, template_coverage, share_history; emitted in that order); no tables, and a second note, when no dns_providers row declares that providerId. Support is current state; the domain share describes the selected import (--import-id, default the newest completed one), named in the first note.",
+  "$ref": "common.schema.json#/$defs/report",
+  "properties": {
+    "notes": {
+      "type": "array",
+      "prefixItems": [{ "type": "string" }],
+      "items": { "type": "string" },
+      "minItems": 1,
+      "maxItems": 2
+    },
+    "tables": {
+      "oneOf": [
+        { "maxProperties": 0 },
+        {
+          "properties": {
+            "stack": { "$ref": "#/$defs/stackTable" },
+            "deployments": { "$ref": "#/$defs/deploymentsTable" },
+            "template_coverage": { "$ref": "#/$defs/coverageTable" },
+            "share_history": { "$ref": "#/$defs/shareHistoryTable" }
+          },
+          "required": ["stack", "deployments", "template_coverage", "share_history"],
+          "additionalProperties": false
+        }
+      ]
+    }
+  },
+  "$defs": {
+    "stackTable": {
+      "description": "The stack's report.py stacks row (same keys and values), as one record: txt/markdown show it transposed, one line per column.",
+      "properties": {
+        "title": { "type": "string" },
+        "columns": {
+          "prefixItems": [
+            { "properties": { "key": { "const": "name" } } },
+            { "properties": { "key": { "const": "provider_id" } } },
+            { "properties": { "key": { "const": "deployments" } } },
+            { "properties": { "key": { "const": "min_supported_pct" } } },
+            { "properties": { "key": { "const": "median_supported_pct" } } },
+            { "properties": { "key": { "const": "max_supported_pct" } } },
+            { "properties": { "key": { "const": "domains" } } },
+            { "properties": { "key": { "const": "domains_pct" } } }
+          ],
+          "minItems": 8,
+          "items": false
+        },
+        "rows": { "$ref": "common.schema.json#/$defs/oneRow", "items": { "$ref": "stacks.schema.json#/$defs/row" } },
+        "footer": { "type": "null" }
+      }
+    },
+    "deploymentsTable": {
+      "description": "The stack's deployments (dns_providers rows declaring its providerId), each its report.py dns-providers row without provider_id.",
+      "properties": {
+        "title": { "type": "string" },
+        "columns": {
+          "prefixItems": [
+            { "properties": { "key": { "const": "name" } } },
+            { "properties": { "key": { "const": "dns_provider_id" } } },
+            { "properties": { "key": { "const": "api_host" } } },
+            { "properties": { "key": { "const": "settings_status" } } },
+            { "properties": { "key": { "const": "support_status" } } },
+            { "properties": { "key": { "const": "total" } } },
+            { "properties": { "key": { "const": "supported_count" } } },
+            { "properties": { "key": { "const": "supported_pct" } } },
+            { "properties": { "key": { "const": "unsupported_count" } } },
+            { "properties": { "key": { "const": "unsupported_pct" } } },
+            { "properties": { "key": { "const": "pending_count" } } },
+            { "properties": { "key": { "const": "pending_pct" } } },
+            { "properties": { "key": { "const": "failed_count" } } },
+            { "properties": { "key": { "const": "failed_pct" } } },
+            { "properties": { "key": { "const": "domains" } } },
+            { "properties": { "key": { "const": "domains_pct" } } }
+          ],
+          "minItems": 16,
+          "items": false
+        },
+        "rows": {
+          "description": "Ordered like report.py dns-providers: by domains (descending) when a domain share is selected, otherwise by supported templates descending. At least one row.",
+          "minItems": 1,
+          "items": { "$ref": "#/$defs/deploymentRow" }
+        },
+        "footer": { "type": "null" }
+      }
+    },
+    "deploymentRow": {
+      "allOf": [
+        { "$ref": "#/$defs/publicDeploymentRow" },
+        { "$ref": "common.schema.json#/$defs/internalSupportBucketColumns" }
+      ],
+      "unevaluatedProperties": false
+    },
+    "publicDeploymentRow": {
+      "description": "A deployment row's public columns - the static export's row (docs/schemas/export/stack-summary.schema.json).",
+      "type": "object",
+      "allOf": [{ "$ref": "common.schema.json#/$defs/publicSupportBucketColumns" }],
+      "properties": {
+        "name": { "$ref": "dns-providers.schema.json#/$defs/publicRow/properties/name" },
+        "dns_provider_id": { "$ref": "dns-providers.schema.json#/$defs/publicRow/properties/dns_provider_id" },
+        "api_host": { "$ref": "dns-providers.schema.json#/$defs/publicRow/properties/api_host" },
+        "settings_status": { "$ref": "dns-providers.schema.json#/$defs/publicRow/properties/settings_status" },
+        "support_status": { "$ref": "dns-providers.schema.json#/$defs/publicRow/properties/support_status" },
+        "total": { "$ref": "dns-providers.schema.json#/$defs/publicRow/properties/total" },
+        "domains": { "$ref": "dns-providers.schema.json#/$defs/publicRow/properties/domains" },
+        "domains_pct": { "$ref": "dns-providers.schema.json#/$defs/publicRow/properties/domains_pct" }
+      },
+      "required": ["name", "dns_provider_id", "api_host", "settings_status", "support_status", "total", "domains", "domains_pct"]
+    },
+    "coverageTable": {
+      "description": "How many of the stack's deployments support each template.",
+      "properties": {
+        "title": { "type": "string" },
+        "columns": {
+          "prefixItems": [
+            { "properties": { "key": { "const": "service_provider_name" } } },
+            { "properties": { "key": { "const": "service_provider_id" } } },
+            { "properties": { "key": { "const": "service_name" } } },
+            { "properties": { "key": { "const": "service_id" } } },
+            { "properties": { "key": { "const": "supporting_deployments" } } },
+            { "properties": { "key": { "const": "supporting_pct" } } },
+            { "properties": { "key": { "const": "reach_domains" } } },
+            { "properties": { "key": { "const": "reach_pct" } } }
+          ],
+          "minItems": 8,
+          "items": false
+        },
+        "rows": {
+          "description": "One row per template (service_provider_id, service_id) at least one of the stack's deployments supports; a template no deployment supports has no row. Ordered by reach_domains (descending) when a domain share is selected, otherwise by supporting_deployments descending; ties by service provider, then template name.",
+          "items": { "$ref": "#/$defs/coverageRow" }
+        },
+        "footer": { "type": "null" }
+      }
+    },
+    "coverageRow": {
+      "type": "object",
+      "properties": {
+        "service_provider_name": { "description": "Falls back to service_provider_id.", "type": "string" },
+        "service_provider_id": { "type": "string" },
+        "service_name": { "description": "Name of the newest stored version; falls back to service_id.", "type": "string" },
+        "service_id": { "type": "string" },
+        "supporting_deployments": {
+          "description": "Deployments whose latest probe of any version of the template said supported (the SUPPORTED rule of report.py dns-providers).",
+          "type": "integer",
+          "minimum": 1
+        },
+        "supporting_pct": {
+          "description": "supporting_deployments as a percentage of all the stack's deployments, probed or not.",
+          "$ref": "common.schema.json#/$defs/boundedPercentage"
+        },
+        "reach_domains": {
+          "description": "Domains behind the supporting deployments in the selected import; null without a domain share.",
+          "$ref": "common.schema.json#/$defs/nullableCount"
+        },
+        "reach_pct": { "$ref": "common.schema.json#/$defs/nullablePercentage" }
+      },
+      "required": [
+        "service_provider_name",
+        "service_provider_id",
+        "service_name",
+        "service_id",
+        "supporting_deployments",
+        "supporting_pct",
+        "reach_domains",
+        "reach_pct"
+      ],
+      "additionalProperties": false
+    },
+    "shareHistoryTable": {
+      "description": "The stack's share in every completed import still on record plus every hygiene-pruned import kept as a snapshot (for any of its deployments), oldest first. Always summed over the stack's current deployments; rank compares it with every stack, each attributed by today's dns_providers.provider_id.",
+      "properties": {
+        "title": { "type": "string" },
+        "columns": {
+          "prefixItems": [
+            { "properties": { "key": { "const": "import_id" } } },
+            { "properties": { "key": { "const": "completed_at" } } },
+            { "properties": { "key": { "const": "status" } } },
+            { "properties": { "key": { "const": "source" } } },
+            { "properties": { "key": { "const": "domains" } } },
+            { "properties": { "key": { "const": "scanned_domains" } } },
+            { "properties": { "key": { "const": "share_pct" } } },
+            { "properties": { "key": { "const": "change_pct" } } },
+            { "properties": { "key": { "const": "rank" } } },
+            { "properties": { "key": { "const": "stacks" } } }
+          ],
+          "minItems": 10,
+          "items": false
+        },
+        "rows": { "items": { "$ref": "#/$defs/shareHistoryRow" } },
+        "footer": { "type": "null" }
+      }
+    },
+    "shareHistoryRow": {
+      "type": "object",
+      "properties": {
+        "import_id": { "$ref": "common.schema.json#/$defs/importId" },
+        "completed_at": {
+          "description": "imports.completed_at; null for a pruned import.",
+          "$ref": "common.schema.json#/$defs/nullableTimestamp"
+        },
+        "status": {
+          "description": "The import's status, or 'pruned' once hygiene has reduced it to its snapshot.",
+          "anyOf": [{ "$ref": "common.schema.json#/$defs/importStatus" }, { "const": "pruned" }]
+        },
+        "source": { "$ref": "common.schema.json#/$defs/shareSource" },
+        "domains": {
+          "description": "Sum of the deployments' domains in the import; null when none of them has a measurement there (all first seen after the snapshot was frozen).",
+          "$ref": "common.schema.json#/$defs/nullableCount"
+        },
+        "scanned_domains": { "$ref": "common.schema.json#/$defs/count" },
+        "share_pct": { "$ref": "common.schema.json#/$defs/nullablePercentage" },
+        "change_pct": {
+          "description": "Change of share_pct in percentage points since the previous import that measured it; null for the first such import or when this one has no measurement.",
+          "type": ["number", "null"]
+        },
+        "rank": {
+          "description": "1 = most domains among the import's stacks with any (a stack's domains summed over its current deployments; a deployment without a provider_id is in no stack); ties share a rank. null at 0 or unmeasured domains.",
+          "oneOf": [{ "type": "integer", "minimum": 1 }, { "type": "null" }]
+        },
+        "stacks": {
+          "description": "Stacks with domains in the import - the denominator of rank.",
+          "$ref": "common.schema.json#/$defs/count"
+        }
+      },
+      "required": ["import_id", "completed_at", "status", "source", "domains", "scanned_domains", "share_pct", "change_pct", "rank", "stacks"],
+      "additionalProperties": false
+    }
+  }
+}

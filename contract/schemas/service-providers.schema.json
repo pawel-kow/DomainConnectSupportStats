@@ -1,0 +1,90 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/pawel-kow/DomainConnectScanner/docs/schemas/service-providers.schema.json",
+  "title": "report.py service-providers --output-mode json",
+  "description": "One table of every stored service provider (template publisher; GitHub issue #211), including one without templates, at most --limit rows. Support counts are current state; reach describes the selected import, named in the note.",
+  "$ref": "common.schema.json#/$defs/report",
+  "properties": {
+    "notes": { "$ref": "common.schema.json#/$defs/shareNotes" },
+    "tables": {
+      "properties": {
+        "service_providers": {
+          "properties": {
+            "title": { "type": "string" },
+            "columns": {
+              "prefixItems": [
+                { "properties": { "key": { "const": "name" } } },
+                { "properties": { "key": { "const": "service_provider_id" } } },
+                { "properties": { "key": { "const": "templates" } } },
+                { "properties": { "key": { "const": "supported_templates" } } },
+                { "properties": { "key": { "const": "supporting_dns_providers" } } },
+                { "properties": { "key": { "const": "first_added_at" } } },
+                { "properties": { "key": { "const": "last_updated_at" } } },
+                { "properties": { "key": { "const": "reach_domains" } } },
+                { "properties": { "key": { "const": "reach_pct" } } }
+              ],
+              "minItems": 9,
+              "items": false
+            },
+            "rows": {
+              "description": "Ordered by reach_domains (descending) when a domain share is selected, otherwise by supported_templates descending; ties by name, case-insensitively. Empty when there are none.",
+              "items": { "$ref": "#/$defs/row" }
+            },
+            "footer": { "type": "null" }
+          }
+        }
+      },
+      "required": ["service_providers"],
+      "additionalProperties": false
+    }
+  },
+  "$defs": {
+    "row": {
+      "type": "object",
+      "properties": {
+        "name": { "description": "Service provider name, falling back to its id.", "type": "string" },
+        "service_provider_id": { "description": "Service provider id (Domain Connect providerId of the template publisher).", "type": "string" },
+        "templates": {
+          "description": "Stored templates (service ids, every version together); 0 for a service provider without any.",
+          "$ref": "common.schema.json#/$defs/count"
+        },
+        "supported_templates": {
+          "description": "Templates at least one DNS provider supports (any version; report.py service-templates' supported_count > 0).",
+          "$ref": "common.schema.json#/$defs/count"
+        },
+        "supporting_dns_providers": {
+          "description": "DNS providers supporting at least one of its templates, each counted once.",
+          "$ref": "common.schema.json#/$defs/count"
+        },
+        "first_added_at": {
+          "description": "Earliest created_at of its stored templates; null without templates or when unknown.",
+          "$ref": "common.schema.json#/$defs/nullableTimestamp"
+        },
+        "last_updated_at": {
+          "description": "Latest updated_at of its stored templates; null without templates or when unknown.",
+          "$ref": "common.schema.json#/$defs/nullableTimestamp"
+        },
+        "reach_domains": {
+          "description": "Domains behind the supporting_dns_providers, in the selected import (each provider counted once, so at most the sum of its templates' reach); null without a domain share.",
+          "$ref": "common.schema.json#/$defs/nullableCount"
+        },
+        "reach_pct": {
+          "description": "reach_domains as a percentage of the import's scanned domains.",
+          "$ref": "common.schema.json#/$defs/nullablePercentage"
+        }
+      },
+      "required": [
+        "name",
+        "service_provider_id",
+        "templates",
+        "supported_templates",
+        "supporting_dns_providers",
+        "first_added_at",
+        "last_updated_at",
+        "reach_domains",
+        "reach_pct"
+      ],
+      "additionalProperties": false
+    }
+  }
+}

@@ -1,0 +1,369 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/pawel-kow/DomainConnectScanner/docs/schemas/dns-provider-summary.schema.json",
+  "title": "report.py dns-provider-summary --output-mode json",
+  "description": "One DNS provider's summary (--dns-provider-id) as seven tables keyed by id (provider, support, share, urls, supported_templates, support_history, share_history; emitted in that order); no tables, and a second note, when there is no such dns_providers row. Support is current state; the domain share describes the selected import (--import-id, default the newest completed one), named in the first note.",
+  "$ref": "common.schema.json#/$defs/report",
+  "properties": {
+    "notes": {
+      "type": "array",
+      "prefixItems": [{ "type": "string" }],
+      "items": { "type": "string" },
+      "minItems": 1,
+      "maxItems": 2
+    },
+    "tables": {
+      "oneOf": [
+        { "maxProperties": 0 },
+        {
+          "properties": {
+            "provider": { "$ref": "#/$defs/metadataTable" },
+            "support": { "$ref": "#/$defs/supportTable" },
+            "share": { "$ref": "#/$defs/shareTable" },
+            "urls": { "$ref": "#/$defs/urlsTable" },
+            "supported_templates": { "$ref": "#/$defs/templatesTable" },
+            "support_history": { "$ref": "#/$defs/templateHistoryTable" },
+            "share_history": { "$ref": "#/$defs/shareHistoryTable" }
+          },
+          "required": ["provider", "support", "share", "urls", "supported_templates", "support_history", "share_history"],
+          "additionalProperties": false
+        }
+      ]
+    }
+  },
+  "$defs": {
+    "metadataTable": {
+      "description": "The stored dns_providers row as one record: one row, one column per stored column, always these columns in this order (txt/markdown show it transposed, one line per column). settings_raw (the raw settings response) is not included.",
+      "properties": {
+        "title": { "type": "string" },
+        "columns": {
+          "prefixItems": [
+            { "properties": { "key": { "const": "id" } } },
+            { "properties": { "key": { "const": "name" } } },
+            { "properties": { "key": { "const": "provider_id" } } },
+            { "properties": { "key": { "const": "dns_provider_key" } } },
+            { "properties": { "key": { "const": "domain_connect_url" } } },
+            { "properties": { "key": { "const": "api_url" } } },
+            { "properties": { "key": { "const": "sync_url" } } },
+            { "properties": { "key": { "const": "async_url" } } },
+            { "properties": { "key": { "const": "control_panel_url" } } },
+            { "properties": { "key": { "const": "nameservers" } } },
+            { "properties": { "key": { "const": "throttle_key" } } },
+            { "properties": { "key": { "const": "first_seen_at" } } },
+            { "properties": { "key": { "const": "last_checked_at" } } },
+            { "properties": { "key": { "const": "settings_last_status" } } },
+            { "properties": { "key": { "const": "settings_last_error" } } },
+            { "properties": { "key": { "const": "settings_last_checked_at" } } },
+            { "properties": { "key": { "const": "settings_last_seen_ok_at" } } },
+            { "properties": { "key": { "const": "support_last_status" } } },
+            { "properties": { "key": { "const": "support_last_error" } } },
+            { "properties": { "key": { "const": "support_last_checked_at" } } },
+            { "properties": { "key": { "const": "support_last_seen_ok_at" } } }
+          ],
+          "minItems": 21,
+          "items": false
+        },
+        "rows": { "$ref": "common.schema.json#/$defs/oneRow", "items": { "$ref": "#/$defs/metadataRow" } },
+        "footer": { "type": "null" }
+      }
+    },
+    "metadataRow": {
+      "allOf": [{ "$ref": "#/$defs/publicMetadataRow" }, { "$ref": "#/$defs/internalMetadataFields" }],
+      "unevaluatedProperties": false
+    },
+    "publicMetadataRow": {
+      "description": "The record's public fields - the static export's record (docs/schemas/export/dns-provider-summary.schema.json).",
+      "type": "object",
+      "properties": {
+        "id": { "$ref": "common.schema.json#/$defs/id" },
+        "name": { "description": "providerName from the settings response.", "type": "string" },
+        "provider_id": { "description": "providerId - the stack.", "$ref": "common.schema.json#/$defs/nullableString" },
+        "domain_connect_url": { "description": "The URL this row was first discovered from (display only).", "type": "string" },
+        "api_url": { "$ref": "common.schema.json#/$defs/nullableString" },
+        "sync_url": { "$ref": "common.schema.json#/$defs/nullableString" },
+        "async_url": { "$ref": "common.schema.json#/$defs/nullableString" },
+        "control_panel_url": { "$ref": "common.schema.json#/$defs/nullableString" },
+        "nameservers": {
+          "description": "JSON-encoded array of nameServers, as stored (a string, not an array).",
+          "$ref": "common.schema.json#/$defs/nullableString"
+        },
+        "first_seen_at": { "$ref": "common.schema.json#/$defs/nullableTimestamp" },
+        "settings_last_status": { "$ref": "common.schema.json#/$defs/settingsStatus" },
+        "settings_last_error": { "$ref": "common.schema.json#/$defs/nullableString" },
+        "settings_last_seen_ok_at": { "$ref": "common.schema.json#/$defs/nullableTimestamp" },
+        "support_last_status": { "$ref": "common.schema.json#/$defs/supportStatus" },
+        "support_last_error": { "$ref": "common.schema.json#/$defs/nullableString" },
+        "support_last_seen_ok_at": { "$ref": "common.schema.json#/$defs/nullableTimestamp" }
+      },
+      "required": [
+        "id",
+        "name",
+        "provider_id",
+        "domain_connect_url",
+        "api_url",
+        "sync_url",
+        "async_url",
+        "control_panel_url",
+        "nameservers",
+        "first_seen_at",
+        "settings_last_status",
+        "settings_last_error",
+        "settings_last_seen_ok_at",
+        "support_last_status",
+        "support_last_error",
+        "support_last_seen_ok_at"
+      ]
+    },
+    "internalMetadataFields": {
+      "description": "Pipeline bookkeeping fields of the record (row identity, throttling, fetch/probe timestamps). Internal columns: report.py shows them, the static export leaves them out.",
+      "type": "object",
+      "properties": {
+        "dns_provider_key": {
+          "description": "Row identity: api_url, else the domain_connect_url (GitHub issue #189).",
+          "$ref": "common.schema.json#/$defs/nullableString"
+        },
+        "throttle_key": { "$ref": "common.schema.json#/$defs/nullableString" },
+        "last_checked_at": { "description": "Last successful settings fetch.", "$ref": "common.schema.json#/$defs/nullableTimestamp" },
+        "settings_last_checked_at": { "$ref": "common.schema.json#/$defs/nullableTimestamp" },
+        "support_last_checked_at": { "$ref": "common.schema.json#/$defs/nullableTimestamp" }
+      },
+      "required": [
+        "dns_provider_key",
+        "throttle_key",
+        "last_checked_at",
+        "settings_last_checked_at",
+        "support_last_checked_at"
+      ]
+    },
+    "supportTable": {
+      "description": "The provider's probe combinations on record and their support breakdown: one row.",
+      "properties": {
+        "title": { "type": "string" },
+        "columns": {
+          "prefixItems": [
+            { "properties": { "key": { "const": "total" } } },
+            { "properties": { "key": { "const": "supported_count" } } },
+            { "properties": { "key": { "const": "supported_pct" } } },
+            { "properties": { "key": { "const": "unsupported_count" } } },
+            { "properties": { "key": { "const": "unsupported_pct" } } },
+            { "properties": { "key": { "const": "pending_count" } } },
+            { "properties": { "key": { "const": "pending_pct" } } },
+            { "properties": { "key": { "const": "failed_count" } } },
+            { "properties": { "key": { "const": "failed_pct" } } }
+          ],
+          "minItems": 9,
+          "items": false
+        },
+        "rows": {
+          "$ref": "common.schema.json#/$defs/oneRow",
+          "items": {
+            "allOf": [
+              { "$ref": "#/$defs/publicSupportRow" },
+              { "$ref": "common.schema.json#/$defs/internalSupportBucketColumns" }
+            ],
+            "unevaluatedProperties": false
+          }
+        },
+        "footer": { "type": "null" }
+      }
+    },
+    "publicSupportRow": {
+      "description": "The support row's public columns - the static export's row (docs/schemas/export/dns-provider-summary.schema.json).",
+      "type": "object",
+      "allOf": [{ "$ref": "common.schema.json#/$defs/publicSupportBucketColumns" }],
+      "properties": {
+        "total": {
+          "description": "Probe combinations on record. Known defect, GitHub issue #205: 1, not 0, for a provider with none.",
+          "$ref": "common.schema.json#/$defs/count"
+        }
+      },
+      "required": ["total"]
+    },
+    "shareTable": {
+      "description": "The provider's share of the selected import: one row, or none when there is no such import with share data.",
+      "properties": {
+        "title": { "type": "string" },
+        "columns": {
+          "prefixItems": [
+            { "properties": { "key": { "const": "import_id" } } },
+            { "properties": { "key": { "const": "status" } } },
+            { "properties": { "key": { "const": "source" } } },
+            { "properties": { "key": { "const": "domains" } } },
+            { "properties": { "key": { "const": "scanned_domains" } } },
+            { "properties": { "key": { "const": "share_pct" } } },
+            { "properties": { "key": { "const": "rank" } } },
+            { "properties": { "key": { "const": "providers" } } }
+          ],
+          "minItems": 8,
+          "items": false
+        },
+        "rows": {
+          "items": { "allOf": [{ "$ref": "#/$defs/providerShare" }], "unevaluatedProperties": false },
+          "maxItems": 1
+        },
+        "footer": { "type": "null" }
+      }
+    },
+    "urlsTable": {
+      "description": "Domain Connect URLs this provider currently owns, by first_seen_at.",
+      "properties": {
+        "title": { "type": "string" },
+        "columns": {
+          "prefixItems": [
+            { "properties": { "key": { "const": "domain_connect_url" } } },
+            { "properties": { "key": { "const": "first_seen_at" } } }
+          ],
+          "minItems": 2,
+          "items": false
+        },
+        "rows": {
+          "items": {
+            "type": "object",
+            "properties": {
+              "domain_connect_url": { "type": "string" },
+              "first_seen_at": { "$ref": "common.schema.json#/$defs/nullableTimestamp" }
+            },
+            "required": ["domain_connect_url", "first_seen_at"],
+            "additionalProperties": false
+          }
+        },
+        "footer": { "type": "null" }
+      }
+    },
+    "templatesTable": {
+      "description": "Templates the provider currently supports in any version, ordered by service provider name/id, then template name/id.",
+      "properties": {
+        "title": { "type": "string" },
+        "columns": {
+          "prefixItems": [
+            { "properties": { "key": { "const": "service_provider_name" } } },
+            { "properties": { "key": { "const": "service_provider_id" } } },
+            { "properties": { "key": { "const": "service_name" } } },
+            { "properties": { "key": { "const": "service_id" } } },
+            { "properties": { "key": { "const": "versions" } } },
+            { "properties": { "key": { "const": "since" } } }
+          ],
+          "minItems": 6,
+          "items": false
+        },
+        "rows": {
+          "items": {
+            "type": "object",
+            "properties": {
+              "service_provider_name": { "description": "Falls back to service_provider_id.", "type": "string" },
+              "service_provider_id": { "type": "string" },
+              "service_name": { "description": "Falls back to service_id.", "type": "string" },
+              "service_id": { "type": "string" },
+              "versions": {
+                "description": "Supported versions, ascending.",
+                "allOf": [{ "$ref": "common.schema.json#/$defs/versions" }],
+                "minItems": 1
+              },
+              "since": {
+                "description": "When the current unbroken run of support began (support_history); null if the event log has no record of it.",
+                "$ref": "common.schema.json#/$defs/nullableTimestamp"
+              }
+            },
+            "required": ["service_provider_name", "service_provider_id", "service_name", "service_id", "versions", "since"],
+            "additionalProperties": false
+          }
+        },
+        "footer": { "type": "null" }
+      }
+    },
+    "templateHistoryTable": {
+      "description": "One row per support sweep that re-probed all of this provider's templates (unscoped, or scoped to this provider only), oldest first: how many templates it supported once that sweep had run.",
+      "properties": {
+        "title": { "type": "string" },
+        "columns": {
+          "prefixItems": [
+            { "properties": { "key": { "const": "sweep_id" } } },
+            { "properties": { "key": { "const": "started_at" } } },
+            { "properties": { "key": { "const": "supported_templates" } } },
+            { "properties": { "key": { "const": "change" } } }
+          ],
+          "minItems": 4,
+          "items": false
+        },
+        "rows": {
+          "items": {
+            "type": "object",
+            "allOf": [{ "$ref": "common.schema.json#/$defs/sweepHistoryRow" }],
+            "properties": { "supported_templates": { "$ref": "common.schema.json#/$defs/count" } },
+            "required": ["supported_templates"],
+            "unevaluatedProperties": false
+          }
+        },
+        "footer": { "type": "null" }
+      }
+    },
+    "shareHistoryTable": {
+      "description": "The provider's share in every completed import still on record plus every hygiene-pruned import kept as a snapshot, oldest first.",
+      "properties": {
+        "title": { "type": "string" },
+        "columns": {
+          "prefixItems": [
+            { "properties": { "key": { "const": "import_id" } } },
+            { "properties": { "key": { "const": "completed_at" } } },
+            { "properties": { "key": { "const": "status" } } },
+            { "properties": { "key": { "const": "source" } } },
+            { "properties": { "key": { "const": "domains" } } },
+            { "properties": { "key": { "const": "scanned_domains" } } },
+            { "properties": { "key": { "const": "share_pct" } } },
+            { "properties": { "key": { "const": "change_pct" } } },
+            { "properties": { "key": { "const": "rank" } } },
+            { "properties": { "key": { "const": "providers" } } }
+          ],
+          "minItems": 10,
+          "items": false
+        },
+        "rows": {
+          "items": {
+            "type": "object",
+            "allOf": [{ "$ref": "#/$defs/providerShare" }],
+            "properties": {
+              "completed_at": {
+                "description": "imports.completed_at; null for a pruned import.",
+                "$ref": "common.schema.json#/$defs/nullableTimestamp"
+              },
+              "change_pct": {
+                "description": "Change of share_pct in percentage points since the previous import that measured it; null for the first such import or when this one has no measurement.",
+                "type": ["number", "null"]
+              }
+            },
+            "required": ["completed_at", "change_pct"],
+            "unevaluatedProperties": false
+          }
+        },
+        "footer": { "type": "null" }
+      }
+    },
+    "providerShare": {
+      "description": "The provider's domains in one import.",
+      "type": "object",
+      "properties": {
+        "import_id": { "$ref": "common.schema.json#/$defs/importId" },
+        "status": {
+          "description": "The import's status, or 'pruned' once hygiene has reduced it to its snapshot.",
+          "anyOf": [{ "$ref": "common.schema.json#/$defs/importStatus" }, { "const": "pruned" }]
+        },
+        "source": { "$ref": "common.schema.json#/$defs/shareSource" },
+        "domains": {
+          "description": "null when the import has no measurement for this provider (first seen after the snapshot was frozen).",
+          "$ref": "common.schema.json#/$defs/nullableCount"
+        },
+        "scanned_domains": { "$ref": "common.schema.json#/$defs/count" },
+        "share_pct": { "$ref": "common.schema.json#/$defs/nullablePercentage" },
+        "rank": {
+          "description": "1 = most domains among the import's providers with any; ties share a rank. null at 0 or unmeasured domains.",
+          "oneOf": [{ "type": "integer", "minimum": 1 }, { "type": "null" }]
+        },
+        "providers": {
+          "description": "Providers with domains in the import - the denominator of rank.",
+          "$ref": "common.schema.json#/$defs/count"
+        }
+      },
+      "required": ["import_id", "status", "source", "domains", "scanned_domains", "share_pct", "rank", "providers"]
+    }
+  }
+}
