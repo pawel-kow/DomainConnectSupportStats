@@ -4,6 +4,13 @@ Changes per site version. Versions follow [SemVer](https://semver.org/): major f
 parameter removed or changed incompatibly, minor for new pages, features or content, patch for
 fixes, styling and dependencies.
 
+## [0.3.0] - 2026-10-04
+
+### Added
+
+- DNS providers list: support, statuses and domains per DNS provider; search, sort, stack filter;
+  given-up, never-probed and zero-domain providers behind a "show all" toggle; caveats.
+
 ## [0.2.0] - 2026-10-04
 
 ### Added
