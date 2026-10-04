@@ -3,6 +3,7 @@ import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { afterEach, describe, expect, it } from 'vitest';
 import {
+  bundleRegistry,
   EXAMPLE_REGISTRY_DIR,
   entryPath,
   loadRegistrySchema,
@@ -116,5 +117,52 @@ describe('validateRegistry on a corrupted copy', () => {
     const errors = validateRegistry(dir, validate).errors.join('\n');
     expect(errors).toMatch(/plesk\.com\.json: \/ must have required property 'name'/);
     expect(errors).toMatch(/ionos\.com\.json: invalid JSON/);
+  });
+});
+
+describe('bundleRegistry', () => {
+  let dist: string;
+  afterEach(() => rmSync(dist, { recursive: true, force: true }));
+  const source = { repository: 'Domain-Connect/DnsProviders', commit: 'abc1234' };
+
+  it('publishes entries and logos at <a>/<b>/<encoded name>, and registry.json', () => {
+    dist = mkdtempSync(join(tmpdir(), 'dist-'));
+    const { entries } = validateRegistry(EXAMPLE_REGISTRY_DIR, validate);
+    const published = bundleRegistry(EXAMPLE_REGISTRY_DIR, entries, dist, source);
+    expect(published.sort()).toEqual([
+      'c/l/cloudflare.com.json',
+      'c/l/cloudflare.com.svg',
+      'i/o/ionos.com.json',
+      'i/o/ionos.com.svg',
+      'p/l/plesk.com.json',
+      'registry.json',
+    ]);
+    expect(JSON.parse(readFileSync(join(dist, 'registry/registry.json'), 'utf8'))).toEqual(source);
+    expect(readFileSync(join(dist, 'registry/p/l/plesk.com.json'), 'utf8')).toBe(
+      readFileSync(join(EXAMPLE_REGISTRY_DIR, 'providers/p/l/plesk.com.json'), 'utf8'),
+    );
+  });
+
+  it('encodes file names and replaces an earlier bundle', () => {
+    dist = mkdtempSync(join(tmpdir(), 'dist-'));
+    const dir = join(dist, 'checkout');
+    mkdirSync(join(dir, 'providers/m/y'), { recursive: true });
+    writeFileSync(join(dir, 'providers/m/y/My Host.json'), '{}');
+    writeFileSync(join(dir, 'providers/m/y/Logo.svg'), '<svg/>');
+    mkdirSync(join(dist, 'registry'));
+    writeFileSync(join(dist, 'registry/stale.json'), '{}');
+    const entries = [
+      {
+        providerId: 'My Host',
+        file: 'providers/m/y/My Host.json',
+        logo: 'providers/m/y/Logo.svg',
+      },
+    ];
+    expect(bundleRegistry(dir, entries, dist, source)).toEqual([
+      'm/y/~4dy~20~48ost.json',
+      'm/y/~4cogo.svg',
+      'registry.json',
+    ]);
+    expect(() => readFileSync(join(dist, 'registry/stale.json'))).toThrow();
   });
 });

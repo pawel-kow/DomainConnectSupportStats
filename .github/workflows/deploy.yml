@@ -1,5 +1,6 @@
 # Publish a tagged site version with the current export release to GitHub Pages. DEPLOYMENT.md.
 # Variables: DATA_REPO (required, "owner/name"), DATA_REF (default main), DATA_PATH (default ".").
+# REGISTRY_REPO (required, "owner/name", public), REGISTRY_REF (default main).
 # Secret DATA_REPO_TOKEN only for a private data repo. Environment `release`: required reviewers.
 name: Deploy
 
@@ -90,6 +91,11 @@ jobs:
         run: |
           echo "::error::Repository variable DATA_REPO (owner/name of the export data repo) is not set. See DEPLOYMENT.md."
           exit 1
+      - name: Require the registry repo variable
+        if: vars.REGISTRY_REPO == ''
+        run: |
+          echo "::error::Repository variable REGISTRY_REPO (owner/name of the DNS provider registry) is not set. See DEPLOYMENT.md."
+          exit 1
       - uses: actions/checkout@v7
         with:
           ref: ${{ needs.version.outputs.tag }}
@@ -100,6 +106,13 @@ jobs:
           ref: ${{ vars.DATA_REF || 'main' }}
           path: export-data
           token: ${{ secrets.DATA_REPO_TOKEN || github.token }}
+          persist-credentials: false
+      - name: Check out the DNS provider registry
+        uses: actions/checkout@v7
+        with:
+          repository: ${{ vars.REGISTRY_REPO }}
+          ref: ${{ vars.REGISTRY_REF || 'main' }}
+          path: registry-data
           persist-credentials: false
       - uses: actions/setup-node@v7
         with:
@@ -112,12 +125,17 @@ jobs:
         run: npm run build
       - name: Validate and bundle the release
         run: npm run bundle:data -- "export-data/${{ vars.DATA_PATH || '.' }}" dist
+      - name: Validate and bundle the registry
+        run: >-
+          npm run bundle:registry -- registry-data dist "${{ vars.REGISTRY_REPO }}"
+          "$(git -C registry-data rev-parse HEAD)"
       - name: Record what was deployed
         run: |
           {
             echo "### Deployed"
             echo "- Site: \`${{ needs.version.outputs.tag }}\` @ \`$(git rev-parse HEAD)\`"
             echo "- Data: \`${{ vars.DATA_REPO }}\` @ \`$(git -C export-data rev-parse HEAD)\`"
+            echo "- Registry: \`${{ vars.REGISTRY_REPO }}\` @ \`$(git -C registry-data rev-parse HEAD)\`"
             echo "- Release generated_at: \`$(node -p "require('./dist/data/manifest.json').generated_at")\`"
             echo "- Trigger: \`${{ github.event_name }}\`"
           } >> "$GITHUB_STEP_SUMMARY"

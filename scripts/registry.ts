@@ -4,9 +4,18 @@
  * extension-qualified, dependency-free modules from `src/`.
  */
 import { Ajv2020 } from 'ajv/dist/2020.js';
-import { existsSync, readdirSync, readFileSync } from 'node:fs';
-import { join, relative, resolve, sep } from 'node:path';
-import { entryPath } from '../src/lib/registry/path.ts';
+import {
+  copyFileSync,
+  existsSync,
+  mkdirSync,
+  readdirSync,
+  readFileSync,
+  rmSync,
+  writeFileSync,
+} from 'node:fs';
+import { dirname, join, relative, resolve, sep } from 'node:path';
+import { encodeSegment } from '../src/lib/data/encode.ts';
+import { entryPath, registryPath } from '../src/lib/registry/path.ts';
 
 export { entryPath };
 
@@ -74,4 +83,38 @@ export function validateRegistry(dir: string, validate = loadRegistrySchema()): 
     entries.push({ providerId: entry.providerId, file: rel, ...(logo ? { logo } : {}) });
   }
   return { entries, errors };
+}
+
+/** Where the registry was checked out from, written to `registry.json` for the site. */
+export interface RegistrySource {
+  repository: string;
+  commit: string;
+}
+
+/**
+ * Copy the validated entries and logos of `dir` into `<distDir>/registry/` at the paths the site
+ * reads: `<a>/<b>/<encoded file name>`, plus `registry.json` with `source`. Returns the published
+ * paths; nothing else in the checkout is published.
+ */
+export function bundleRegistry(
+  dir: string,
+  entries: RegistryEntryFile[],
+  distDir: string,
+  source: RegistrySource,
+): string[] {
+  const target = join(distDir, 'registry');
+  rmSync(target, { recursive: true, force: true });
+  mkdirSync(target, { recursive: true });
+  const published: string[] = [];
+  for (const { providerId, file, logo } of entries) {
+    for (const rel of logo ? [file, logo] : [file]) {
+      const out = registryPath(providerId) + encodeSegment(rel.slice(rel.lastIndexOf('/') + 1));
+      mkdirSync(dirname(join(target, out)), { recursive: true });
+      copyFileSync(join(dir, rel), join(target, out));
+      published.push(out);
+    }
+  }
+  writeFileSync(join(target, 'registry.json'), JSON.stringify(source) + '\n');
+  published.push('registry.json');
+  return published;
 }
