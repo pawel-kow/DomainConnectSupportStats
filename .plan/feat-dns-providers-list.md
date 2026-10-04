@@ -42,6 +42,9 @@ search, hide-by-default toggle, badges and caveats; tests, docs, version 0.3.0.
 
 ## Corrections
 
+- Maintainer: F-2.9 for every table. DNS provider card's supported templates overflowed 51 px at
+  Pixel 7 width; keeps service provider, template, since at phone width (maintainer's choice).
+
 - Maintainer: phone width shows only name, supported and domains (DataTable `phoneKeys`, hidden
   below 480 px); status badges and stack stay on wide screens.
 

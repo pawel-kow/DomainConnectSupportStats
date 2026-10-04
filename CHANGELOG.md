@@ -11,6 +11,11 @@ fixes, styling and dependencies.
 - DNS providers list: support, statuses and domains per DNS provider; search, sort, stack filter;
   given-up, never-probed and zero-domain providers behind a "show all" toggle; caveats.
 
+### Changed
+
+- Tables show fewer columns at phone width to fit the screen; DNS provider card's supported
+  templates without versions.
+
 ## [0.2.0] - 2026-10-04
 
 ### Added
