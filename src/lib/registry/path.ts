@@ -15,3 +15,8 @@ export function registryPath(providerId: string): string {
   const [a, b] = Array.from(providerId);
   return `${folder(a)}/${folder(b)}/`;
 }
+
+/** Path of the entry of `providerId` in the registry's repository. */
+export function entryPath(providerId: string): string {
+  return `providers/${registryPath(providerId)}${providerId}.json`;
+}

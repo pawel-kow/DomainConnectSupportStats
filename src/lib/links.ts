@@ -53,3 +53,11 @@ export function safeUrl(value: string | null | undefined): string | null {
     return null;
   }
 }
+
+const EMAIL = /^[^@\s<>"?&#/:]+@[^@\s<>"?&#/:]+$/;
+
+/** A `mailto:` link for an e-mail address from the data, or null when it is not a plain address. */
+export function safeMailto(value: string | null | undefined): string | null {
+  const address = value?.trim();
+  return address && EMAIL.test(address) ? `mailto:${address}` : null;
+}

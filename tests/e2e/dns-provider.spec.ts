@@ -4,7 +4,14 @@ function section(page: import('@playwright/test').Page, heading: string) {
   return page.locator('section', { has: page.getByRole('heading', { name: heading }) });
 }
 
+const SOURCE = { repository: 'Domain-Connect/DnsProviders', commit: 'abc1234' };
+
 test.describe('DNS provider card (dns-provider.html)', () => {
+  // The deploy writes registry.json; the example registry has none.
+  test.beforeEach(async ({ page }) => {
+    await page.route('**/registry/registry.json', (route) => route.fulfill({ json: SOURCE }));
+  });
+
   test('shows the provider, its stack and its support', async ({ page }) => {
     await page.goto('dns-provider.html?id=1');
     await expect(page.getByTestId('card-title')).toContainText('Cloudflare');
@@ -51,12 +58,6 @@ test.describe('DNS provider card (dns-provider.html)', () => {
     );
   });
 
-  test('shows an unranked provider as unknown, not zero', async ({ page }) => {
-    await page.goto('dns-provider.html?id=6');
-    const rank = page.getByTestId('headline').locator('.stat-card', { hasText: 'Rank' });
-    await expect(rank.locator('.stat-value')).toHaveText('–');
-  });
-
   for (const query of ['', '?id=', '?id=abc']) {
     test(`shows "not found" for dns-provider.html${query}`, async ({ page }) => {
       await page.goto(`dns-provider.html${query}`);
@@ -75,6 +76,94 @@ test.describe('DNS provider card (dns-provider.html)', () => {
       await page.goto('dns-provider.html?id=999');
       await expect(page.getByTestId('not-found')).toContainText('DNS provider 999');
       expect(consoleErrors.every((e) => e.includes('404'))).toBe(true);
+    });
+  });
+
+  test('shows the registry entry of its stack', async ({ page }) => {
+    await page.goto('dns-provider.html?id=1');
+    const registry = page.getByTestId('registry');
+    await expect(registry.getByRole('heading', { name: 'Registry' })).toBeVisible();
+    const logo = registry.getByRole('img', { name: 'Cloudflare' });
+    await expect(logo).toBeVisible();
+    expect(await logo.evaluate((img: HTMLImageElement) => img.naturalWidth)).toBeGreaterThan(0);
+    await expect(registry.getByRole('link', { name: 'Community forum' })).toBeVisible();
+    await expect(registry.getByTestId('registry-notes')).toContainText('<script>alert(1)</script>');
+    await expect(
+      registry.getByRole('link', { name: 'Entry in the registry repository' }),
+    ).toHaveAttribute(
+      'href',
+      'https://github.com/Domain-Connect/DnsProviders/blob/abc1234/providers/c/l/cloudflare.com.json',
+    );
+    // Before the headline.
+    const [registryBox, headlineBox] = await Promise.all([
+      registry.boundingBox(),
+      page.getByTestId('headline').boundingBox(),
+    ]);
+    expect(registryBox!.y).toBeLessThan(headlineBox!.y);
+  });
+
+  test('shows a migrated entry with unknown features', async ({ page }) => {
+    await page.goto('dns-provider.html?id=5');
+    const registry = page.getByTestId('registry');
+    await expect(registry.getByRole('heading', { name: 'Registry' })).toBeVisible();
+    await expect(registry.getByTestId('registry-onboarding')).toContainText('On request');
+    await expect(
+      registry.getByRole('link', { name: 'domain_connect_admin@ionos.example' }),
+    ).toHaveAttribute('href', 'mailto:domain_connect_admin@ionos.example');
+  });
+
+  for (const id of [2, 3]) {
+    test(`names the stack of several deployments (DNS provider ${id})`, async ({ page }) => {
+      await page.goto(`dns-provider.html?id=${id}`);
+      const heading = page.getByRole('heading', { name: 'Registry entry of stack Plesk' });
+      await expect(heading).toBeVisible();
+      await heading.getByRole('link', { name: 'Plesk' }).click();
+      await expect(page).toHaveURL(/stack\.html\?id=plesk\.com$/);
+    });
+  }
+
+  test('requests no registry entry without a stack', async ({ page }) => {
+    const requested: string[] = [];
+    page.on('request', (r) => {
+      if (r.url().includes('/registry/')) requested.push(r.url());
+    });
+    await page.goto('dns-provider.html?id=4');
+    await expect(page.getByTestId('headline')).toBeVisible();
+    await expect(page.getByTestId('registry')).toHaveCount(0);
+    expect(requested).toEqual([]);
+  });
+
+  test.describe('registry 404s and failures', () => {
+    // The browser logs the failed requests as console errors. DNS provider 6's stack has no
+    // registry entry.
+    test.use({ expectErrors: true });
+
+    test('shows an unranked provider as unknown, not zero', async ({ page }) => {
+      await page.goto('dns-provider.html?id=6');
+      const rank = page.getByTestId('headline').locator('.stat-card', { hasText: 'Rank' });
+      await expect(rank.locator('.stat-value')).toHaveText('–');
+    });
+
+    test('shows no registry section for a stack without an entry', async ({ page }) => {
+      await page.goto('dns-provider.html?id=6');
+      await expect(page.getByTestId('headline')).toBeVisible();
+      await expect(page.getByTestId('registry')).toHaveCount(0);
+    });
+
+    test('shows a short error when the entry fails to load', async ({ page }) => {
+      await page.route('**/registry/c/l/*.json', (route) => route.fulfill({ status: 500 }));
+      await page.goto('dns-provider.html?id=1');
+      await expect(page.getByTestId('registry')).toContainText('could not be loaded');
+      await expect(page.getByTestId('headline')).toBeVisible();
+    });
+
+    test('shows the entry without a repository link when registry.json is missing', async ({
+      page,
+    }) => {
+      await page.unroute('**/registry/registry.json');
+      await page.goto('dns-provider.html?id=1');
+      await expect(page.getByTestId('registry').getByRole('img')).toBeVisible();
+      await expect(page.getByRole('link', { name: /registry repository/ })).toHaveCount(0);
     });
   });
 

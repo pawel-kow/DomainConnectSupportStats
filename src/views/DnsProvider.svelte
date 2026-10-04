@@ -4,6 +4,7 @@
   import LoadError from '../lib/components/LoadError.svelte';
   import NotFound from '../lib/components/NotFound.svelte';
   import Notes from '../lib/components/Notes.svelte';
+  import Registry from '../lib/components/Registry.svelte';
   import StatCard from '../lib/components/StatCard.svelte';
   import TimeChart from '../lib/components/TimeChart.svelte';
   import { parseNameservers } from '../lib/cells';
@@ -13,6 +14,7 @@
   import { formatCount, formatDateTime, formatPct, UNKNOWN } from '../lib/format';
   import { links, safeUrl } from '../lib/links';
   import { integerParam } from '../lib/params';
+  import { defaultRegistryClient, entryFileUrl } from '../lib/registry/load';
   import { importSeries, needsAdoption, sweepSeries } from '../lib/series';
 
   const id = integerParam(window.location.search, 'id');
@@ -43,6 +45,36 @@
       .file('overview')
       .then((f) => findTable(f, 'adoption')?.rows ?? [])
       .catch(() => []);
+  }
+
+  const registry = defaultRegistryClient();
+
+  /**
+   * The registry section of stack `providerId`, or null when the stack has no entry. The stack
+   * card is fetched only for an entry: several deployments share it, so the section names the
+   * stack; if that fetch fails, the section names the stack by its id.
+   */
+  async function registrySection(providerId: string) {
+    const entry = await registry.entry(providerId);
+    if (!entry) return null;
+    const [source, stack] = await Promise.all([
+      registry.source(),
+      client.file('stack', { provider_id: providerId }).then(
+        (f) => {
+          const record = oneRecord(findTable(f, 'stack'));
+          const deployments = num(record, 'deployments');
+          if (deployments !== null && deployments <= 1) return null;
+          return { id: providerId, name: text(record, 'name') ?? providerId };
+        },
+        () => ({ id: providerId, name: providerId }),
+      ),
+    ]);
+    return {
+      entry,
+      logoUrl: registry.logoUrl(entry),
+      fileUrl: source && entryFileUrl(source, providerId),
+      stack,
+    };
   }
 
   function num(row: Row | undefined, key: string): number | null {
@@ -125,6 +157,17 @@
       </section>
 
       <Notes notes={file.notes} />
+
+      {#if stack}
+        {#await registrySection(stack) then section}
+          {#if section}<Registry {...section} />{/if}
+        {:catch}
+          <section class="panel" data-testid="registry">
+            <h2>Registry</h2>
+            <p class="no-data">The registry entry could not be loaded.</p>
+          </section>
+        {/await}
+      {/if}
 
       <section class="summary-stats" aria-label="Support and domain share" data-testid="headline">
         <StatCard

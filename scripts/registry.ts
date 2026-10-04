@@ -6,7 +6,9 @@
 import { Ajv2020 } from 'ajv/dist/2020.js';
 import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { join, relative, resolve, sep } from 'node:path';
-import { registryPath } from '../src/lib/registry/path.ts';
+import { entryPath } from '../src/lib/registry/path.ts';
+
+export { entryPath };
 
 export const REGISTRY_DIR = resolve(import.meta.dirname, '../registry');
 export const REGISTRY_SCHEMA = join(REGISTRY_DIR, 'schema/provider.schema.json');
@@ -36,11 +38,6 @@ function jsonFilesUnder(dir: string): string[] {
 export function loadRegistrySchema(schemaFile = REGISTRY_SCHEMA) {
   const ajv = new Ajv2020({ allErrors: true, strict: false });
   return ajv.compile(JSON.parse(readFileSync(schemaFile, 'utf8')));
-}
-
-/** Registry-relative path of the entry of `providerId`. */
-export function entryPath(providerId: string): string {
-  return `providers/${registryPath(providerId)}${providerId}.json`;
 }
 
 /**
