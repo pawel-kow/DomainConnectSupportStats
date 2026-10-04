@@ -15,6 +15,8 @@ fixes, styling and dependencies.
 
 - Tables show fewer columns at phone width to fit the screen; DNS provider card's supported
   templates without versions.
+- Long tables in pages of 20 rows (50, 100 or all on request): DNS providers list, DNS provider
+  card's supported templates (now with a filter).
 
 ## [0.2.0] - 2026-10-04
 

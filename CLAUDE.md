@@ -41,7 +41,8 @@ reference for page work**), `contract/schemas/` (JSON Schemas), `contract/exampl
   - show `notes` verbatim; show `generated_at` and the domain-share import on every page;
   - import series and sweep series run on two clocks (`src/lib/series.ts`);
   - tables keep only the columns that fit at phone width (`phoneKeys`); ask the maintainer which
-    when not obvious.
+    when not obvious;
+  - tables that can grow long have a filter and 20-row pages (`searchable`, `pageSize`).
 
 ## Architecture
 
@@ -170,6 +171,7 @@ Pushing `.github/workflows/` changes needs a token with the `workflow` scope.
 - `src/lib/registry/entry.ts`: `parseEntry()` (registry entry, unknown values as `null`), `parseSource()`, `FEATURES`
 - `src/lib/registry/load.ts`: `RegistryClient` (entry, logo URL, `registry.json` once), `entryFileUrl()`
 - `src/lib/dns-providers.ts`: DNS providers list (stack filter, rows hidden by default, undetermined count, status badges)
+- `src/lib/paging.ts`: page count, rows and range of a paginated table
 - `src/lib/format.ts`, `cells.ts`, `series.ts`, `links.ts`, `params.ts`: pure display/series/URL/query helpers (`safeUrl`, `safeMailto` for URLs from the data; `isPublicKey` hides internal ids)
 - `src/lib/components/`: shared Svelte components
 - `src/lib/styles.css`: global styles, brand tokens

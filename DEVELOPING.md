@@ -264,6 +264,7 @@ When code and docs disagree, fix both.
 - The PR that changes the site bumps the version (`npm version <level> --no-git-tag-version`) and
   adds its section to [CHANGELOG.md](CHANGELOG.md). Agents ask the maintainer when the level is not
   obvious.
+- **Long tables.** A table that can grow long gets a filter and pages (F-2.10).
 - Merging a new version to `main` tags `v<version>`, creates a prerelease and waits for manual
   approval; after deploy it becomes the latest release ([DEPLOYMENT.md](DEPLOYMENT.md)).
 - Rollback: revert via PR with a patch bump, or mark the previous release as latest and run the
