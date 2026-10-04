@@ -9,22 +9,26 @@ adapted process docs, with the overview page (`index.html`) rendering the vendor
 - [x] Read inputs: issue pawel-kow/DomainConnectScanner#211 "Future frontend", EXPORT_FORMAT.md,
       schemas, example export, existing stats page, Scanner process docs
 - [x] Clarify open decisions with the maintainer (see Decisions)
-- [~] Vendor the export contract into `contract/`
-- [ ] Repo hygiene: .gitignore, devcontainer (Node only), .claude settings, remove .venv
-- [ ] Vite + Svelte 5 + TS multi-page scaffold (9 HTML entries, base path + data URL configurable)
-- [ ] Shared lib: id encoding, manifest/path building, fetch + not-found, formatting, two-clock series
-- [ ] Shared components: header/footer/layout (stats.domainconnect.org look), generic data table, not-found
-- [ ] Overview page: headline numbers, adoption + ecosystem chart (Chart.js), notes/caveats
-- [ ] Placeholder for the 8 other pages (render header + "coming soon" linking to overview)
-- [ ] Tests: Vitest unit, ajv contract tests, Svelte component tests, Playwright e2e
-- [ ] CI workflow (lint, typecheck, tests, build, e2e, `.plan/` gate)
-- [ ] Pages deploy workflow (repository_dispatch + schedule + manual; checkout data repo; validate; deploy)
-- [ ] Process docs adapted: CLAUDE.md, DEVELOPING.md, TESTING.md, DEPLOYMENT.md, README.md, REQUIREMENTS.md
+- [x] Vendor the export contract into `contract/`
+- [x] Repo hygiene: .gitignore, devcontainer (Node only), .claude settings, remove .venv
+- [x] Vite + Svelte 5 + TS multi-page scaffold (9 HTML entries, base path + data URL configurable)
+- [x] Shared lib: id encoding, manifest/path building, fetch + not-found, formatting, two-clock series
+- [x] Shared components: header/footer/layout (stats.domainconnect.org look), generic data table, not-found
+- [x] Overview page: headline numbers, adoption + ecosystem chart (Chart.js), notes/caveats
+- [x] Placeholder for the 8 other pages (render header + "coming soon" linking to overview)
+- [x] Tests: Vitest unit, ajv contract tests, Svelte component tests, Playwright e2e
+- [x] CI workflow (lint, typecheck, tests, build, e2e, `.plan/` gate)
+- [x] Pages deploy workflow (repository_dispatch + schedule + manual; checkout data repo; validate; deploy)
+- [~] Process docs adapted: CLAUDE.md, DEVELOPING.md, TESTING.md, DEPLOYMENT.md, README.md, REQUIREMENTS.md
 - [ ] File follow-up issues for the remaining pages
 - [ ] Promote findings, `git rm -r .plan`
 
 ## Findings
 
+- Release validation: the example export is 24 files; a release missing `stacks.json` is refused by `bundle-data.ts` (exit 1) — local run 2026-10-04
+- The bundled `dist/` works served statically under a sub-path (`/DomainConnectSupportStats/index.html`, python http.server) — screenshot check 2026-10-04
+- Chromium needed `npx playwright install-deps` in this container (libatk missing); the new devcontainer postCreate does `--with-deps`
+- Overview chart: "Supported templates" is constant 3 in the example and is drawn under the other right-axis lines; acceptable with legend toggling, revisit with real data
 - Export contract: format_version 1; every data file is `{generated_at, notes, tables{id:{title,columns,rows,footer}}}`;
   ids encoded with the `~xx` rule; manifest `files.<kind>.path` is authoritative — `.inputs/scanner_input/EXPORT_FORMAT.md`
 - Template card table ids are prefixed `<spid>/<sid>/` — find by suffix after last `/` — EXPORT_FORMAT.md "templates/…"
@@ -51,6 +55,10 @@ adapted process docs, with the overview page (`index.html`) rendering the vendor
   `window.DC_STATS_CONFIG.dataBaseUrl` in an optional `config.js`)
 
 ## Corrections
+
+- Tests were written right after each module, not strictly before (TDD order not followed for the scaffold). They found two real defects: `validateRelease` crashed on a file without `tables` (now guarded, covered by a corrupted-copy test); null cells in numeric columns were left-aligned (alignment is now per column).
+- `kill $(pgrep -f "vite preview")` matched and killed its own shell, so the files written in that command were lost and re-written; use `fuser -k <port>/tcp`.
+- Playwright `reuseExistingServer` would reuse a stale preview locally: disabled.
 
 ## Open questions
 
