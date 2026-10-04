@@ -126,7 +126,10 @@ Full rules: [DEVELOPING.md](DEVELOPING.md) §3.
    section. Major: page or URL parameter removed/changed incompatibly. Minor: new page, feature or
    visible content. Patch: fixes, styling, dependencies. Docs/tests/CI only: no bump. **Ask the
    maintainer when the level is not obvious.**
-4. **Before merge:** defects found but not fixed → GitHub issue (`bug` or `refactoring` plus a
+4. **Screenshots** (§3.6): a PR that changes a page, component or style shows screenshots of every
+   affected page (desktop and phone) to the maintainer in the chat; it is marked ready only after
+   acceptance.
+5. **Before merge:** defects found but not fixed → GitHub issue (`bug` or `refactoring` plus a
    `severity: *` label); behavioural decisions → REQUIREMENTS.md; rationale, if needed → commit
    message. Then `git rm -r .plan` in its own commit (CI fails otherwise).
 
