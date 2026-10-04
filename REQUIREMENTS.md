@@ -83,18 +83,18 @@ The site shows the latest release the Scanner publishes and always states its ag
 
 ### F-1 Pages
 
-| Id     | Page                                    | Data                     | Must show                                                                                                                                                                                                                                                                             |
-| ------ | --------------------------------------- | ------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| F-1.1  | `index.html` (landing)                  | `overview.json`          | One "Domain Connect support over time" chart on a shared date axis: adoption `dc_pct` per import (with `dc_domains` in the tooltip) and `supporting_dns_providers`, `supporting_stacks`, `supported_templates` per full sweep (secondary axis); the latest values as headline numbers |
-| F-1.2  | `dns-providers.html` (`?stack=`, `&q=`) | `dns-providers.json`     | Every DNS provider; filter by stack and search                                                                                                                                                                                                                                        |
-| F-1.3  | `stacks.html`                           | `stacks.json`            | Every stack with its support distribution                                                                                                                                                                                                                                             |
-| F-1.4  | `service-providers.html`                | `service-providers.json` | Every service provider                                                                                                                                                                                                                                                                |
-| F-1.5  | `templates.html` (`?spid=`)             | `templates.json`         | Every template; filter by service provider                                                                                                                                                                                                                                            |
-| F-1.6  | `dns-provider.html?id=`                 | DNS provider card        | Layout F-1a; charts: domain share per import, supported templates per sweep; the stack's registry entry                                                                                                                                                                               |
-| F-1.7  | `stack.html?id=`                        | Stack card               | Deployments; chart: share per import                                                                                                                                                                                                                                                  |
-| F-1.8  | `service-provider.html?id=`             | Service provider card    | Templates; chart: supporting providers per template per sweep                                                                                                                                                                                                                         |
-| F-1.9  | `template.html?spid=&sid=`              | Template card            | Records, supporters; chart: supporting DNS providers per sweep                                                                                                                                                                                                                        |
-| F-1.10 | Methodology page                        | —                        | How the data comes about, what the numbers count, their limits                                                                                                                                                                                                                        |
+| Id     | Page                                             | Data                     | Must show                                                                                                                                                                                                                                                                             |
+| ------ | ------------------------------------------------ | ------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| F-1.1  | `index.html` (landing)                           | `overview.json`          | One "Domain Connect support over time" chart on a shared date axis: adoption `dc_pct` per import (with `dc_domains` in the tooltip) and `supporting_dns_providers`, `supporting_stacks`, `supported_templates` per full sweep (secondary axis); the latest values as headline numbers |
+| F-1.2  | `dns-providers.html` (`?stack=`, `&q=`, `&all=`) | `dns-providers.json`     | Every DNS provider; filter by stack and search; layout F-1b                                                                                                                                                                                                                           |
+| F-1.3  | `stacks.html`                                    | `stacks.json`            | Every stack with its support distribution                                                                                                                                                                                                                                             |
+| F-1.4  | `service-providers.html`                         | `service-providers.json` | Every service provider                                                                                                                                                                                                                                                                |
+| F-1.5  | `templates.html` (`?spid=`)                      | `templates.json`         | Every template; filter by service provider                                                                                                                                                                                                                                            |
+| F-1.6  | `dns-provider.html?id=`                          | DNS provider card        | Layout F-1a; charts: domain share per import, supported templates per sweep; the stack's registry entry                                                                                                                                                                               |
+| F-1.7  | `stack.html?id=`                                 | Stack card               | Deployments; chart: share per import                                                                                                                                                                                                                                                  |
+| F-1.8  | `service-provider.html?id=`                      | Service provider card    | Templates; chart: supporting providers per template per sweep                                                                                                                                                                                                                         |
+| F-1.9  | `template.html?spid=&sid=`                       | Template card            | Records, supporters; chart: supporting DNS providers per sweep                                                                                                                                                                                                                        |
+| F-1.10 | Methodology page                                 | —                        | How the data comes about, what the numbers count, their limits                                                                                                                                                                                                                        |
 
 ### F-1a DNS provider and stack cards
 
@@ -115,6 +115,20 @@ load: a short error in their place.
 
 Settings show the URLs, name servers and first-seen time; probe statuses, errors and last-success
 times are not shown.
+
+### F-1b DNS providers list
+
+- Columns: name (card link) with its API host below; stack (stack card link); settings and support
+  status badges; supported (of total, %); not supported (%); undetermined
+  (`total - supported - not supported`); domains (% of scanned). Sorted by the counts.
+- Badges: `ok` "OK" green; `http_error`, `error` "HTTP error" and `connection_error` "Connection
+  error" orange; `dead` "Given up" and `null` "Not checked yet" grey. The hover text shows the raw
+  value.
+- Hidden by default (F-2.6): either status `dead`, support status `null`, or `domains` 0 (`null`
+  domains stays visible). The toggle is `&all=1`; it applies after `?stack=`.
+- `?q=` and `&all=` follow the search box and toggle in the URL.
+- Footnotes: undetermined, `total` 1 without template versions, attributed domains only, statuses
+  describe the last attempt.
 
 ### F-2 Common behaviour
 
