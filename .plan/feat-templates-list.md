@@ -6,12 +6,12 @@
 ## Tasks
 
 - [x] Investigate contract, DNS providers list, decisions with the maintainer
-- [~] Scanner issue: `logo_url` in `templates.json`
-- [ ] Unit tests (TDD) for the list helper (spid filter, never-probed hidden)
-- [ ] Templates view, entry, links (`q`, `all`)
-- [ ] E2E spec (content, links, spid filter, search in URL, mobile)
-- [ ] Docs (CLAUDE.md page table, REQUIREMENTS F-1d), version 0.5.0, CHANGELOG
-- [ ] Real-release check, screenshots, maintainer acceptance
+- [x] Scanner issue: `logo_url` in `templates.json`
+- [x] Unit tests (TDD) for the list helper (spid filter, never-probed hidden)
+- [x] Templates view, entry, links (`q`, `all`)
+- [x] E2E spec (content, links, spid filter, search in URL, mobile)
+- [x] Docs (CLAUDE.md page table, REQUIREMENTS F-1d), version 0.5.0, CHANGELOG
+- [~] Real-release check, screenshots, maintainer acceptance
 - [ ] Promote findings, delete this file
 
 ## Findings
@@ -19,6 +19,10 @@
 - `templates.json` `service_templates` has no logo; `logo_url` only on each template card — contract/EXPORT_FORMAT.md "templates.json"
 - `provider_id` there is the service provider id — EXPORT_FORMAT.md "templates.json"
 - Example export: 5 templates, none with `total` 0 — contract/examples/export/templates.json
+
+- Scanner issue for `logo_url`: pawel-kow/DomainConnectScanner#224
+- `npm run verify` green: 204 Vitest, 158 Playwright; templates spec 95/95 with `--repeat-each=5`
+- No data repo checked out; stress copy (305 templates, long names and ids, 24 never probed): pages at 20, wraps, no horizontal scroll on Pixel 7
 
 ## Decisions
 
@@ -29,5 +33,7 @@
 - Version: minor (new page) → 0.5.0
 
 ## Corrections
+
+- Link e2e failed on the card's logo from a non-existent example host: the test routes `logo.png`, like the card spec
 
 ## Open questions
