@@ -1,0 +1,80 @@
+# Build the site, bundle the current export release from the data repo, publish to GitHub Pages.
+# See DEPLOYMENT.md. Repository variables: DATA_REPO (required, "owner/name"), DATA_REF (default
+# main), DATA_PATH (release directory inside the data repo, default "."). Secret DATA_REPO_TOKEN
+# only if the data repo is private.
+name: Deploy
+
+on:
+  push:
+    branches: [main]
+  # Sent by the Scanner's publish step after it pushed a new release to the data repo.
+  repository_dispatch:
+    types: [export-published]
+  # Fallback in case a dispatch was lost: the data repo's current state is redeployed daily.
+  schedule:
+    - cron: '30 7 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+# One deploy at a time; a newer trigger waits instead of cancelling a deploy in flight.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Require the data repo variable
+        if: vars.DATA_REPO == ''
+        run: |
+          echo "::error::Repository variable DATA_REPO (owner/name of the export data repo) is not set. See DEPLOYMENT.md."
+          exit 1
+      - uses: actions/checkout@v7
+      - name: Check out the export release
+        uses: actions/checkout@v7
+        with:
+          repository: ${{ vars.DATA_REPO }}
+          ref: ${{ vars.DATA_REF || 'main' }}
+          path: export-data
+          token: ${{ secrets.DATA_REPO_TOKEN || github.token }}
+          persist-credentials: false
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Unit, contract and component tests
+        run: npm test
+      - name: Build
+        run: npm run build
+      - name: Validate and bundle the release
+        run: npm run bundle:data -- "export-data/${{ vars.DATA_PATH || '.' }}" dist
+      - name: Record what was deployed
+        run: |
+          {
+            echo "### Deployed"
+            echo "- Site: \`${GITHUB_SHA}\`"
+            echo "- Data: \`${{ vars.DATA_REPO }}\` @ \`$(git -C export-data rev-parse HEAD)\`"
+            echo "- Release generated_at: \`$(node -p "require('./dist/data/manifest.json').generated_at")\`"
+            echo "- Trigger: \`${{ github.event_name }}\`"
+          } >> "$GITHUB_STEP_SUMMARY"
+      - uses: actions/configure-pages@v6
+      - uses: actions/upload-pages-artifact@v5
+        with:
+          path: dist
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v5
