@@ -74,3 +74,17 @@ export function rowMatches(row: Record<string, CellValue>, query: string): boole
       (typeof v === 'string' || typeof v === 'number') && String(v).toLowerCase().includes(needle),
   );
 }
+
+/**
+ * A DNS provider's `nameservers`: a JSON array encoded inside a string, parsed a second time.
+ * Null when absent or not an array of strings.
+ */
+export function parseNameservers(value: string | null | undefined): string[] | null {
+  if (!value) return null;
+  try {
+    const parsed: unknown = JSON.parse(value);
+    return Array.isArray(parsed) && parsed.every((v) => typeof v === 'string') ? parsed : null;
+  } catch {
+    return null;
+  }
+}

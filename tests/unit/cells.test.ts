@@ -1,5 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import { cellKind, compareCells, formatCell, rowMatches } from '../../src/lib/cells';
+import {
+  cellKind,
+  compareCells,
+  formatCell,
+  parseNameservers,
+  rowMatches,
+} from '../../src/lib/cells';
 
 describe('formatCell', () => {
   it('formats by column key', () => {
@@ -46,5 +52,20 @@ describe('rowMatches', () => {
     expect(rowMatches(row, 'PLESK')).toBe(true);
     expect(rowMatches(row, 'cloudflare')).toBe(false);
     expect(rowMatches(row, '  ')).toBe(true);
+  });
+});
+
+describe('parseNameservers', () => {
+  it('parses the JSON array inside the string', () => {
+    expect(parseNameservers('["ns1.example.net", "ns2.example.net"]')).toEqual([
+      'ns1.example.net',
+      'ns2.example.net',
+    ]);
+  });
+
+  it('is null for null, malformed JSON or anything but an array of strings', () => {
+    for (const value of [null, '', 'ns1.example.net', '{"a":1}', '[1, 2]', '"x"']) {
+      expect(parseNameservers(value)).toBeNull();
+    }
   });
 });
