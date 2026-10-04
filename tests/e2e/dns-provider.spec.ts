@@ -79,14 +79,14 @@ test.describe('DNS provider card (dns-provider.html)', () => {
     });
   });
 
-  test('shows the registry entry of its stack', async ({ page }) => {
+  test('shows the registry logo in the title, then contact and details', async ({ page }) => {
     await page.goto('dns-provider.html?id=1');
-    const registry = page.getByTestId('registry');
-    await expect(registry.getByRole('heading', { name: 'Registry' })).toBeVisible();
-    const logo = registry.getByRole('img', { name: 'Cloudflare' });
+    const logo = page.getByTestId('card-title').getByRole('img', { name: 'Cloudflare' });
     await expect(logo).toBeVisible();
     expect(await logo.evaluate((img: HTMLImageElement) => img.naturalWidth)).toBeGreaterThan(0);
-    await expect(registry.getByRole('link', { name: 'Community forum' })).toBeVisible();
+    const contact = page.getByTestId('registry-contact');
+    await expect(contact.getByRole('link', { name: 'Community forum' })).toBeVisible();
+    const registry = page.getByTestId('registry');
     await expect(registry.getByTestId('registry-notes')).toContainText('<script>alert(1)</script>');
     await expect(
       registry.getByRole('link', { name: 'Entry in the registry repository' }),
@@ -94,12 +94,26 @@ test.describe('DNS provider card (dns-provider.html)', () => {
       'href',
       'https://github.com/Domain-Connect/DnsProviders/blob/abc1234/providers/c/l/cloudflare.com.json',
     );
-    // Before the headline.
-    const [registryBox, headlineBox] = await Promise.all([
-      registry.boundingBox(),
-      page.getByTestId('headline').boundingBox(),
-    ]);
-    expect(registryBox!.y).toBeLessThan(headlineBox!.y);
+  });
+
+  test('orders the card: title, headline, contact, history, templates, registry, settings', async ({
+    page,
+  }) => {
+    await page.goto('dns-provider.html?id=1');
+    const blocks = [
+      page.getByTestId('card-title'),
+      page.getByTestId('headline'),
+      page.getByTestId('registry-contact'),
+      section(page, 'Domain share over time'),
+      section(page, 'Supported templates over time'),
+      section(page, 'Supported templates (current state)'),
+      page.getByTestId('registry'),
+      section(page, 'Settings'),
+      page.locator('section', { has: page.getByRole('heading', { name: /Domain Connect URLs/ }) }),
+    ];
+    for (const block of blocks) await expect(block).toBeVisible();
+    const ys = await Promise.all(blocks.map(async (b) => (await b.boundingBox())!.y));
+    expect(ys).toEqual([...ys].sort((x, y) => x - y));
   });
 
   test('shows a migrated entry with unknown features', async ({ page }) => {
@@ -108,13 +122,16 @@ test.describe('DNS provider card (dns-provider.html)', () => {
     await expect(registry.getByRole('heading', { name: 'Registry' })).toBeVisible();
     await expect(registry.getByTestId('registry-onboarding')).toContainText('On request');
     await expect(
-      registry.getByRole('link', { name: 'domain_connect_admin@ionos.example' }),
+      page
+        .getByTestId('registry-contact')
+        .getByRole('link', { name: 'domain_connect_admin@ionos.example' }),
     ).toHaveAttribute('href', 'mailto:domain_connect_admin@ionos.example');
   });
 
   for (const id of [2, 3]) {
     test(`names the stack of several deployments (DNS provider ${id})`, async ({ page }) => {
       await page.goto(`dns-provider.html?id=${id}`);
+      await expect(page.getByTestId('stack-link')).toHaveText('Plesk (plesk.com)');
       const heading = page.getByRole('heading', { name: 'Registry entry of stack Plesk' });
       await expect(heading).toBeVisible();
       await heading.getByRole('link', { name: 'Plesk' }).click();
@@ -162,7 +179,7 @@ test.describe('DNS provider card (dns-provider.html)', () => {
     }) => {
       await page.unroute('**/registry/registry.json');
       await page.goto('dns-provider.html?id=1');
-      await expect(page.getByTestId('registry').getByRole('img')).toBeVisible();
+      await expect(page.getByTestId('card-title').getByRole('img')).toBeVisible();
       await expect(page.getByRole('link', { name: /registry repository/ })).toHaveCount(0);
     });
   });

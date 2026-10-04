@@ -1,10 +1,13 @@
 <script lang="ts">
+  import CardTitle from '../lib/components/CardTitle.svelte';
   import DataTable from '../lib/components/DataTable.svelte';
+  import ExternalLink from '../lib/components/ExternalLink.svelte';
   import Layout from '../lib/components/Layout.svelte';
   import LoadError from '../lib/components/LoadError.svelte';
   import NotFound from '../lib/components/NotFound.svelte';
   import Notes from '../lib/components/Notes.svelte';
   import Registry from '../lib/components/Registry.svelte';
+  import RegistryContact from '../lib/components/RegistryContact.svelte';
   import StatCard from '../lib/components/StatCard.svelte';
   import TimeChart from '../lib/components/TimeChart.svelte';
   import { parseNameservers } from '../lib/cells';
@@ -12,7 +15,7 @@
   import { findTable, oneRecord } from '../lib/data/tables';
   import type { Column, ExportFile, Manifest, Row } from '../lib/data/types';
   import { formatCount, formatDateTime, formatPct, UNKNOWN } from '../lib/format';
-  import { links, safeUrl } from '../lib/links';
+  import { links } from '../lib/links';
   import { integerParam } from '../lib/params';
   import { defaultRegistryClient, entryFileUrl } from '../lib/registry/load';
   import { importSeries, needsAdoption, sweepSeries } from '../lib/series';
@@ -48,13 +51,19 @@
   }
 
   const registry = defaultRegistryClient();
+  const registryLoads: Record<string, ReturnType<typeof loadRegistry>> = {};
+
+  /** The registry of stack `providerId`, loaded once for the title, contact and details. */
+  function registryOf(providerId: string) {
+    return (registryLoads[providerId] ??= loadRegistry(providerId));
+  }
 
   /**
-   * The registry section of stack `providerId`, or null when the stack has no entry. The stack
-   * card is fetched only for an entry: several deployments share it, so the section names the
-   * stack; if that fetch fails, the section names the stack by its id.
+   * The registry entry of stack `providerId`, or null when the stack has none. The stack card is
+   * fetched only for an entry: several deployments share it, so the card names the stack; if that
+   * fetch fails, it names the stack by its id.
    */
-  async function registrySection(providerId: string) {
+  async function loadRegistry(providerId: string) {
     const entry = await registry.entry(providerId);
     if (!entry) return null;
     const [source, stack] = await Promise.all([
@@ -104,15 +113,6 @@
   ] as const;
 </script>
 
-{#snippet externalUrl(value: string | null)}
-  {@const href = safeUrl(value)}
-  {#if href}
-    <a class="mono break" {href} target="_blank" rel="nofollow noopener noreferrer">{value}</a>
-  {:else}
-    <span class="mono break">{value ?? UNKNOWN}</span>
-  {/if}
-{/snippet}
-
 {#snippet templateCell(column: Column, row: Row)}
   {@const spid = text(row, 'service_provider_id')}
   {@const sid = text(row, 'service_id')}
@@ -143,31 +143,27 @@
       {@const shareHistory = findTable(file, 'share_history')}
       {@const stack = text(provider, 'provider_id')}
       {@const nameservers = parseNameservers(text(provider, 'nameservers'))}
+      {@const providerName = text(provider, 'name') ?? `DNS provider ${id}`}
+      {@const reg = stack ? registryOf(stack) : Promise.resolve(null)}
 
-      <section class="panel card-title" data-testid="card-title">
-        <h2>{text(provider, 'name') ?? `DNS provider ${id}`}</h2>
-        <p class="muted">
-          DNS provider {id} ·
-          {#if stack}
-            Stack <a href={links.stack(stack)} data-testid="stack-link">{stack}</a>
-          {:else}
-            No stack (declares no providerId)
-          {/if}
-        </p>
-      </section>
-
-      <Notes notes={file.notes} />
-
-      {#if stack}
-        {#await registrySection(stack) then section}
-          {#if section}<Registry {...section} />{/if}
-        {:catch}
-          <section class="panel" data-testid="registry">
-            <h2>Registry</h2>
-            <p class="no-data">The registry entry could not be loaded.</p>
-          </section>
-        {/await}
-      {/if}
+      <CardTitle
+        name={providerName}
+        logo={reg.then(
+          (r) => (r?.logoUrl ? { url: r.logoUrl, alt: r.entry.name } : null),
+          () => null,
+        )}
+      >
+        DNS provider {id} ·
+        {#if stack}
+          Stack <a href={links.stack(stack)} data-testid="stack-link"
+            >{#await reg}{stack}{:then r}{r?.stack
+                ? `${r.stack.name} (${stack})`
+                : stack}{:catch}{stack}{/await}</a
+          >
+        {:else}
+          No stack (declares no providerId)
+        {/if}
+      </CardTitle>
 
       <section class="summary-stats" aria-label="Support and domain share" data-testid="headline">
         <StatCard
@@ -201,62 +197,11 @@
         />
       </section>
 
-      <section class="panel">
-        <h2>Settings</h2>
-        <dl class="record" data-testid="provider-record">
-          {#each URL_FIELDS as [key, label] (key)}
-            <dt>{label}</dt>
-            <dd>{@render externalUrl(text(provider, key))}</dd>
-          {/each}
-          <dt>Name servers</dt>
-          <dd>
-            {#if nameservers?.length}
-              <ul class="plain mono">
-                {#each nameservers as ns, i (i)}<li>{ns}</li>{/each}
-              </ul>
-            {:else}
-              {nameservers ? 'none' : (text(provider, 'nameservers') ?? UNKNOWN)}
-            {/if}
-          </dd>
-          <dt>First seen</dt>
-          <dd>{formatDateTime(text(provider, 'first_seen_at'))}</dd>
-        </dl>
-      </section>
-
-      {#if templates}
-        <section class="panel">
-          <h2>{templates.title}</h2>
-          <DataTable
-            table={templates}
-            keys={['service_provider_name', 'service_name', 'versions', 'since']}
-            customKeys={['service_provider_name', 'service_name']}
-            cell={templateCell}
-            emptyText="No template supported in the latest probes"
-          />
-        </section>
-      {/if}
-
-      {#if supportHistory}
-        <section class="panel">
-          <h2>Supported templates over time</h2>
-          {#if supportHistory.rows.length}
-            <TimeChart
-              label="Supported templates over time"
-              series={[
-                {
-                  label: 'Supported templates',
-                  points: sweepSeries(supportHistory.rows, 'supported_templates'),
-                  stepped: true,
-                  tooltip: (p) => `Supported templates: ${p.y}`,
-                },
-              ]}
-              leftTitle="Templates"
-              formatLeft={(v) => (Number.isInteger(v) ? formatCount(v) : '')}
-            />
-          {/if}
-          <DataTable table={supportHistory} emptyText="Not measured yet" />
-        </section>
-      {/if}
+      {#await reg then r}
+        {#if r}<RegistryContact entry={r.entry} stack={r.stack} />{/if}
+      {:catch}
+        <!-- The registry details section below says the entry could not be loaded. -->
+      {/await}
 
       {#if shareHistory}
         <section class="panel">
@@ -297,6 +242,79 @@
         </section>
       {/if}
 
+      {#if supportHistory}
+        <section class="panel">
+          <h2>Supported templates over time</h2>
+          {#if supportHistory.rows.length}
+            <TimeChart
+              label="Supported templates over time"
+              series={[
+                {
+                  label: 'Supported templates',
+                  points: sweepSeries(supportHistory.rows, 'supported_templates'),
+                  stepped: true,
+                  tooltip: (p) => `Supported templates: ${p.y}`,
+                },
+              ]}
+              leftTitle="Templates"
+              formatLeft={(v) => (Number.isInteger(v) ? formatCount(v) : '')}
+            />
+          {/if}
+          <DataTable table={supportHistory} emptyText="Not measured yet" />
+        </section>
+      {/if}
+
+      {#if templates}
+        <section class="panel">
+          <h2>{templates.title}</h2>
+          <DataTable
+            table={templates}
+            keys={['service_provider_name', 'service_name', 'versions', 'since']}
+            customKeys={['service_provider_name', 'service_name']}
+            cell={templateCell}
+            emptyText="No template supported in the latest probes"
+          />
+        </section>
+      {/if}
+
+      {#await reg then r}
+        {#if r}<Registry entry={r.entry} fileUrl={r.fileUrl} stack={r.stack} />{/if}
+      {:catch}
+        <section class="panel" data-testid="registry">
+          <h2>Registry</h2>
+          <p class="no-data">The registry entry could not be loaded.</p>
+        </section>
+      {/await}
+
+      <section class="panel">
+        <h2>Settings</h2>
+        <dl class="record" data-testid="provider-record">
+          {#each URL_FIELDS as [key, label] (key)}
+            <dt>{label}</dt>
+            <dd><ExternalLink url={text(provider, key)} mono /></dd>
+          {/each}
+          <dt>Name servers</dt>
+          <dd>
+            {#if nameservers?.length}
+              <ul class="plain mono">
+                {#each nameservers as ns, i (i)}<li>{ns}</li>{/each}
+              </ul>
+            {:else}
+              {nameservers ? 'none' : (text(provider, 'nameservers') ?? UNKNOWN)}
+            {/if}
+          </dd>
+          <dt>First seen</dt>
+          <dd>{formatDateTime(text(provider, 'first_seen_at'))}</dd>
+        </dl>
+      </section>
+
+      {#if file.notes.length}
+        <section class="panel">
+          <h2>Notes</h2>
+          <Notes notes={file.notes} />
+        </section>
+      {/if}
+
       {#if urls}
         <section class="panel">
           <h2>{urls.title}</h2>
@@ -308,51 +326,3 @@
     <LoadError {error} />
   {/await}
 </Layout>
-
-<style>
-  .card-title h2 {
-    border-bottom: none;
-    padding-bottom: 0;
-    margin-bottom: var(--spacing-xs);
-  }
-
-  .card-title p {
-    margin: 0;
-  }
-
-  .record {
-    display: grid;
-    grid-template-columns: max-content 1fr;
-    gap: var(--spacing-xs) var(--spacing-md);
-  }
-
-  .record dt {
-    font-weight: var(--font-weight-semibold);
-    color: var(--text-secondary);
-  }
-
-  .record dd {
-    margin: 0;
-    min-width: 0;
-  }
-
-  .plain {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-  }
-
-  .break {
-    overflow-wrap: anywhere;
-  }
-
-  @media (max-width: 480px) {
-    .record {
-      grid-template-columns: 1fr;
-    }
-
-    .record dd {
-      margin-bottom: var(--spacing-sm);
-    }
-  }
-</style>

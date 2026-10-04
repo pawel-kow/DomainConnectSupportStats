@@ -1,9 +1,12 @@
 // @vitest-environment jsdom
 import { render, screen, within } from '@testing-library/svelte';
+import { createRawSnippet } from 'svelte';
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
+import CardTitle from '../../src/lib/components/CardTitle.svelte';
 import Registry from '../../src/lib/components/Registry.svelte';
+import RegistryContact from '../../src/lib/components/RegistryContact.svelte';
 import { parseEntry } from '../../src/lib/registry/entry';
 
 const EXAMPLES = resolve(import.meta.dirname, '../../registry/examples/providers');
@@ -15,31 +18,86 @@ function feature(label: string): string | null {
   return row?.querySelector('td')?.textContent?.trim() ?? null;
 }
 
-describe('Registry', () => {
-  it('shows a full entry: logo, links, contacts, flags', () => {
-    render(Registry, {
-      entry: example('c/l/cloudflare.com.json'),
-      logoUrl: './registry/c/l/cloudflare.com.svg',
-      fileUrl: 'https://github.com/o/r/blob/abc1234/providers/c/l/cloudflare.com.json',
-      stack: null,
+describe('CardTitle', () => {
+  const children = createRawSnippet(() => ({ render: () => '<span>DNS provider 1</span>' }));
+
+  it('shows the name, the small line and the logo once loaded', async () => {
+    render(CardTitle, {
+      name: 'Cloudflare',
+      logo: Promise.resolve({ url: './registry/c/l/cloudflare.com.svg', alt: 'Cloudflare' }),
+      children,
     });
-    expect(screen.getByRole('heading', { name: 'Registry' })).toBeInTheDocument();
-    expect(screen.getByRole('img', { name: 'Cloudflare' })).toHaveAttribute(
+    expect(screen.getByRole('heading', { name: 'Cloudflare' })).toBeInTheDocument();
+    expect(screen.getByText('DNS provider 1')).toBeInTheDocument();
+    expect(await screen.findByRole('img', { name: 'Cloudflare' })).toHaveAttribute(
       'src',
       './registry/c/l/cloudflare.com.svg',
     );
+  });
+
+  it('shows no image without a logo', () => {
+    render(CardTitle, { name: 'Quiet Host', children });
+    expect(screen.queryByRole('img')).toBeNull();
+  });
+});
+
+describe('RegistryContact', () => {
+  it('shows links and contacts', () => {
+    render(RegistryContact, { entry: example('c/l/cloudflare.com.json'), stack: null });
+    expect(screen.getByRole('heading', { name: 'Contact' })).toBeInTheDocument();
     expect(screen.getByRole('link', { name: 'https://www.cloudflare.example' })).toHaveAttribute(
       'rel',
       'nofollow noopener noreferrer',
     );
-    expect(screen.getByRole('link', { name: 'domain-connect@cloudflare.example' })).toHaveAttribute(
+    expect(screen.getByRole('link', { name: 'dc-tech@cloudflare.example' })).toHaveAttribute(
       'href',
-      'mailto:domain-connect@cloudflare.example',
+      'mailto:dc-tech@cloudflare.example',
     );
     expect(screen.getByRole('link', { name: 'Community forum' })).toHaveAttribute(
       'href',
       'https://community.cloudflare.example/c/dns',
     );
+    expect(
+      screen.getByRole('link', { name: 'https://forms.cloudflare.example/domain-connect' }),
+    ).toBeInTheDocument();
+  });
+
+  it('never links a URL or address that is not plain http(s) or e-mail', () => {
+    render(RegistryContact, {
+      entry: parseEntry({
+        providerId: 'x',
+        name: 'X',
+        url: 'javascript:alert(1)',
+        onboarding: { contacts: [{ type: 'email', value: 'a@b?x=<y>' }] },
+      }),
+      stack: null,
+    });
+    expect(screen.getByText('javascript:alert(1)').closest('a')).toBeNull();
+    expect(screen.getByText('a@b?x=<y>').closest('a')).toBeNull();
+  });
+
+  it('names and links the stack of several deployments', () => {
+    render(RegistryContact, {
+      entry: example('p/l/plesk.com.json'),
+      stack: { id: 'plesk.com', name: 'Plesk' },
+    });
+    expect(screen.getByRole('heading', { name: /Contact of stack Plesk/ })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Plesk' })).toHaveAttribute(
+      'href',
+      './stack.html?id=plesk.com',
+    );
+  });
+});
+
+describe('Registry', () => {
+  it('shows onboarding facts, features and the repository link', () => {
+    render(Registry, {
+      entry: example('c/l/cloudflare.com.json'),
+      fileUrl: 'https://github.com/o/r/blob/abc1234/providers/c/l/cloudflare.com.json',
+      stack: null,
+    });
+    expect(screen.getByRole('heading', { name: 'Registry' })).toBeInTheDocument();
+    expect(screen.getByTestId('registry-onboarding')).toHaveTextContent('On request');
     expect(feature('Synchronous flow')).toBe('yes');
     expect(feature('Asynchronous flow (OAuth)')).toBe('no');
     expect(feature('Revert in the asynchronous flow')).toBe('–');
@@ -52,7 +110,6 @@ describe('Registry', () => {
   it('shows HTML in notes as text', () => {
     const { container } = render(Registry, {
       entry: example('c/l/cloudflare.com.json'),
-      logoUrl: null,
       fileUrl: null,
       stack: null,
     });
@@ -61,37 +118,15 @@ describe('Registry', () => {
     expect(container.querySelector('script, b')).toBeNull();
   });
 
-  it('never links a URL or address that is not plain http(s) or e-mail', () => {
-    render(Registry, {
-      entry: parseEntry({
-        providerId: 'x',
-        name: 'X',
-        url: 'javascript:alert(1)',
-        onboarding: { contacts: [{ type: 'email', value: 'a@b?x=<y>' }] },
-      }),
-      logoUrl: null,
-      fileUrl: null,
-      stack: null,
-    });
-    expect(screen.getByText('javascript:alert(1)').closest('a')).toBeNull();
-    expect(screen.getByText('a@b?x=<y>').closest('a')).toBeNull();
-  });
-
-  it('names and links the stack of several deployments; unknown values as –', () => {
+  it('names the stack of several deployments; unknown values as –', () => {
     render(Registry, {
       entry: example('p/l/plesk.com.json'),
-      logoUrl: null,
       fileUrl: null,
       stack: { id: 'plesk.com', name: 'Plesk' },
     });
     expect(
       screen.getByRole('heading', { name: 'Registry entry of stack Plesk' }),
     ).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: 'Plesk' })).toHaveAttribute(
-      'href',
-      './stack.html?id=plesk.com',
-    );
-    expect(screen.queryByRole('img')).toBeNull();
     expect(screen.queryByRole('link', { name: /registry repository/ })).toBeNull();
     expect(screen.getByTestId('registry-onboarding')).toHaveTextContent(/Automatic/);
     expect(feature('SPFM')).toBe('–');

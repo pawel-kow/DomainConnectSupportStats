@@ -23,6 +23,9 @@ reset. Between steps keep `.agent-sync.yml` and stay on this branch.
   - [x] `src/lib/registry/entry.ts` (`parseEntry`, `FEATURES`, `parseSource`), `load.ts` (`RegistryClient.entry/logoUrl/source`, `entryFileUrl`); `entryPath` moved to `path.ts`; `formatFlag`, `safeMailto`
   - [x] `src/lib/components/Registry.svelte`, wired in `DnsProvider.svelte` before the headline
   - [x] tests: unit `registry-entry`, `registry-load`, config/format/links; component `Registry.test.ts`; e2e cards 1, 2, 3, 5, 6, 4, 500, missing registry.json (registry.json routed in e2e)
+- [x] Step 3b: card layout (maintainer)
+  - [x] order: title (name, registry logo; small id/stack line), headline, contact block, domain share over time, supported templates over time, supported templates, registry details, settings, notes, owned URLs
+  - [x] components `CardTitle`, `RegistryContact`, `Registry` (details), `ExternalLink`, `ContactList`; `.record`/`.plain` global; REQUIREMENTS.md F-1a; comment on #8
 - [~] Step 4: deploy (start here; bundle writes `dist/registry/<a>/<b>/<encodeSegment(file)>` from `validateRegistry().entries` and `dist/registry/registry.json` `{repository, commit}`; footer reads `RegistryClient.source()`)
   - [ ] `deploy.yml`: `REGISTRY_REPO` required (fails when unset), `REGISTRY_REF`; validate; bundle into `dist/registry/` with encoded file names
   - [ ] footer shows the registry commit
@@ -54,7 +57,8 @@ reset. Between steps keep `.agent-sync.yml` and stay on this branch.
 - Registry schema: `$id` `https://github.com/Domain-Connect/DnsProviders/schema/provider.schema.json` (proposed repo); unknown keys allowed; URLs `^https?://`; `logo` a file name ending `.svg|.png|.jpg`; email contacts need an `@`, url contacts a URL.
 - Settings URLs are links only through `safeUrl`, `rel="nofollow noopener noreferrer"`.
 - Registry repository and commit: `registry/registry.json` `{repository, commit}` written by the bundle step; the site reads it for the entry's repository link (and the footer, step 4). Missing or invalid: no link (maintainer).
-- Registry section placement: after the title and notes, before the headline (maintainer).
+- Card layout (REQUIREMENTS.md F-1a, also for the stack card #8): title with name and registry logo, id/stack small; headline; contact block (website, documentation, technical contact, onboarding contact, request form, process documentation); domain share over time; supported templates over time; supported templates; registry details (onboarding facts, features, notes, entry link); settings; notes; owned URLs (maintainer).
+- A deployment of a multi-deployment stack shows the stack's logo; title line "Stack Plesk (plesk.com)"; contact block "Contact of stack Plesk" (maintainer).
 - Deployed registry layout as in the issue: `registry/<a>/<b>/<encoded file>` (no `providers/`); dev/preview map `/registry/<a>/<b>/<seg>` to `REGISTRY_DIR/providers/<a>/<b>/<decoded seg>`, `/registry/registry.json` to `REGISTRY_DIR/registry.json`.
 - Logo URL: `<a>/<b>/<encodeSegment(logo)>`, `<a>/<b>` from the providerId.
 - "Registry entry of stack <name>": stack card (`stack` kind, table `stack`, `deployments`, `name`) fetched only when an entry exists; `deployments > 1` → stack heading linking the stack card; fetch failure → stack heading with the `provider_id`.
@@ -65,7 +69,6 @@ reset. Between steps keep `.agent-sync.yml` and stay on this branch.
 - Share history table overflowed at 1280 px: `source` column not shown (status says pruned/completed).
 - `pkill -f` on the preview server killed the agent's own shell (pattern matched the command line): stop preview servers by PID from `ss -ltnp`.
 
-- Registry section is tall (all onboarding rows and 16 feature rows, `–` when unknown); revisit at screenshot review (e.g. features in columns on desktop).
 
 ## Open questions
 

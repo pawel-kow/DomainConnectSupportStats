@@ -96,6 +96,21 @@ The site shows the latest release the Scanner publishes and always states its ag
 | F-1.9  | `template.html?spid=&sid=`              | Template card            | Records, supporters; chart: supporting DNS providers per sweep                                                                                                                                                                                                                        |
 | F-1.10 | Methodology page                        | —                        | How the data comes about, what the numbers count, their limits                                                                                                                                                                                                                        |
 
+### F-1a DNS provider and stack cards
+
+Both cards share one layout, top to bottom:
+
+1. Title: name and the registry logo; the card's id and stack in a small line.
+2. Headline stat cards.
+3. Contact block from the registry: website, documentation, technical contact, onboarding contact,
+   request form, process documentation.
+4. Domain share over time; supported templates over time; supported templates.
+5. Registry details: onboarding facts, features, notes, link to the entry.
+6. Settings, notes, owned URLs.
+
+A deployment of a multi-deployment stack shows the stack's registry entry (logo, contact block,
+details), labelled as the stack's.
+
 ### F-2 Common behaviour
 
 - F-2.1 Every page shows the release's `generated_at` and domain-share import in its header, and
