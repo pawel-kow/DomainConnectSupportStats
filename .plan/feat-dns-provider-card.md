@@ -31,7 +31,16 @@ reset. Between steps keep `.agent-sync.yml` and stay on this branch.
   - [x] `DnsProvider.svelte`: remove the `DataTable`s under "Domain share over time" and "Supported templates over time"; keep the empty-history text ("Not measured yet") when a history has no rows
   - [x] tests: component (`Registry.test.ts`: `–` assertions → rows absent; Plesk/IONOS sparse entries), e2e (`draws both charts…` row counts → charts only; IONOS/Plesk sections), CardTitle unchanged
   - [x] screenshots desktop + phone (cards 1, 2, 5), commit, push
-- [~] Step 4: deploy (start here; bundle writes `dist/registry/<a>/<b>/<encodeSegment(file)>` from `validateRegistry().entries` and `dist/registry/registry.json` `{repository, commit}`; footer reads `RegistryClient.source()`)
+- [~] Step 3d: hide non-public ids (maintainer; start here)
+  - [ ] Non-public: `dns_provider_id`/`id` (DNS provider), `import_id`, `sweep_id`. Public, stay visible: `provider_id` (stack), `service_provider_id`, `service_id`
+  - [ ] DNS provider card: title line without "DNS provider {id}"; not-found text and name fallback without the id (`DnsProvider.svelte`)
+  - [ ] `Layout.svelte` banner: domain-share import by its completion time, not `import_id`
+  - [ ] `Overview.svelte`: chart tooltip and latest-import stat card without `import_id`
+  - [ ] tables: leave id columns out (`keys` on every `DataTable` showing `id`/`import_id`/`sweep_id`); `PLAIN_NUMBER_KEYS` (cells.ts) unchanged
+  - [ ] ids stay in URLs (`?id=`) and in data lookups
+  - [ ] tests: e2e/component assertions on ids (`share-import`, "DNS provider 999", card title); grep `src/` for any other id shown
+  - [ ] REQUIREMENTS.md rule; screenshots desktop + phone (overview, cards 1, 4), commit, push
+- [ ] Step 4: deploy ( bundle writes `dist/registry/<a>/<b>/<encodeSegment(file)>` from `validateRegistry().entries` and `dist/registry/registry.json` `{repository, commit}`; footer reads `RegistryClient.source()`)
   - [ ] `deploy.yml`: `REGISTRY_REPO` required (fails when unset), `REGISTRY_REF`; validate; bundle into `dist/registry/` with encoded file names
   - [ ] footer shows the registry commit
   - [ ] DEPLOYMENT.md
@@ -78,5 +87,7 @@ reset. Between steps keep `.agent-sync.yml` and stay on this branch.
 
 
 ## Open questions
+
+- Export `notes` (shown verbatim) contain import ids, e.g. "Domain share: import 1780272000 …": keep verbatim, or ask for a Scanner change?
 
 - Registry: repository owner/name, logo licence, entry maintenance, per-deployment entries (issue #7 "Open questions"); not blocking.
