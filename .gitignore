@@ -1,0 +1,16 @@
+# Agent branch mutex (DEVELOPING.md §3.0) — never committed
+.agent-sync.yml
+
+# Bootstrap inputs (kept locally, never committed)
+.inputs/
+
+node_modules/
+dist/
+coverage/
+test-results/
+playwright-report/
+blob-report/
+.vite/
+*.log
+.DS_Store
+.venv/

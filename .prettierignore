@@ -1,0 +1,10 @@
+contract/
+dist/
+coverage/
+node_modules/
+playwright-report/
+test-results/
+package-lock.json
+.plan/
+.claude/settings.local.json
+.devcontainer/

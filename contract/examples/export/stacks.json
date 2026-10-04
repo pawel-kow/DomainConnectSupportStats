@@ -1,0 +1,8 @@
+{"generated_at": "2026-10-01T00:00:00Z", "notes": ["Domain share: import 1780272000 (completed, live), 12000 domains scanned. Support columns are current state."], "tables": {
+"stacks": {"title": "DNS provider stacks", "columns": [{"key": "name", "header": "STACK"}, {"key": "provider_id", "header": "PROVIDER ID"}, {"key": "deployments", "header": "DEPLOYMENTS"}, {"key": "min_supported_pct", "header": "MIN SUPPORT"}, {"key": "median_supported_pct", "header": "MEDIAN SUPPORT"}, {"key": "max_supported_pct", "header": "MAX SUPPORT"}, {"key": "domains", "header": "DOMAINS"}, {"key": "domains_pct", "header": "% SCANNED"}], "rows": [
+{"name": "Cloudflare", "provider_id": "cloudflare.com", "deployments": 1, "min_supported_pct": 66.66666666666666, "median_supported_pct": 66.66666666666666, "max_supported_pct": 66.66666666666666, "domains": 4000, "domains_pct": 33.33333333333333},
+{"name": "IONOS", "provider_id": "ionos.com", "deployments": 1, "min_supported_pct": 33.33333333333333, "median_supported_pct": 33.33333333333333, "max_supported_pct": 33.33333333333333, "domains": 2000, "domains_pct": 16.666666666666664},
+{"name": "Plesk", "provider_id": "plesk.com", "deployments": 2, "min_supported_pct": 0.0, "median_supported_pct": 16.666666666666664, "max_supported_pct": 33.33333333333333, "domains": 1150, "domains_pct": 9.583333333333334},
+{"name": "Quiet Host", "provider_id": "quiet-host.example", "deployments": 1, "min_supported_pct": 0.0, "median_supported_pct": 0.0, "max_supported_pct": 0.0, "domains": 0, "domains_pct": 0.0}
+], "footer": null}
+}}

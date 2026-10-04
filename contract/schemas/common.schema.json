@@ -1,0 +1,181 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/pawel-kow/DomainConnectScanner/docs/schemas/common.schema.json",
+  "title": "Shared definitions",
+  "description": "Building blocks referenced by the other schemas in docs/schemas/. Not an output shape on its own.",
+  "$defs": {
+    "timestamp": {
+      "description": "A UTC timestamp as stored in SQLite: 'YYYY-MM-DD HH:MM:SS' (CURRENT_TIMESTAMP's format). Rows written before GitHub issue #202 may carry an ISO-8601 form with 'T' and a UTC offset, hence only the leading date and time are pinned.",
+      "type": "string",
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}[ T][0-9]{2}:[0-9]{2}:[0-9]{2}"
+    },
+    "nullableTimestamp": {
+      "oneOf": [{ "$ref": "#/$defs/timestamp" }, { "type": "null" }]
+    },
+    "count": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "nullableCount": {
+      "description": "A count, or null when there is no measurement (never a stand-in for zero).",
+      "oneOf": [{ "$ref": "#/$defs/count" }, { "type": "null" }]
+    },
+    "id": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "importId": {
+      "description": "imports.import_id - the import's creation time as Unix epoch seconds.",
+      "type": "integer",
+      "minimum": 0
+    },
+    "percentage": {
+      "description": "A raw (unrounded) percentage, 0-100 scale.",
+      "type": "number",
+      "minimum": 0
+    },
+    "nullablePercentage": {
+      "description": "A raw percentage, or null when either side of the ratio is unknown (no domain share selected, or no measurement for this provider in that import).",
+      "oneOf": [{ "$ref": "#/$defs/percentage" }, { "type": "null" }]
+    },
+    "boundedPercentage": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 100
+    },
+    "nullableBoundedPercentage": {
+      "oneOf": [{ "$ref": "#/$defs/boundedPercentage" }, { "type": "null" }]
+    },
+    "importStatus": {
+      "description": "imports.status.",
+      "enum": ["in_progress", "completed"]
+    },
+    "shareSource": {
+      "description": "Where a domain share's numbers came from: 'live' (computed from the import's results) or 'snapshot' (provider_import_share - the import was pruned by hygiene).",
+      "enum": ["live", "snapshot"]
+    },
+    "settingsStatus": {
+      "description": "dns_providers.settings_last_status; null until the first settings attempt is recorded.",
+      "enum": ["ok", "http_error", "connection_error", "dead", null]
+    },
+    "supportStatus": {
+      "description": "dns_providers.support_last_status; null until the first support probe is recorded.",
+      "enum": ["ok", "error", "dead", null]
+    },
+    "versions": {
+      "description": "Template (service) versions.",
+      "type": "array",
+      "items": { "type": "integer", "minimum": 0 },
+      "uniqueItems": true
+    },
+    "nullableString": {
+      "type": ["string", "null"]
+    },
+    "publicSupportBucketColumns": {
+      "description": "The published support buckets: supported / not supported (404), each with its percentage of the row's total. total - supported - unsupported is not yet determined (pending, backed off or failed probes).",
+      "type": "object",
+      "properties": {
+        "supported_count": { "$ref": "#/$defs/count" },
+        "supported_pct": { "$ref": "#/$defs/nullableBoundedPercentage" },
+        "unsupported_count": { "$ref": "#/$defs/count" },
+        "unsupported_pct": { "$ref": "#/$defs/nullableBoundedPercentage" }
+      },
+      "required": ["supported_count", "supported_pct", "unsupported_count", "unsupported_pct"]
+    },
+    "internalSupportBucketColumns": {
+      "description": "The pipeline-bookkeeping support buckets: pending or backed off / terminally failed, each with its percentage of the row's total. Internal columns: report.py shows them, the static export leaves them out.",
+      "type": "object",
+      "properties": {
+        "pending_count": { "$ref": "#/$defs/count" },
+        "pending_pct": { "$ref": "#/$defs/nullableBoundedPercentage" },
+        "failed_count": { "$ref": "#/$defs/count" },
+        "failed_pct": { "$ref": "#/$defs/nullableBoundedPercentage" }
+      },
+      "required": ["pending_count", "pending_pct", "failed_count", "failed_pct"]
+    },
+    "sweepHistoryRow": {
+      "description": "One support sweep (support_probe_job_generator_runs row), oldest first.",
+      "type": "object",
+      "properties": {
+        "sweep_id": { "$ref": "#/$defs/id" },
+        "started_at": { "$ref": "#/$defs/timestamp" },
+        "change": {
+          "description": "Difference to the previous row's count (to 0 for the first row).",
+          "type": "integer"
+        }
+      },
+      "required": ["sweep_id", "started_at", "change"]
+    },
+    "report": {
+      "description": "The one JSON shape every report shares (GitHub issue #204): notes, then tables keyed by id, and no other key. Each report's schema pins its own tables' ids, column keys (in display order) and row types on top of this. Titles, column headers and note texts are display text: only their type is pinned, their wording may change without notice (docs/EXPORT_FORMAT.md, Versioning and compatibility). A row holds raw values only, keyed by exactly its table's column keys.",
+      "$ref": "#/$defs/reportBody",
+      "unevaluatedProperties": false
+    },
+    "exportGeneratedAt": {
+      "description": "When the export ran, UTC, to the second: the manifest's generated_at, which every file of one release carries.",
+      "type": "string",
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$"
+    },
+    "exportFile": {
+      "description": "A list or card file of the static export (export.py, GitHub issue #211): the report shape plus the release's generated_at (the export adds it; report.py's JSON never has it). Not closed: each export schema adds its report's notes/tables constraints and closes the object with unevaluatedProperties: false.",
+      "$ref": "#/$defs/reportBody",
+      "properties": {
+        "generated_at": { "$ref": "#/$defs/exportGeneratedAt" }
+      },
+      "required": ["generated_at"]
+    },
+    "reportBody": {
+      "description": "The report shape's keys without closing the object: the base of report (which closes it) and of exportFile (which adds generated_at).",
+      "type": "object",
+      "properties": {
+        "notes": {
+          "description": "Free-text context for the tables, e.g. which import the domain columns describe.",
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "tables": {
+          "description": "The report's tables keyed by table id (unique within the report; not shown in txt/markdown), in report order.",
+          "type": "object",
+          "additionalProperties": { "$ref": "#/$defs/table" }
+        }
+      },
+      "required": ["notes", "tables"]
+    },
+    "table": {
+      "type": "object",
+      "properties": {
+        "title": { "description": "Display text.", "type": ["string", "null"] },
+        "columns": {
+          "description": "The table's columns in display order: each row's key (the contract) and its txt/markdown header (display text).",
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": { "key": { "type": "string" }, "header": { "type": "string" } },
+            "required": ["key", "header"],
+            "additionalProperties": false
+          }
+        },
+        "rows": { "type": "array", "items": { "type": "object" } },
+        "footer": {
+          "description": "A summary row (e.g. TOTAL) keyed like the rows; null when the table has none.",
+          "type": ["object", "null"]
+        }
+      },
+      "required": ["title", "columns", "rows", "footer"],
+      "additionalProperties": false
+    },
+    "oneRow": {
+      "description": "The rows of a table that is one record (GitHub issue #204): exactly one row, its columns the record's fields, so a reader gets a dict (rows[0].<field>). txt/markdown show such a table transposed, one line per field.",
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 1
+    },
+    "shareNotes": {
+      "description": "The share-weighted reports' one note: which import (id, status, live or snapshot, domains scanned) the domain columns describe, or that no import matched and they are blank.",
+      "type": "array",
+      "items": { "type": "string" },
+      "minItems": 1,
+      "maxItems": 1
+    }
+  }
+}

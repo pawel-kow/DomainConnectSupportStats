@@ -1,0 +1,106 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/pawel-kow/DomainConnectScanner/docs/schemas/dns-providers.schema.json",
+  "title": "report.py dns-providers --output-mode json",
+  "description": "One table of DNS providers (dns_providers rows), at most --limit rows. Support counts are current state; domains/domains_pct describe the selected import (--import-id, default the newest completed one), named in the note.",
+  "$ref": "common.schema.json#/$defs/report",
+  "properties": {
+    "notes": { "$ref": "common.schema.json#/$defs/shareNotes" },
+    "tables": {
+      "properties": {
+        "dns_providers": {
+          "properties": {
+            "title": { "type": "string" },
+            "columns": {
+              "prefixItems": [
+                { "properties": { "key": { "const": "name" } } },
+                { "properties": { "key": { "const": "dns_provider_id" } } },
+                { "properties": { "key": { "const": "provider_id" } } },
+                { "properties": { "key": { "const": "api_host" } } },
+                { "properties": { "key": { "const": "settings_status" } } },
+                { "properties": { "key": { "const": "support_status" } } },
+                { "properties": { "key": { "const": "total" } } },
+                { "properties": { "key": { "const": "supported_count" } } },
+                { "properties": { "key": { "const": "supported_pct" } } },
+                { "properties": { "key": { "const": "unsupported_count" } } },
+                { "properties": { "key": { "const": "unsupported_pct" } } },
+                { "properties": { "key": { "const": "pending_count" } } },
+                { "properties": { "key": { "const": "pending_pct" } } },
+                { "properties": { "key": { "const": "failed_count" } } },
+                { "properties": { "key": { "const": "failed_pct" } } },
+                { "properties": { "key": { "const": "domains" } } },
+                { "properties": { "key": { "const": "domains_pct" } } }
+              ],
+              "minItems": 17,
+              "items": false
+            },
+            "rows": {
+              "description": "Ordered by domains (descending, unmeasured last) when a domain share is selected, otherwise by supported_count descending, then name. Empty when there are no DNS providers.",
+              "items": { "$ref": "#/$defs/row" }
+            },
+            "footer": { "type": "null" }
+          }
+        }
+      },
+      "required": ["dns_providers"],
+      "additionalProperties": false
+    }
+  },
+  "$defs": {
+    "row": {
+      "allOf": [
+        { "$ref": "#/$defs/publicRow" },
+        { "$ref": "common.schema.json#/$defs/internalSupportBucketColumns" }
+      ],
+      "unevaluatedProperties": false
+    },
+    "publicRow": {
+      "description": "A row's public columns - the static export's row (docs/schemas/export/dns-providers.schema.json).",
+      "type": "object",
+      "allOf": [{ "$ref": "common.schema.json#/$defs/publicSupportBucketColumns" }],
+      "properties": {
+        "name": {
+          "description": "providerName, falling back to the first Domain Connect URL, then '?'.",
+          "type": "string"
+        },
+        "dns_provider_id": {
+          "description": "dns_providers.id - the --dns-provider-id of report.py dns-provider-summary.",
+          "$ref": "common.schema.json#/$defs/id"
+        },
+        "provider_id": {
+          "description": "The providerId the provider declares - its stack, the provider_id of a report.py stacks row; null when it declares none (then it belongs to no stack).",
+          "type": ["string", "null"]
+        },
+        "api_host": {
+          "description": "Host of the provider's urlAPI; null when it declares none.",
+          "type": ["string", "null"]
+        },
+        "settings_status": { "$ref": "common.schema.json#/$defs/settingsStatus" },
+        "support_status": { "$ref": "common.schema.json#/$defs/supportStatus" },
+        "total": {
+          "description": "Probe combinations (template versions) on record for this provider. Known defect, GitHub issue #205: 1, not 0, for a provider with none.",
+          "$ref": "common.schema.json#/$defs/count"
+        },
+        "domains": {
+          "description": "Domains attributed to this provider in the selected import; null without a domain share, or when the provider has no measurement in a pruned import's snapshot.",
+          "$ref": "common.schema.json#/$defs/nullableCount"
+        },
+        "domains_pct": {
+          "description": "domains as a percentage of the import's scanned domains.",
+          "$ref": "common.schema.json#/$defs/nullablePercentage"
+        }
+      },
+      "required": [
+        "name",
+        "dns_provider_id",
+        "provider_id",
+        "api_host",
+        "settings_status",
+        "support_status",
+        "total",
+        "domains",
+        "domains_pct"
+      ]
+    }
+  }
+}

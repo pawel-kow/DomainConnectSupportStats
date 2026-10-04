@@ -1,0 +1,62 @@
+# Every PR and push to main: the gates of DEVELOPING.md §3.6 / TESTING.md §7.
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Lint and format check
+        run: npm run lint
+      - name: Type check
+        run: npm run check
+      - name: Unit, contract and component tests
+        run: npm test
+      - name: Example export is valid against the vendored contract
+        run: npm run validate:export
+      - name: Build
+        run: npm run build
+      - name: Install Playwright Chromium
+        run: npx playwright install --with-deps chromium
+      - name: E2E tests
+        run: npm run test:e2e
+      - name: Upload Playwright report
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 7
+
+  # DEVELOPING.md §3.8 rule 7: iteration plans are committed while work is in progress but
+  # never merged.
+  no-plan-files:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - name: No plan files left behind
+        run: |
+          if git ls-files --error-unmatch '.plan/*' >/dev/null 2>&1; then
+            echo "::error::.plan/ files are still tracked. Promote findings, then:"
+            echo "  git rm -r .plan && git commit -m 'chore: remove iteration plan'"
+            git ls-files '.plan/*'
+            exit 1
+          fi

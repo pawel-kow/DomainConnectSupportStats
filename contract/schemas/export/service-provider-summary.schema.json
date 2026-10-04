@@ -1,0 +1,12 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/pawel-kow/DomainConnectScanner/docs/schemas/export/service-provider-summary.schema.json",
+  "title": "export.py service-providers/{service_provider_id}.json",
+  "description": "One service provider's card: report.py service-provider-summary's JSON for a row of service-providers.json, for the manifest's share_import. The report has no internal columns, so the file is exactly that report plus the release's generated_at (the manifest's) - always found (a card exists only for a listed id), so always all tables and only the share note.",
+  "$ref": "../common.schema.json#/$defs/exportFile",
+  "properties": {
+    "notes": { "allOf": [{ "$ref": "../service-provider-summary.schema.json#/properties/notes" }, { "$ref": "../common.schema.json#/$defs/shareNotes" }] },
+    "tables": { "allOf": [{ "$ref": "../service-provider-summary.schema.json#/properties/tables" }, { "minProperties": 1 }] }
+  },
+  "unevaluatedProperties": false
+}

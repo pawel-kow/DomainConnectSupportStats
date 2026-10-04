@@ -1,0 +1,55 @@
+/**
+ * Page URLs. Query parameters carry the raw ids (the browser URL-encodes them), never the encoded
+ * file segment, so every view is a plain shareable link (EXPORT_FORMAT.md "Pages").
+ */
+
+function page(
+  name: string,
+  params: Record<string, string | number | null | undefined> = {},
+): string {
+  const query = new URLSearchParams();
+  for (const [key, value] of Object.entries(params)) {
+    if (value !== null && value !== undefined && value !== '') query.set(key, String(value));
+  }
+  const qs = query.toString();
+  return `./${name}.html${qs ? '?' + qs : ''}`;
+}
+
+export const links = {
+  overview: () => page('index'),
+  dnsProviders: (filters: { stack?: string | null; q?: string | null } = {}) =>
+    page('dns-providers', filters),
+  stacks: () => page('stacks'),
+  serviceProviders: () => page('service-providers'),
+  templates: (filters: { spid?: string | null } = {}) => page('templates', filters),
+  dnsProvider: (dnsProviderId: number) => page('dns-provider', { id: dnsProviderId }),
+  stack: (providerId: string) => page('stack', { id: providerId }),
+  serviceProvider: (serviceProviderId: string) =>
+    page('service-provider', { id: serviceProviderId }),
+  template: (serviceProviderId: string, serviceId: string) =>
+    page('template', { spid: serviceProviderId, sid: serviceId }),
+};
+
+/** Top navigation: the landing page and the four lists. */
+export const NAV = [
+  { page: 'index', label: 'Overview', href: links.overview() },
+  { page: 'dns-providers', label: 'DNS providers', href: links.dnsProviders() },
+  { page: 'stacks', label: 'Stacks', href: links.stacks() },
+  { page: 'service-providers', label: 'Service providers', href: links.serviceProviders() },
+  { page: 'templates', label: 'Templates', href: links.templates() },
+] as const;
+
+/**
+ * A URL from the export (logo, API, control panel) usable as an `href`/`src`, or null. The values
+ * come from third parties: only absolute http(s) URLs pass, so a `javascript:` or `data:` value
+ * can never become a link.
+ */
+export function safeUrl(value: string | null | undefined): string | null {
+  if (!value) return null;
+  try {
+    const url = new URL(value.trim());
+    return url.protocol === 'https:' || url.protocol === 'http:' ? url.href : null;
+  } catch {
+    return null;
+  }
+}

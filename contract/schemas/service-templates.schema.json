@@ -1,0 +1,94 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/pawel-kow/DomainConnectScanner/docs/schemas/service-templates.schema.json",
+  "title": "report.py service-templates --output-mode json",
+  "description": "One table of every stored template (service provider + service id, all stored versions together), including templates no DNS provider has been probed for yet (every count 0), at most --limit rows. Support counts are current state; reach describes the selected import, named in the note.",
+  "$ref": "common.schema.json#/$defs/report",
+  "properties": {
+    "notes": { "$ref": "common.schema.json#/$defs/shareNotes" },
+    "tables": {
+      "properties": {
+        "service_templates": {
+          "properties": {
+            "title": { "type": "string" },
+            "columns": {
+              "prefixItems": [
+                { "properties": { "key": { "const": "provider_name" } } },
+                { "properties": { "key": { "const": "provider_id" } } },
+                { "properties": { "key": { "const": "service_name" } } },
+                { "properties": { "key": { "const": "service_id" } } },
+                { "properties": { "key": { "const": "added_at" } } },
+                { "properties": { "key": { "const": "total" } } },
+                { "properties": { "key": { "const": "supported_count" } } },
+                { "properties": { "key": { "const": "supported_pct" } } },
+                { "properties": { "key": { "const": "unsupported_count" } } },
+                { "properties": { "key": { "const": "unsupported_pct" } } },
+                { "properties": { "key": { "const": "pending_count" } } },
+                { "properties": { "key": { "const": "pending_pct" } } },
+                { "properties": { "key": { "const": "failed_count" } } },
+                { "properties": { "key": { "const": "failed_pct" } } },
+                { "properties": { "key": { "const": "reach_domains" } } },
+                { "properties": { "key": { "const": "reach_pct" } } }
+              ],
+              "minItems": 16,
+              "items": false
+            },
+            "rows": {
+              "description": "Ordered by reach_domains (descending) when a domain share is selected, otherwise by supported_count descending. Empty when there are none.",
+              "items": { "$ref": "#/$defs/row" }
+            },
+            "footer": { "type": "null" }
+          }
+        }
+      },
+      "required": ["service_templates"],
+      "additionalProperties": false
+    }
+  },
+  "$defs": {
+    "row": {
+      "allOf": [
+        { "$ref": "#/$defs/publicRow" },
+        { "$ref": "common.schema.json#/$defs/internalSupportBucketColumns" }
+      ],
+      "unevaluatedProperties": false
+    },
+    "publicRow": {
+      "description": "A row's public columns - the static export's row (docs/schemas/export/service-templates.schema.json).",
+      "type": "object",
+      "allOf": [{ "$ref": "common.schema.json#/$defs/publicSupportBucketColumns" }],
+      "properties": {
+        "provider_name": { "description": "Service provider name, falling back to its id.", "type": "string" },
+        "provider_id": { "description": "Service provider id (Domain Connect providerId).", "type": "string" },
+        "service_name": { "description": "Template name, falling back to the service id.", "type": "string" },
+        "service_id": { "type": "string" },
+        "added_at": {
+          "description": "Earliest created_at of the template's stored versions; null when unknown.",
+          "$ref": "common.schema.json#/$defs/nullableTimestamp"
+        },
+        "total": {
+          "description": "Probe combinations (DNS provider x template version) on record for this template; 0 when it has not been probed yet.",
+          "$ref": "common.schema.json#/$defs/count"
+        },
+        "reach_domains": {
+          "description": "Domains behind the DNS providers counted in supported_count, in the selected import; null without a domain share.",
+          "$ref": "common.schema.json#/$defs/nullableCount"
+        },
+        "reach_pct": {
+          "description": "reach_domains as a percentage of the import's scanned domains.",
+          "$ref": "common.schema.json#/$defs/nullablePercentage"
+        }
+      },
+      "required": [
+        "provider_name",
+        "provider_id",
+        "service_name",
+        "service_id",
+        "added_at",
+        "total",
+        "reach_domains",
+        "reach_pct"
+      ]
+    }
+  }
+}
