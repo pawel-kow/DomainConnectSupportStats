@@ -45,8 +45,9 @@ reset. Between steps keep `.agent-sync.yml` and stay on this branch.
   - [x] footer "Registry <short commit>" → `github.com/<repo>/tree/<commit>` (Layout prop `registry`; `RegistryClient.source()` fetched once; DnsProvider passes its client); e2e fixture routes `registry.json` for every page
   - [x] DEPLOYMENT.md (§1, §2.1, new §2.3 registry repo, §3, §4)
 - [~] Step 5: finish (start here)
-  - [ ] docs (CLAUDE.md page table + file reference, REQUIREMENTS.md, README, TESTING.md), version 0.2.0 + CHANGELOG
-  - [ ] `npm run verify`; screenshots desktop + phone, maintainer acceptance
+  - [x] docs (CLAUDE.md page table + file reference, REQUIREMENTS.md F-1.6/F-1a/F-3.6, README, TESTING.md), version 0.2.0 + CHANGELOG
+  - [x] `npm run verify` green (72 e2e)
+  - [~] screenshots desktop + phone (overview, cards 1, 2, 4, 5, 999) shown; waiting for maintainer acceptance
   - [ ] promote findings, `git rm -r .plan`, PR ready
 
 ## Findings
