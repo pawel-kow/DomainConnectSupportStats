@@ -133,7 +133,7 @@ Red → green → refactor wherever there is a testable seam. Mandatory for:
 - every bug fix: a failing test reproducing the observed behaviour first.
 
 Page layout, styling and chart cosmetics: Playwright assertions on what the page shows
-([TESTING.md](TESTING.md) §6), screenshots in the PR when the look changed.
+([TESTING.md](TESTING.md) §6), screenshots accepted by the maintainer (§3.6).
 
 ### 3.3 Branches
 
@@ -166,7 +166,7 @@ Types: `feat` `fix` `refactor` `perf` `test` `docs` `chore` `ci`. Atomic, revert
 - Every change goes through a PR. `main` is protected.
 - `gh` is used only to open issues and PRs, edit PR descriptions, and flip draft ⟷ ready. Merging,
   closing, commenting, triggering workflows and settings are done by hand in the GitHub UI.
-- PR descriptions: intent and main changes; screenshots when a page's look changed.
+- PR descriptions: intent and main changes; the accepted screenshots of affected pages (§3.6).
 
 **Tier 1** (merge when CI is green): docs, tests, formatting, styling, single-file refactors under
 ~100 lines.
@@ -186,21 +186,25 @@ Tier 2 checklist, in the PR's diff view:
       domains say so
 - [ ] Third-party text escaped, URLs through `safeUrl`, no new third-party request
 - [ ] [REQUIREMENTS.md](REQUIREMENTS.md) still accurate
-- [ ] Checked against a real release (§3.6)
+- [ ] Checked against a real release, screenshots accepted (§3.6)
 - [ ] Version and [CHANGELOG.md](CHANGELOG.md) updated (§3.10)
 - [ ] Agentic work: plan findings promoted, `.plan/` removed (§3.11)
 
-### 3.6 Real-release check before review
+### 3.6 Real-release check and screenshots before review
 
-Applies to changes to a page, a shared component or `src/lib/`.
+Applies to changes to a page, a shared component, `src/lib/` or styles.
 
 1. Push the branch and open the PR as a draft.
 2. With the data repo checked out next to this one:
    `npm run validate:export -- ../<data-repo>/<DATA_PATH>`,
    `DATA_DIR=../<data-repo>/<DATA_PATH> npm run test:e2e`, and look at every changed page in
    `DATA_DIR=... npm run preview` (large tables, long names, nulls, phone width).
-3. When clean: `gh pr ready`, and add the release's `generated_at` and what was checked to the PR
-   description (`gh pr edit --body`).
+3. Screenshot every affected page, desktop and phone width, against the preview:
+   `npx playwright screenshot --full-page <url> <file>.png` and again with `--device="Pixel 7"`.
+   Show them to the maintainer in the chat and wait for acceptance. Change and repeat until
+   accepted.
+4. When clean and accepted: `gh pr ready`, and add the release's `generated_at`, what was checked
+   and the accepted screenshots to the PR description (`gh pr edit --body`).
 
 E2E assertions on example values fail against a real release; page errors, blank pages and broken
 links must not.
