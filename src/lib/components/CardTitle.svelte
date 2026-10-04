@@ -10,11 +10,20 @@
   }
 
   let { name, logo = Promise.resolve(null), children }: Props = $props();
+  let broken = $state(false);
 </script>
 
 <section class="panel card-title" data-testid="card-title">
   {#await logo then l}
-    {#if l}<img class="logo" src={l.url} alt={l.alt} />{/if}
+    {#if l && !broken}
+      <img
+        class="logo"
+        src={l.url}
+        alt={l.alt}
+        referrerpolicy="no-referrer"
+        onerror={() => (broken = true)}
+      />
+    {/if}
   {/await}
   <div class="text">
     <h2>{name}</h2>
