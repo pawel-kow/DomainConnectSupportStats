@@ -1,5 +1,4 @@
 <script lang="ts">
-  import DataTable from '../lib/components/DataTable.svelte';
   import Layout from '../lib/components/Layout.svelte';
   import LoadError from '../lib/components/LoadError.svelte';
   import Notes from '../lib/components/Notes.svelte';
@@ -135,20 +134,6 @@
         <p class="no-data">No data available</p>
       {/if}
     </section>
-
-    {#if adoption}
-      <section class="panel">
-        <h2>{adoption.title}</h2>
-        <DataTable table={adoption} emptyText="No import has data yet" />
-      </section>
-    {/if}
-
-    {#if ecosystem}
-      <section class="panel">
-        <h2>{ecosystem.title}</h2>
-        <DataTable table={ecosystem} emptyText="No full support sweep has recorded support yet" />
-      </section>
-    {/if}
 
     <section class="panel caveats">
       <h2>About these numbers</h2>

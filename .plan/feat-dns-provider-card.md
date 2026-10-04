@@ -37,6 +37,7 @@ reset. Between steps keep `.agent-sync.yml` and stay on this branch.
   - [x] `Layout.svelte` banner: "scan completed <time>" from overview `adoption.completed_at` (prop `client`); "latest scan" while loading or when unknown
   - [x] `Overview.svelte`: tooltips without import/sweep id; stat card "scan of <date>" (`started_at`, else `completed_at`)
   - [x] tests: unit `isPublicKey`, component DataTable/Layout, e2e overview "shows no internal id", card title/not-found
+  - [x] overview: adoption and ecosystem tables removed (C-11 changed)
   - [x] REQUIREMENTS.md F-2.1, F-2.9; screenshots desktop + phone (overview, cards 1, 4, 999)
 - [~] Step 4: deploy (bundle writes `dist/registry/<a>/<b>/<encodeSegment(file)>` from `validateRegistry().entries` and `dist/registry/registry.json` `{repository, commit}`; footer reads `RegistryClient.source()`; start here)
   - [ ] `deploy.yml`: `REGISTRY_REPO` required (fails when unset), `REGISTRY_REF`; validate; bundle into `dist/registry/` with encoded file names
@@ -71,14 +72,13 @@ reset. Between steps keep `.agent-sync.yml` and stay on this branch.
 - Registry repository and commit: `registry/registry.json` `{repository, commit}` written by the bundle step; the site reads it for the entry's repository link (and the footer, step 4). Missing or invalid: no link (maintainer).
 - Card layout (REQUIREMENTS.md F-1a, also for the stack card #8): title with name and registry logo, id/stack small; headline; contact block (website, documentation, technical contact, onboarding contact, request form, process documentation); domain share over time; supported templates over time; supported templates; registry details (onboarding facts, features, notes, entry link); settings; notes; owned URLs (maintainer).
 - Registry entries: unknown or empty values are not shown; no `–` rows (maintainer). Partner is its own row ("Partner") after the flags; a details section with only the entry link is not shown.
-- History charts without their data tables (maintainer).
+- Charts without data tables on every page, the overview included; C-11 changed (maintainer).
 - A deployment of a multi-deployment stack shows the stack's logo; title line "Stack Plesk (plesk.com)"; contact block "Contact of stack Plesk" (maintainer).
 - Deployed registry layout as in the issue: `registry/<a>/<b>/<encoded file>` (no `providers/`); dev/preview map `/registry/<a>/<b>/<seg>` to `REGISTRY_DIR/providers/<a>/<b>/<decoded seg>`, `/registry/registry.json` to `REGISTRY_DIR/registry.json`.
 - Logo URL: `<a>/<b>/<encodeSegment(logo)>`, `<a>/<b>` from the providerId.
 - "Registry entry of stack <name>": stack card (`stack` kind, table `stack`, `deployments`, `name`) fetched only when an entry exists; `deployments > 1` → stack heading linking the stack card; fetch failure → stack heading with the `provider_id`.
 
 - Banner time: the manifest's `share_import` has no time; Layout fetches `overview.json` for the import's `completed_at` (one extra request per page).
-- C-11 ("every chart's data also as a table") conflicts with the card's charts without tables (step 3c): ask the maintainer before merge.
 
 ## Corrections
 

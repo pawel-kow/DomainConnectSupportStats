@@ -161,7 +161,7 @@ details), labelled as the stack's.
 | C-8  | Look and feel of stats.domainconnect.org; navigation and URLs compatible with a merge                                                        |
 | C-9  | Works at phone width without horizontal page scroll                                                                                          |
 | C-10 | Only `format_version` `SUPPORTED_FORMAT_VERSION` is rendered; others fail loudly                                                             |
-| C-11 | WCAG 2.2 AA: contrast, keyboard use, screen-reader-usable tables, every chart's data also as a table                                         |
+| C-11 | WCAG 2.2 AA: contrast, keyboard use, screen-reader-usable tables; charts without data tables                                                 |
 | C-12 | User-facing texts translatable (not scattered through logic); English only                                                                   |
 
 ## 3. Stack
