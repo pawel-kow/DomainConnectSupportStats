@@ -1,0 +1,27 @@
+{
+  "permissions": {
+    "allow": [
+      "WebFetch(domain:docs.digitalocean.com)",
+      "WebFetch(domain:developer.dnsimple.com)",
+      "Bash(python -m venv /workspaces/DomainConnectProxy/.venv)",
+      "Bash(/workspaces/DomainConnectProxy/.venv/bin/pip install:*)",
+      "Bash(python -m pytest *)",
+      "WebFetch(domain:github.com)",
+      "WebFetch(domain:raw.githubusercontent.com)",
+      "Bash(.venv/bin/pytest*)",
+      "Bash(../.venv/bin/pytest*)",
+      "WebFetch(domain:developer.hosting.ionos.com)"
+    ],
+    "deny": [
+      "Read(**/.env)",
+      "Read(**/env.php*)",
+      "Read(**/*.pem)",
+      "Read(**/*.key)",
+      "Read(**/secrets/**)",
+      "Read(**/credentials/**)",
+      "Read(**/.aws/**)",
+      "Read(**/.ssh/**)",
+      "Read(**/config/database.yml)"
+    ]
+  }
+}

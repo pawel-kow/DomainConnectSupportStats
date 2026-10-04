@@ -1,0 +1,22 @@
+{
+	"name": "Python 3 + Node.js",
+	"image": "mcr.microsoft.com/devcontainers/python:3-3.14-bookworm",
+	"features": {
+		"ghcr.io/devcontainers/features/node:1": {
+			"version": "lts"
+		},
+		"ghcr.io/devcontainers/features/github-cli:1": {},
+		"ghcr.io/devcontainers/features/docker-in-docker:2": {}
+	},
+	"customizations": {
+		"vscode": {
+			"extensions": [
+				"Anthropic.claude-code",
+				"dbaeumer.vscode-eslint",
+				"esbenp.prettier-vscode"
+			]
+		}
+	},
+	// "forwardPorts": [5016, 5173],
+	"postCreateCommand": "npm install -g npm@latest && python3 -m venv .venv && .venv/bin/pip install -r backend/requirements.txt && cd frontend && npm install"
+}
