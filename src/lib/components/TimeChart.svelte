@@ -52,9 +52,19 @@
     formatRight?: (v: number) => string;
     /** Accessible description of what the chart shows. */
     label: string;
+    /** Draw the legend; off when the page shows its own. */
+    legend?: boolean;
   }
 
-  let { series, leftTitle, rightTitle, formatLeft, formatRight, label }: Props = $props();
+  let {
+    series,
+    leftTitle,
+    rightTitle,
+    formatLeft,
+    formatRight,
+    label,
+    legend = true,
+  }: Props = $props();
 
   let canvas: HTMLCanvasElement | undefined = $state();
   let chart: Chart<'line', Point[]> | undefined;
@@ -118,7 +128,7 @@
           },
         },
         plugins: {
-          legend: { position: 'top', align: 'start' },
+          legend: { display: legend, position: 'top', align: 'start' },
           tooltip: {
             callbacks: {
               title: (items) => (items[0] ? formatDate(new Date(items[0].parsed.x ?? 0)) : ''),

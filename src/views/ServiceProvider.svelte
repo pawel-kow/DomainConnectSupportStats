@@ -139,6 +139,7 @@
               <TimeChart
                 label="Supporting DNS providers per template over time"
                 series={lines}
+                legend={drawable.length === 1}
                 leftTitle="DNS providers"
                 formatLeft={(v) => (Number.isInteger(v) ? formatCount(v) : '')}
               />
