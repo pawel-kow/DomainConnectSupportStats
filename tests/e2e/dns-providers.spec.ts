@@ -19,7 +19,8 @@ test.describe('DNS providers list (dns-providers.html)', () => {
     await expect(page.getByTestId('caveats')).toContainText('last attempt');
   });
 
-  test('shows statuses as badges with the raw value on hover', async ({ page }) => {
+  test('shows statuses as badges with the raw value on hover', async ({ page }, testInfo) => {
+    test.skip(testInfo.project.name === 'mobile', 'status columns hidden at phone width');
     await page.goto('dns-providers.html?all=1');
     const plesk3 = page.locator('tbody tr').nth(3);
     await expect(plesk3.locator('.badge', { hasText: 'HTTP error' })).toHaveAttribute(
@@ -31,7 +32,10 @@ test.describe('DNS providers list (dns-providers.html)', () => {
       /^dead/,
     );
     const small = page.locator('tbody tr', { hasText: 'Small Registrar' });
-    await expect(small.locator('.badge', { hasText: 'Not checked yet' })).toBeVisible();
+    await expect(small.locator('.badge', { hasText: 'Not checked yet' })).toHaveAttribute(
+      'title',
+      /^null/,
+    );
   });
 
   test('hides given-up, never-probed and zero-domain providers behind a toggle in the URL', async ({
@@ -74,17 +78,27 @@ test.describe('DNS providers list (dns-providers.html)', () => {
     await expect(page).toHaveURL(/dns-providers\.html\?q=cloud$/);
   });
 
-  test('sorts by a column, unknown last', async ({ page }) => {
+  test('sorts by a column, largest first, then smallest first', async ({ page }) => {
+    await page.goto('dns-providers.html?all=1');
+    const domains = page.getByRole('button', { name: /DOMAINS/ });
+    await domains.click();
+    await expect(names(page).first()).toHaveText('Cloudflare');
+    await domains.click();
+    await expect(names(page).first()).toHaveText('Quiet Host');
+  });
+
+  test('sorts by the undetermined count on wide screens', async ({ page }, testInfo) => {
+    test.skip(testInfo.project.name === 'mobile', 'column hidden at phone width');
     await page.goto('dns-providers.html?all=1');
     await page.getByRole('button', { name: /Undetermined/i }).click();
-    await expect(names(page).first()).toHaveText('Plesk');
     await expect(page.locator('tbody tr').first()).toContainText('domainconnect.plesk.com');
   });
 
   test('links names to DNS provider cards and stacks to stack cards', async ({ page }) => {
     await page.goto('dns-providers.html');
     const row = page.locator('tbody tr', { hasText: 'Cloudflare' });
-    await expect(row.getByRole('link', { name: 'cloudflare.com' })).toHaveAttribute(
+    // The stack column is hidden at phone width, so it is found by its href, not its role.
+    await expect(row.locator('a', { hasText: 'cloudflare.com' })).toHaveAttribute(
       'href',
       './stack.html?id=cloudflare.com',
     );
@@ -108,6 +122,20 @@ test.describe('DNS providers list (dns-providers.html)', () => {
       await page.goto('dns-providers.html');
       await expect(page.getByTestId('load-error')).toBeVisible();
     });
+  });
+
+  test('shows name, support and domains only at phone width', async ({ page }, testInfo) => {
+    await page.goto('dns-providers.html');
+    const headers = page.locator('thead th:visible');
+    if (testInfo.project.name === 'mobile') {
+      await expect(headers).toHaveText([/NAME/, /SUPPORTED/, /DOMAINS/]);
+      const overflow = await page
+        .locator('.table-wrapper')
+        .evaluate((w) => w.scrollWidth - w.clientWidth);
+      expect(overflow).toBeLessThanOrEqual(0);
+    } else {
+      await expect(headers).toHaveCount(8);
+    }
   });
 
   test('fits the screen without horizontal page scroll', async ({ page }) => {

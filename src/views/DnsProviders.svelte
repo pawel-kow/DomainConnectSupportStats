@@ -122,6 +122,7 @@
           table={list.table}
           keys={KEYS}
           customKeys={CUSTOM_KEYS}
+          phoneKeys={['name', 'supported_count', 'domains']}
           cell={providerCell}
           searchable
           bind:query
