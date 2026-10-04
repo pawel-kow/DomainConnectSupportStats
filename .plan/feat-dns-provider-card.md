@@ -9,8 +9,8 @@ reset. Between steps keep `.agent-sync.yml` and stay on this branch.
 ## Tasks
 
 - [x] Step 1: card from the export
-  - [x] `src/lib/params.ts` (`textParam`, `integerParam`), `src/lib/status.ts` (`statusLabel`, `statusTone`), `parseNameservers` (cells.ts), `needsAdoption` (series.ts); unit tests first
-  - [x] `src/views/DnsProvider.svelte`: title + stack link, notes, headline (supported / not supported / not yet determined / domains / rank), last contact (status badge, last success, last error), settings record, supported templates (links), support history chart + table, share history chart + table, owned URLs, not-found, load error
+  - [x] `src/lib/params.ts` (`textParam`, `integerParam`), `parseNameservers` (cells.ts), `needsAdoption` (series.ts); unit tests first
+  - [x] `src/views/DnsProvider.svelte`: title + stack link, notes, headline (supported / not supported / not yet determined / domains / rank), settings record, supported templates (links), "Supported templates over time" chart + table, "Domain share over time" chart + table, owned URLs, not-found, load error
   - [x] e2e `tests/e2e/dns-provider.spec.ts` (cards 1, 4, 6; missing/blank/malformed/unknown id; no horizontal scroll)
   - [x] Draft PR #22
 - [~] Step 2: registry data in this repo
@@ -49,6 +49,8 @@ reset. Between steps keep `.agent-sync.yml` and stay on this branch.
 - Overview fetched only when a `share_history` row has `completed_at: null`; if that fetch fails, fall back to `import_id` as Unix seconds.
 - Version bump: minor (new page content).
 - Unknown id (`?id=999`): the browser logs the 404 as a console error; that e2e test opts into expected errors.
+- No last-contact box: settings/support status, errors and last-success times not shown (maintainer). `src/lib/status.ts` removed with it.
+- Charts speak of time only: no "import" or "sweep" in chart headings, labels or tooltips (maintainer).
 - Settings URLs are links only through `safeUrl`, `rel="nofollow noopener noreferrer"`.
 
 ## Corrections
