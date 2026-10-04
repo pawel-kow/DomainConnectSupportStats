@@ -7,11 +7,11 @@ docs and version 0.6.0.
 ## Tasks
 
 - [x] Investigate contract, example cards, Template view
-- [~] Helper `src/lib/service-providers.ts` (per-template series, chart selection) + unit tests
-- [ ] View `ServiceProvider.svelte`, entry
-- [ ] E2E spec `tests/e2e/service-provider.spec.ts`
-- [ ] Stress copy check (many templates, long names, nulls), screenshots to maintainer
-- [ ] Docs (CLAUDE.md, REQUIREMENTS.md F-1e, CHANGELOG), version 0.6.0
+- [x] Helper `src/lib/service-providers.ts` (per-template series, chart selection) + unit tests
+- [x] View `ServiceProvider.svelte`, entry
+- [x] E2E spec `tests/e2e/service-provider.spec.ts`
+- [~] Stress copy check (many templates, long names, nulls), screenshots to maintainer
+- [x] Docs (CLAUDE.md, REQUIREMENTS.md F-1e, CHANGELOG), version 0.6.0
 - [ ] Promote findings, delete this file
 
 ## Findings
@@ -21,6 +21,9 @@ docs and version 0.6.0.
 - Example: 3 cards; `unnamed.example` has `name` null; history rows of a template may be missing
   for some sweeps (`mail` absent at sweep 3) — contract/examples/export/service-providers/
 - No logo for a service provider in the export.
+- Stress copy (32 templates, long names and ids, null reach, missing sweeps, one template
+  without history): no horizontal scroll at Pixel 7; `npm run verify` green (208 Vitest, 180
+  Playwright).
 - No data repo yet (#12): real-release check replaced by a stress copy of the example.
 
 ## Decisions
@@ -35,5 +38,8 @@ docs and version 0.6.0.
 - Version: minor (new page).
 
 ## Corrections
+
+- Chart.js legend took half the phone chart with 7 long names; hidden when the picker (with
+  colour swatches) is shown.
 
 ## Open questions
