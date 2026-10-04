@@ -1,7 +1,6 @@
 # Deployment
 
-How the site is published: GitHub Pages, fed by a separate data repo that the Domain Connect
-Scanner pushes its export releases to.
+GitHub Pages, built from a tagged site release and the current export release from the data repo.
 
 ---
 
@@ -12,34 +11,33 @@ Scanner host (cron)                     data repo (DATA_REPO)            this re
 ───────────────────                     ─────────────────────            ─────────
 export.py → OUT_DIR/current/  ──push──▶  one release (manifest.json …)
                               ──repository_dispatch (export-published)──▶ deploy.yml
-                                                                          ├ checkout site + data repo
+                                                                          ├ pick site version (tag)
+                                                                          ├ checkout tag + data repo
                                                                           ├ npm test, npm run build
                                                                           ├ validate release vs contract/
                                                                           ├ bundle into dist/data/
                                                                           └ publish dist/ to Pages
 ```
 
-- **Site and data are published together, as one Pages artifact.** A visitor never sees new
-  pages with old data or the reverse, and the page and the release it reads always come from
-  one deploy.
-- **A release that doesn't validate is not published.** The deploy fails and Pages keeps
-  serving the last good deploy. This protects the site when the Scanner's format runs ahead of
-  the vendored contract (DEVELOPING.md §3.6b).
-- **Only the files the release's manifest reaches are published** (`scripts/bundle-data.ts`):
-  nothing else in the data repo (README, scripts, older releases) ever goes public.
-- The site has no secrets and no backend. Its only moving parts are the two repos and the
-  workflow.
+- Site and data are published together as one Pages artifact.
+- Only tagged site versions are published. The deployed version is the **latest GitHub Release**.
+- A release that fails validation is not published; Pages keeps the last good deploy.
+- Only files reachable from the release's manifest are published (`scripts/bundle-data.ts`).
+- No secrets, no backend.
 
-Triggers of `.github/workflows/deploy.yml`:
+`.github/workflows/deploy.yml`:
 
-| Trigger                                  | When                         | Why                                        |
-| ---------------------------------------- | ---------------------------- | ------------------------------------------ |
-| `push` to `main`                         | A PR is merged               | Ship site changes with the current release |
-| `repository_dispatch` `export-published` | The Scanner pushed a release | Ship new data                              |
-| `schedule` daily 07:30 UTC               | Always                       | Fallback if a dispatch was lost            |
-| `workflow_dispatch`                      | By hand                      | Redeploy, e.g. after fixing the data repo  |
+| Trigger                                      | Site version       | Flow                                                                                  |
+| -------------------------------------------- | ------------------ | ------------------------------------------------------------------------------------- |
+| `push` to `main`, new `package.json` version | `v<version>` (new) | tag + prerelease → approval in environment `release` → deploy → release marked latest |
+| `push` to `main`, version already tagged     | —                  | nothing deployed                                                                      |
+| `repository_dispatch` `export-published`     | latest release     | deploy                                                                                |
+| `schedule` daily 07:30 UTC                   | latest release     | deploy (covers a lost dispatch)                                                       |
+| `workflow_dispatch`                          | latest release     | deploy                                                                                |
 
-Deploys run one at a time (`concurrency: pages`); a newer trigger waits.
+Release notes are the version's [CHANGELOG.md](CHANGELOG.md) section. A rejected or failed approval
+leaves the prerelease unpublished; data deploys keep using the previous latest release. Deploys run
+one at a time (`concurrency: pages`).
 
 ---
 
@@ -47,26 +45,25 @@ Deploys run one at a time (`concurrency: pages`); a newer trigger waits.
 
 ### 2.1 This repo (pawel-kow/DomainConnectSupportStats)
 
-1. **Settings → Pages → Build and deployment → Source: GitHub Actions.**
-2. **Settings → Secrets and variables → Actions → Variables:**
+1. **Settings → Pages → Source: GitHub Actions.**
+2. **Settings → Environments → New environment `release`** → Required reviewers: the maintainer.
+3. **Settings → Secrets and variables → Actions → Variables:**
 
-   | Variable    | Required | Default | Meaning                                                                 |
-   | ----------- | -------- | ------- | ----------------------------------------------------------------------- |
-   | `DATA_REPO` | yes      | —       | `owner/name` of the data repo                                           |
-   | `DATA_REF`  | no       | `main`  | Branch (or tag) of the data repo to deploy                              |
-   | `DATA_PATH` | no       | `.`     | Directory inside the data repo that holds the release (`manifest.json`) |
+   | Variable    | Required | Default | Meaning                                            |
+   | ----------- | -------- | ------- | -------------------------------------------------- |
+   | `DATA_REPO` | yes      | —       | `owner/name` of the data repo                      |
+   | `DATA_REF`  | no       | `main`  | Branch or tag of the data repo                     |
+   | `DATA_PATH` | no       | `.`     | Directory in the data repo holding `manifest.json` |
 
-3. **Secret `DATA_REPO_TOKEN`** — only if the data repo is private: a fine-grained token with
-   _Contents: read_ on the data repo. A public data repo needs no secret.
-4. **Branch protection on `main`:** require PRs and the CI `test` and `no-plan-files` checks.
-5. The site is then at `https://pawel-kow.github.io/DomainConnectSupportStats/`. The build uses
-   a relative base, so a custom domain later needs no rebuild: set it under Settings → Pages
-   (and DNS), nothing in the code.
+4. **Secret `DATA_REPO_TOKEN`**, only for a private data repo: fine-grained token, _Contents:
+   read_ on the data repo.
+5. **Branch protection on `main`:** PRs required; required checks `test` and `no-plan-files`.
+6. URL: `https://pawel-kow.github.io/DomainConnectSupportStats/`. A custom domain is set under
+   Settings → Pages and DNS; the relative base needs no rebuild.
 
 ### 2.2 The data repo
 
-Created by the maintainer, name free (it goes into `DATA_REPO`). Public is recommended — the
-data is published on the site anyway. Layout, with the default `DATA_PATH=.`:
+Created by the maintainer, any name (`DATA_REPO`), public recommended. With `DATA_PATH=.`:
 
 ```
 <data repo>/
@@ -80,23 +77,19 @@ data is published on the site anyway. Layout, with the default `DATA_PATH=.`:
   README.md            optional; never published
 ```
 
-i.e. exactly the **contents** of the Scanner's `OUT_DIR/current/` (one release, symlink
-resolved), replacing the previous release in full on every push. Nothing in the data repo runs;
-it needs no workflows and no Pages of its own.
+The contents of the Scanner's `OUT_DIR/current/` (one release, symlink resolved), replaced in full
+on every push. No workflows, no Pages.
 
 ### 2.3 The Scanner side (publish step)
 
 The Scanner host needs:
 
-- push access to the data repo (a deploy key with write access, or a fine-grained token with
-  _Contents: read and write_ on the data repo only), and
-- a fine-grained token with _Contents: read and write_ on **this** repo, only to send the
-  `repository_dispatch` (GitHub requires that permission for dispatches; it grants nothing the
-  token is used for otherwise). Store it outside the Scanner's repo checkout, readable only by
-  the cron user.
+- push access to the data repo (deploy key with write access, or fine-grained token with
+  _Contents: read and write_ on the data repo only);
+- a fine-grained token with _Contents: read and write_ on **this** repo, used only for the
+  `repository_dispatch`, stored outside the Scanner checkout, readable only by the cron user.
 
-The publish step, run after each export (when and how often is the Scanner's decision —
-DomainConnectScanner DEPLOYMENT.md §10A):
+Publish step, run after each export:
 
 ```bash
 #!/usr/bin/env bash
@@ -124,21 +117,20 @@ curl -fsS -X POST \
   -d "{\"event_type\":\"export-published\",\"client_payload\":{\"generated_at\":\"$generated_at\"}}"
 ```
 
-If the dispatch fails, the daily scheduled deploy picks the release up.
+A failed dispatch is picked up by the daily deploy.
 
 ---
 
 ## 3. Runtime configuration
 
-Pages read the release from `./data/` (bundled by the deploy). To point a build at a data host
-instead, without rebuilding, set it in `config.js` next to the pages:
+Pages read the release from `./data/`. A different data host, without rebuilding, in `config.js`:
 
 ```js
 window.DC_STATS_CONFIG = { dataBaseUrl: 'https://data.example.org/current/' };
 ```
 
-Build-time alternative: `VITE_DATA_BASE_URL=… npm run build`. Precedence: runtime → build time →
-`./data/`. A cross-origin data host must send CORS headers. The standard deploy needs neither.
+Build time: `VITE_DATA_BASE_URL=… npm run build`. Precedence: runtime → build time → `./data/`. A
+cross-origin data host must send CORS headers.
 
 ---
 
@@ -146,31 +138,38 @@ Build-time alternative: `VITE_DATA_BASE_URL=… npm run build`. Precedence: runt
 
 ### 4.1 Checking a deploy
 
-The deploy run's summary records the site commit, the data repo commit, the release's
-`generated_at` and the trigger. The site header shows `generated_at` too, so "is the new data
-live?" is one look at the page.
+The run summary lists the site version, site commit, data repo commit, the release's
+`generated_at` and the trigger. The page header shows `generated_at`; the footer shows the site
+version.
 
-### 4.2 When a deploy fails
+### 4.2 Releasing a site version
 
-| Failure                                              | Meaning                                                                         | Action                                                                                                                                                        |
-| ---------------------------------------------------- | ------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `Require the data repo variable`                     | `DATA_REPO` unset                                                               | Set it (§2.1)                                                                                                                                                 |
-| Data repo checkout                                   | Wrong `DATA_REPO`/`DATA_REF`, or private without `DATA_REPO_TOKEN`              | Fix variable/secret                                                                                                                                           |
-| `npm test`                                           | `main` is broken                                                                | Fix via PR; CI should have caught it                                                                                                                          |
-| `Validate and bundle the release` with schema errors | The Scanner's format changed beyond the vendored contract, or a corrupt release | Compare the release with `contract/`; for a format change, bring in the new contract (contract/README.md); for a corrupt release, re-publish from the Scanner |
-| … with `missing` / `generated_at` errors             | A partial or mixed release was pushed                                           | Re-run the Scanner's publish step                                                                                                                             |
+Merge a PR with a new version (DEVELOPING.md §3.10), then approve the `release` deployment in the
+Deploy run (Actions → Deploy → Review deployments).
 
-In every case the site keeps serving the last good deploy.
+### 4.3 When a deploy fails
 
-### 4.3 Rollback
+| Failure                                          | Meaning                                                            | Action                                                                                           |
+| ------------------------------------------------ | ------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------ |
+| `Require the data repo variable`                 | `DATA_REPO` unset                                                  | Set it (§2.1)                                                                                    |
+| `No site release yet`                            | Data deploy before the first approved site release                 | Release a site version (§4.2)                                                                    |
+| `Release notes`                                  | No CHANGELOG section for the version                               | Add it via PR with a patch bump                                                                  |
+| Data repo checkout                               | Wrong `DATA_REPO`/`DATA_REF`, or private without `DATA_REPO_TOKEN` | Fix variable/secret                                                                              |
+| `npm test`                                       | The tagged version is broken                                       | Fix via PR with a patch bump                                                                     |
+| `Validate and bundle the release`, schema errors | Format changed beyond the vendored contract, or a corrupt release  | Compare with `contract/`: new contract copy (contract/README.md), or re-publish from the Scanner |
+| … `missing` / `generated_at` errors              | Partial or mixed release pushed                                    | Re-run the Scanner's publish step                                                                |
 
-- **Site:** revert the PR on `main` (via a PR); the push deploys.
+The site keeps serving the last good deploy.
+
+### 4.4 Rollback
+
+- **Site:** revert via PR with a patch bump; or mark the previous release as latest
+  (`gh release edit v<previous> --latest`) and run Deploy by hand.
 - **Data:** `git revert` the release commit in the data repo (or push an older release), then run
-  the deploy by hand (Actions → Deploy → Run workflow).
+  Deploy by hand.
 
-### 4.4 Data repo growth
+### 4.5 Data repo growth
 
-Each release replaces several thousand small JSON files; git stores only what changed, but
-history grows with every release. If the repo grows unwieldy, history can be dropped
-(force-push a single-commit branch): the site only ever deploys the tip. Agree it with the
-maintainer first; it rewrites the data repo's history.
+Each release replaces several thousand small JSON files; history grows with each one. History can
+be dropped (force-push a single-commit branch) after agreement with the maintainer; deploys use
+only the tip.
