@@ -88,5 +88,5 @@ reset. Between steps keep `.agent-sync.yml` and stay on this branch.
 
 ## Open questions
 
-- Export `notes` (shown verbatim) contain import ids, e.g. "Domain share: import 1780272000 …": keep verbatim, or ask for a Scanner change?
+- Export `notes` (shown verbatim) contain import ids, e.g. "Domain share: import 1780272000 …": asked in pawel-kow/DomainConnectScanner#220; shown verbatim until a contract update.
 - Registry: repository owner/name, logo licence, entry maintenance, per-deployment entries (issue #7 "Open questions"); not blocking.
