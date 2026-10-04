@@ -154,3 +154,11 @@ The site shows the latest release the Scanner publishes and always states its ag
 - Contract vendored under `contract/`, updated by PR.
 - Node-only tooling; Vitest (unit, contract, component) and Playwright.
 - SemVer site versions, [CHANGELOG.md](CHANGELOG.md).
+
+## 4. Open questions
+
+Tracked and decided in GitHub issues:
+
+- **Analytics service** (C-7, P-8): #13
+- **Leaderboard data, "most improved" window** (F-4): #15, pawel-kow/DomainConnectScanner#219
+- **Methodology content and source** (F-1.10, P-6): #14, pawel-kow/DomainConnectScanner#218
