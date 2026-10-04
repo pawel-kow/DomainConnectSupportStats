@@ -18,6 +18,8 @@
     cell?: Snippet<[Column, R]>;
     /** Keys the `cell` snippet renders; other keys use the default formatting. */
     customKeys?: string[];
+    /** Column keys shown at phone width; default: every column. */
+    phoneKeys?: string[];
     /** Show a free-text filter over the rows. */
     searchable?: boolean;
     /** Initial search text (e.g. from the page's `?q=`). */
@@ -32,6 +34,7 @@
     keys,
     cell,
     customKeys = [],
+    phoneKeys,
     searchable = false,
     query = $bindable(''),
     emptyText = 'No data available',
@@ -64,6 +67,10 @@
   /** Alignment is per column (from its first known value), so `null` cells line up too. */
   function isNumeric(key: string): boolean {
     return isNumericKind(cellKind(key, sampleValue(key)));
+  }
+
+  function isWideOnly(key: string): boolean {
+    return phoneKeys !== undefined && !phoneKeys.includes(key);
   }
 
   function isTimestamp(key: string): boolean {
@@ -105,7 +112,12 @@
     <thead>
       <tr>
         {#each columns as column (column.key)}
-          <th class:num={isNumeric(column.key)} aria-sort={ariaSort(column.key)} scope="col">
+          <th
+            class:num={isNumeric(column.key)}
+            class:wide-only={isWideOnly(column.key)}
+            aria-sort={ariaSort(column.key)}
+            scope="col"
+          >
             <button type="button" onclick={() => toggleSort(column.key)}>
               {column.header}
               <span aria-hidden="true" class="sort-mark"
@@ -121,7 +133,11 @@
         <tr>
           {#each columns as column (column.key)}
             {@const value = row[column.key] ?? null}
-            <td class:num={isNumeric(column.key)} class:nowrap={isTimestamp(column.key)}>
+            <td
+              class:num={isNumeric(column.key)}
+              class:nowrap={isTimestamp(column.key)}
+              class:wide-only={isWideOnly(column.key)}
+            >
               {#if cell && customKeys.includes(column.key)}
                 {@render cell(column, row)}
               {:else}
@@ -139,7 +155,11 @@
         <tr>
           {#each columns as column (column.key)}
             {@const value = table.footer[column.key] ?? null}
-            <td class:num={isNumeric(column.key)} class:nowrap={isTimestamp(column.key)}>
+            <td
+              class:num={isNumeric(column.key)}
+              class:nowrap={isTimestamp(column.key)}
+              class:wide-only={isWideOnly(column.key)}
+            >
               {value === null ? '' : formatCell(column.key, value)}
             </td>
           {/each}

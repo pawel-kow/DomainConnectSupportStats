@@ -45,6 +45,26 @@ describe('DataTable', () => {
     expect(bodyColumn(0)).toEqual(['Cloudflare', 'IONOS', 'Plesk', 'Quiet Host']);
   });
 
+  it('marks the columns outside phoneKeys as wide-screen only', () => {
+    render(DataTable, {
+      table: stacks(),
+      keys: ['name', 'deployments', 'domains'],
+      phoneKeys: ['name', 'domains'],
+    });
+    const wideOnly = (cells: HTMLElement[]) => cells.map((c) => c.classList.contains('wide-only'));
+    expect(wideOnly(screen.getAllByRole('columnheader'))).toEqual([false, true, false]);
+    expect(wideOnly(within(screen.getAllByRole('row')[1]!).getAllByRole('cell'))).toEqual([
+      false,
+      true,
+      false,
+    ]);
+  });
+
+  it('shows every column on phones without phoneKeys', () => {
+    render(DataTable, { table: stacks(), keys: ['name', 'domains'] });
+    expect(document.querySelectorAll('.wide-only')).toHaveLength(0);
+  });
+
   it('filters rows by free text', async () => {
     render(DataTable, { table: stacks(), searchable: true });
     await fireEvent.input(screen.getByRole('searchbox'), { target: { value: 'plesk' } });

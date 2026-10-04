@@ -341,6 +341,12 @@ th.num {
   tfoot td {
     padding: var(--spacing-xs);
   }
+
+  /* Columns a table leaves out at phone width (DataTable `phoneKeys`). */
+  th.wide-only,
+  td.wide-only {
+    display: none;
+  }
 }
 
 /* ===== Print ===== */
