@@ -120,7 +120,8 @@ times are not shown.
 
 - Columns: name (card link) with its API host below; stack (stack card link); settings and support
   status badges; supported (of total, %); not supported (%); undetermined
-  (`total - supported - not supported`); domains (% of scanned). Sorted by the counts.
+  (`total - supported - not supported`); domains (% of scanned). Sorted by the counts. Phone width:
+  name, supported and domains only.
 - Badges: `ok` "OK" green; `http_error`, `error` "HTTP error" and `connection_error` "Connection
   error" orange; `dead` "Given up" and `null` "Not checked yet" grey. The hover text shows the raw
   value.
@@ -144,6 +145,8 @@ times are not shown.
   (N hidden)" toggle.
 - F-2.7 Every card has a "report a problem" link.
 - F-2.8 Caveats link to the methodology page.
+- F-2.9 Tables at phone width show only the columns that fit the screen without horizontal scroll
+  (`DataTable` `phoneKeys`); the other columns appear on wider screens.
 - F-2.9 Internal ids (`dns_provider_id`, `import_id`, `sweep_id`) are not shown: no columns, titles,
   tooltips or messages. They stay in URLs and lookups. Charts speak of time only: no "import" or
   "sweep" in headings, labels or tooltips. Public ids (`provider_id`,

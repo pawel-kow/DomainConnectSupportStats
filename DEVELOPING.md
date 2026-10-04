@@ -358,6 +358,9 @@ check, build, Playwright (desktop + mobile), `.plan/` gate. Never merge red.
 
 ## 6. Project conventions
 
+- **Phone columns.** Every table chooses the columns it keeps at phone width
+  ([REQUIREMENTS.md](REQUIREMENTS.md) F-2.9). Agents ask the maintainer when the choice is not
+  obvious.
 - **Presentation integrity first.** Every number states what it counts and of what (attributed
   domains of the _scanned_ domains, supporting providers of the _known_ ones). `null` is "not
   measured": `–`, a gap, sorted last, never 0. History and current state are labelled as such.

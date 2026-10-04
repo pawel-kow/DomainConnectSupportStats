@@ -39,7 +39,9 @@ reference for page work**), `contract/schemas/` (JSON Schemas), `contract/exampl
   - percentages arrive unrounded; round for display only;
   - text values come from third parties: never render them as HTML (`{@html}` is a lint error);
   - show `notes` verbatim; show `generated_at` and the domain-share import on every page;
-  - import series and sweep series run on two clocks (`src/lib/series.ts`).
+  - import series and sweep series run on two clocks (`src/lib/series.ts`);
+  - tables keep only the columns that fit at phone width (`phoneKeys`); ask the maintainer which
+    when not obvious.
 
 ## Architecture
 
