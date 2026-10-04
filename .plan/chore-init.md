@@ -19,9 +19,9 @@ adapted process docs, with the overview page (`index.html`) rendering the vendor
 - [x] Tests: Vitest unit, ajv contract tests, Svelte component tests, Playwright e2e
 - [x] CI workflow (lint, typecheck, tests, build, e2e, `.plan/` gate)
 - [x] Pages deploy workflow (repository_dispatch + schedule + manual; checkout data repo; validate; deploy)
-- [~] Process docs adapted: CLAUDE.md, DEVELOPING.md, TESTING.md, DEPLOYMENT.md, README.md, REQUIREMENTS.md
-- [ ] File follow-up issues for the remaining pages
-- [ ] Promote findings, `git rm -r .plan`
+- [x] Process docs adapted: CLAUDE.md, DEVELOPING.md, TESTING.md, DEPLOYMENT.md, README.md, REQUIREMENTS.md
+- [x] File follow-up issues for the remaining pages (#3–#10; chart overlap #11)
+- [x] Promote findings, `git rm -r .plan`
 
 ## Findings
 
@@ -61,5 +61,8 @@ adapted process docs, with the overview page (`index.html`) rendering the vendor
 - Playwright `reuseExistingServer` would reuse a stale preview locally: disabled.
 
 ## Open questions
+
+- Push of this branch is blocked: the gh token lacks the `workflow` scope needed to push `.github/workflows/` — maintainer runs `gh auth refresh -s workflow` (or pushes)
+- Severity labels (`severity: *`) do not exist in this repo yet; creating labels is outside the agent's gh scope
 
 - Data repo name and creation — maintainer creates it; layout documented in DEPLOYMENT.md
