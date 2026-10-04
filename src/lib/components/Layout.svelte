@@ -14,6 +14,7 @@
 
   let { current, manifest = null, children }: Props = $props();
   const share = $derived(manifest?.share_import ?? null);
+  const version = `v${__APP_VERSION__}`;
 </script>
 
 <header class="site-header">
@@ -77,6 +78,12 @@
         href="https://github.com/pawel-kow/DomainConnectSupportStats"
         target="_blank"
         rel="noopener">View on GitHub</a
+      >
+      ·
+      <a
+        href="https://github.com/pawel-kow/DomainConnectSupportStats/releases/tag/{version}"
+        target="_blank"
+        rel="noopener">{version}</a
       >
     </p>
   </div>

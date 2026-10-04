@@ -1,11 +1,14 @@
 import { svelte } from '@sveltejs/vite-plugin-svelte';
-import { createReadStream, existsSync, readdirSync, statSync } from 'node:fs';
+import { createReadStream, existsSync, readFileSync, readdirSync, statSync } from 'node:fs';
 import { resolve, sep } from 'node:path';
 import type { Connect, Plugin } from 'vite';
 import { defineConfig } from 'vitest/config';
 
 const ROOT = import.meta.dirname;
 const PAGES_DIR = resolve(ROOT, 'src/pages');
+const { version } = JSON.parse(readFileSync(resolve(ROOT, 'package.json'), 'utf8')) as {
+  version: string;
+};
 
 // The example export of the vendored contract is the dev data set; DATA_DIR points dev/preview
 // at a real release (e.g. a checkout of the data repo) instead.
@@ -49,6 +52,7 @@ export default defineConfig({
   publicDir: resolve(ROOT, 'public'),
   // Relative base: the same build works on github.io/<repo>/, a custom domain, or any sub-path.
   base: './',
+  define: { __APP_VERSION__: JSON.stringify(version) },
   plugins: [svelte({ configFile: resolve(ROOT, 'svelte.config.js') }), serveExportData()],
   build: {
     outDir: resolve(ROOT, 'dist'),

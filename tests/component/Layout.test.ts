@@ -2,6 +2,7 @@
 import { render, screen } from '@testing-library/svelte';
 import { createRawSnippet } from 'svelte';
 import { describe, expect, it } from 'vitest';
+import pkg from '../../package.json';
 import Layout from '../../src/lib/components/Layout.svelte';
 import { exampleManifest } from '../fixtures';
 
@@ -30,5 +31,14 @@ describe('Layout', () => {
     expect(screen.getByRole('link', { name: 'Stacks' })).toHaveAttribute('aria-current', 'page');
     expect(screen.getByRole('link', { name: 'Overview' })).not.toHaveAttribute('aria-current');
     expect(screen.getByText(/Loading data release/)).toBeInTheDocument();
+  });
+
+  it('shows the site version in the footer, linked to its release', () => {
+    render(Layout, { current: 'index', manifest: null, children });
+    const link = screen.getByRole('link', { name: `v${pkg.version}` });
+    expect(link).toHaveAttribute(
+      'href',
+      `https://github.com/pawel-kow/DomainConnectSupportStats/releases/tag/v${pkg.version}`,
+    );
   });
 });
