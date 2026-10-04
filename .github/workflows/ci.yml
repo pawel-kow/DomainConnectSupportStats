@@ -31,6 +31,8 @@ jobs:
         run: npm test
       - name: Example export is valid against the vendored contract
         run: npm run validate:export
+      - name: Example registry is valid against its schema
+        run: npm run validate:registry
       - name: Version has a CHANGELOG section
         run: npm run check:version
       - name: Build
