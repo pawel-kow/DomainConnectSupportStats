@@ -1,7 +1,7 @@
 {
   "name": "domainconnect-support-stats",
   "private": true,
-  "version": "0.0.0",
+  "version": "0.1.0",
   "type": "module",
   "description": "Static statistics site for Domain Connect support across DNS providers, built from the DomainConnectScanner export",
   "engines": {
@@ -44,6 +44,8 @@
     "test:e2e": "playwright test",
     "validate:export": "node scripts/validate-export.ts",
     "bundle:data": "node scripts/bundle-data.ts",
-    "verify": "npm run lint && npm run check && npm test && npm run build && npm run test:e2e"
+    "check:version": "node scripts/check-version.ts",
+    "release:notes": "node scripts/release-notes.ts",
+    "verify": "npm run lint && npm run check && npm run check:version && npm test && npm run build && npm run test:e2e"
   }
 }
