@@ -12,17 +12,10 @@ test.describe('Stacks list (stacks.html)', () => {
     await expect(names(page)).toHaveText(['Cloudflare', 'IONOS', 'Plesk', 'Quiet Host']);
     const plesk = page.locator('tbody tr', { hasText: 'Plesk' });
     await expect(plesk.locator('td').first()).toContainText('plesk.com');
-    await expect(plesk).toContainText(/16.7%/);
+    await expect(plesk).toContainText('0.0% – 33.3%');
     await expect(plesk).toContainText(/1,150\s*9.6%/);
     await expect(plesk.getByTestId('range-bar')).toBeVisible();
     await expect(page.getByTestId('caveats')).toContainText('without a stack are not listed');
-  });
-
-  test('shows min and max support on wide screens', async ({ page }, testInfo) => {
-    test.skip(testInfo.project.name === 'mobile', 'columns hidden at phone width');
-    await page.goto('stacks.html');
-    const cells = page.locator('tbody tr', { hasText: 'Plesk' }).locator('td');
-    await expect(cells).toHaveText([/Plesk/, '2', '0.0%', /16.7%/, '33.3%', /1,150/]);
   });
 
   test('links the name to the card', async ({ page }) => {
@@ -63,7 +56,6 @@ test.describe('Stacks list (stacks.html)', () => {
       const file = await (await route.fetch()).json();
       Object.assign(file.tables.stacks.rows[0], {
         min_supported_pct: null,
-        median_supported_pct: null,
         max_supported_pct: null,
       });
       await route.fulfill({ json: file });
@@ -71,8 +63,8 @@ test.describe('Stacks list (stacks.html)', () => {
     await page.goto('stacks.html');
     const first = page.locator('tbody tr', { hasText: 'Cloudflare' });
     await expect(first.getByTestId('range-bar')).toHaveCount(0);
-    await expect(first.locator('td').nth(3)).toContainText('–');
-    await page.getByRole('button', { name: /MEDIAN/ }).click();
+    await expect(first.locator('td').nth(2)).toContainText('–');
+    await page.getByRole('button', { name: /SUPPORT/ }).click();
     await expect(names(page).last()).toHaveText('Cloudflare');
   });
 
@@ -90,9 +82,9 @@ test.describe('Stacks list (stacks.html)', () => {
     await page.goto('stacks.html');
     const headers = page.locator('thead th:visible');
     if (testInfo.project.name === 'mobile') {
-      await expect(headers).toHaveText([/STACK/, /DEPLOYMENTS/, /MEDIAN/, /DOMAINS/]);
+      await expect(headers).toHaveText([/STACK/, /DEPLOYMENTS/, /SUPPORT/, /DOMAINS/]);
     } else {
-      await expect(headers).toHaveCount(6);
+      await expect(headers).toHaveCount(4);
     }
     const table = await page
       .locator('.table-wrapper')

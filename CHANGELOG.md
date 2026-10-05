@@ -8,8 +8,8 @@ fixes, styling and dependencies.
 
 ### Added
 
-- Stacks list: every stack with deployments (link to its DNS providers), support as lowest,
-  median and highest across deployments with a range bar, and domains; sort, search, pages of 20.
+- Stacks list: every stack with deployments (link to its DNS providers), support as lowest and
+  highest across deployments with a range bar, and domains; sort, search, pages of 20.
 
 ## [0.8.0] - 2026-10-05
 

@@ -17,15 +17,9 @@
     return client.file('stacks');
   });
 
-  const KEYS = [
-    'name',
-    'deployments',
-    'min_supported_pct',
-    'median_supported_pct',
-    'max_supported_pct',
-    'domains',
-  ];
-  const CUSTOM_KEYS = ['name', 'deployments', 'median_supported_pct', 'domains'];
+  // One column shows the range; it sorts by its lowest value.
+  const KEYS = ['name', 'deployments', 'min_supported_pct', 'domains'];
+  const CUSTOM_KEYS = KEYS;
 
   function num(row: Row, key: string): number | null {
     const v = row[key];
@@ -49,14 +43,15 @@
     {@const n = num(row, 'deployments')}
     {#if id && n}<a href={links.dnsProviders({ stack: id })}>{formatCount(n)}</a
       >{:else}{formatCount(n)}{/if}
-  {:else if column.key === 'median_supported_pct'}
+  {:else if column.key === 'min_supported_pct'}
     {@const range = supportRange(row)}
-    <span class="count">{formatPct(num(row, 'median_supported_pct'))}</span>
+    <span class="count"
+      >{formatPct(num(row, 'min_supported_pct'))} – {formatPct(num(row, 'max_supported_pct'))}</span
+    >
     {#if range}
-      <!-- Span from the lowest to the highest deployment; the tick marks the median. -->
+      <!-- Span from the lowest to the highest deployment. -->
       <div class="range" data-testid="range-bar" aria-hidden="true">
         <span class="span" style="left: {range.left}%; width: {range.width}%"></span>
-        <span class="median" style="left: {range.median}%"></span>
       </div>
     {/if}
   {:else if column.key === 'domains'}
@@ -76,10 +71,15 @@
         <h2>Stacks</h2>
         <Notes notes={file.notes} />
         <DataTable
-          table={source}
+          table={{
+            ...source,
+            columns: source.columns.map((c) =>
+              c.key === 'min_supported_pct' ? { ...c, header: 'SUPPORT' } : c,
+            ),
+          }}
           keys={KEYS}
           customKeys={CUSTOM_KEYS}
-          phoneKeys={['name', 'deployments', 'median_supported_pct', 'domains']}
+          phoneKeys={KEYS}
           cell={stackCell}
           searchable
           pageSize={20}
@@ -89,8 +89,7 @@
         <ul class="caveats" data-testid="caveats">
           <li>
             Support: the share of supported template versions of each deployment with probe
-            combinations; lowest, median and highest across the stack. The bar spans lowest to
-            highest, the tick marks the median.
+            combinations; lowest and highest across the stack, shown as a bar on a 0–100% scale.
           </li>
           <li>
             Deployments: DNS providers running the stack, probed or not. DNS providers without a
@@ -144,15 +143,6 @@
     border-radius: 0.2rem;
     background-color: var(--accent-cyan);
     opacity: 0.6;
-  }
-
-  .median {
-    position: absolute;
-    top: -0.15rem;
-    bottom: -0.15rem;
-    width: 2px;
-    margin-left: -1px;
-    background-color: var(--secondary-navy);
   }
 
   .caveats {
