@@ -13,9 +13,10 @@ const { version } = JSON.parse(readFileSync(resolve(ROOT, 'package.json'), 'utf8
 
 // The example export of the vendored contract is the dev data set; DATA_DIR points dev/preview
 // at a real release (e.g. a checkout of the data repo) instead.
-const DATA_DIR = resolve(ROOT, process.env.DATA_DIR ?? 'contract/examples/export');
-// The example registry is the dev registry; REGISTRY_DIR points at a registry checkout instead.
-const REGISTRY_DIR = resolve(ROOT, process.env.REGISTRY_DIR ?? 'registry/examples');
+const DATA_DIR = resolve(ROOT, process.env.DATA_DIR ?? 'contract/export/examples/export');
+// The test registry submodule is the dev registry; REGISTRY_DIR points at another registry checkout
+// (e2e: the contract's golden copy).
+const REGISTRY_DIR = resolve(ROOT, process.env.REGISTRY_DIR ?? 'registry');
 
 const CONTENT_TYPES: Record<string, string> = {
   '.json': 'application/json; charset=utf-8',

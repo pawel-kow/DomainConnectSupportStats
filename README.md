@@ -28,8 +28,9 @@ Every view is a shareable link; query parameters carry only ids and filters.
 Node 22.18+ (the devcontainer has Node 24 and Chromium for Playwright).
 
 ```bash
+git submodule update --init   # dev registry (or clone with --recurse-submodules)
 npm ci
-npm run dev          # http://localhost:5173/ with the example data set
+npm run dev          # http://localhost:5173/ with the example data set and the test registry
 npm run verify       # lint, type check, tests, build, e2e
 ```
 
@@ -41,19 +42,21 @@ npm run verify       # lint, type check, tests, build, e2e
 
 - **Svelte 5 + TypeScript, Vite multi-page build**: one HTML file per page, no backend.
 - **Chart.js**, bundled.
-- **[`contract/`](contract/)**: the Scanner's export format, schemas and example export, vendored
-  verbatim; the only interface to the data.
+- **[`contract/`](contract/)**: the Scanner's export format and the DNS provider registry format,
+  with schemas and examples, vendored verbatim; the only interface to the data.
+- **`registry/`**: git submodule, the test DNS provider registry (dev registry).
 - **Deploy**: approved, tagged site versions plus the current data release, published together to
   GitHub Pages ([DEPLOYMENT.md](DEPLOYMENT.md)).
 
 ## Documentation
 
-| Document                                               | Content                                              |
-| ------------------------------------------------------ | ---------------------------------------------------- |
-| [REQUIREMENTS.md](REQUIREMENTS.md)                     | What the site must do                                |
-| [DEVELOPING.md](DEVELOPING.md)                         | Writing, code and process conventions, versioning    |
-| [TESTING.md](TESTING.md)                               | Test layers and gates                                |
-| [DEPLOYMENT.md](DEPLOYMENT.md)                         | Pages, data repo, Scanner publish step, operations   |
-| [CHANGELOG.md](CHANGELOG.md)                           | Changes per version                                  |
-| [contract/EXPORT_FORMAT.md](contract/EXPORT_FORMAT.md) | The data: every file, table and column               |
-| [CLAUDE.md](CLAUDE.md)                                 | Architecture and file reference (also for AI agents) |
+| Document                                                                     | Content                                              |
+| ---------------------------------------------------------------------------- | ---------------------------------------------------- |
+| [REQUIREMENTS.md](REQUIREMENTS.md)                                           | What the site must do                                |
+| [DEVELOPING.md](DEVELOPING.md)                                               | Writing, code and process conventions, versioning    |
+| [TESTING.md](TESTING.md)                                                     | Test layers and gates                                |
+| [DEPLOYMENT.md](DEPLOYMENT.md)                                               | Pages, data repo, Scanner publish step, operations   |
+| [CHANGELOG.md](CHANGELOG.md)                                                 | Changes per version                                  |
+| [contract/export/EXPORT_FORMAT.md](contract/export/EXPORT_FORMAT.md)         | The data: every file, table and column               |
+| [contract/registry/REGISTRY_FORMAT.md](contract/registry/REGISTRY_FORMAT.md) | The registry: layout and entry format                |
+| [CLAUDE.md](CLAUDE.md)                                                       | Architecture and file reference (also for AI agents) |

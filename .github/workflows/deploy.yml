@@ -107,12 +107,13 @@ jobs:
           path: export-data
           token: ${{ secrets.DATA_REPO_TOKEN || github.token }}
           persist-credentials: false
+      # Into the dev registry's path: the site checkout leaves the submodule empty.
       - name: Check out the DNS provider registry
         uses: actions/checkout@v7
         with:
           repository: ${{ vars.REGISTRY_REPO }}
           ref: ${{ vars.REGISTRY_REF || 'main' }}
-          path: registry-data
+          path: registry
           persist-credentials: false
       - uses: actions/setup-node@v7
         with:
@@ -127,15 +128,15 @@ jobs:
         run: npm run bundle:data -- "export-data/${{ vars.DATA_PATH || '.' }}" dist
       - name: Validate and bundle the registry
         run: >-
-          npm run bundle:registry -- registry-data dist "${{ vars.REGISTRY_REPO }}"
-          "$(git -C registry-data rev-parse HEAD)"
+          npm run bundle:registry -- registry dist "${{ vars.REGISTRY_REPO }}"
+          "$(git -C registry rev-parse HEAD)"
       - name: Record what was deployed
         run: |
           {
             echo "### Deployed"
             echo "- Site: \`${{ needs.version.outputs.tag }}\` @ \`$(git rev-parse HEAD)\`"
             echo "- Data: \`${{ vars.DATA_REPO }}\` @ \`$(git -C export-data rev-parse HEAD)\`"
-            echo "- Registry: \`${{ vars.REGISTRY_REPO }}\` @ \`$(git -C registry-data rev-parse HEAD)\`"
+            echo "- Registry: \`${{ vars.REGISTRY_REPO }}\` @ \`$(git -C registry rev-parse HEAD)\`"
             echo "- Release generated_at: \`$(node -p "require('./dist/data/manifest.json').generated_at")\`"
             echo "- Trigger: \`${{ github.event_name }}\`"
           } >> "$GITHUB_STEP_SUMMARY"

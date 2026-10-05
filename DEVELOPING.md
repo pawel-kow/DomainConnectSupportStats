@@ -3,7 +3,7 @@
 Code, writing and process conventions.
 
 Related: [REQUIREMENTS.md](REQUIREMENTS.md), [TESTING.md](TESTING.md),
-[DEPLOYMENT.md](DEPLOYMENT.md), [contract/EXPORT_FORMAT.md](contract/EXPORT_FORMAT.md).
+[DEPLOYMENT.md](DEPLOYMENT.md), [contract/export/EXPORT_FORMAT.md](contract/export/EXPORT_FORMAT.md).
 
 ---
 
@@ -238,9 +238,10 @@ Before opening the PR:
 
 When code and docs disagree, fix both.
 
-### 3.9 The export contract
+### 3.9 The contracts
 
-1. Build only from `contract/EXPORT_FORMAT.md`, the schemas and the example export. **Never read
+1. Build only from `contract/export/` (EXPORT_FORMAT.md, schemas, example export) and
+   `contract/registry/` (REGISTRY_FORMAT.md, schema, examples). **Never read
    DomainConnectScanner source code.** Missing information is a question for the maintainer or an
    issue on the Scanner.
 2. **Never edit `contract/` by hand.** A new copy arrives verbatim in a `chore/contract-<topic>` PR

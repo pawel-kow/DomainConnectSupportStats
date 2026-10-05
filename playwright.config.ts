@@ -4,7 +4,8 @@ const PORT = 4173;
 
 /**
  * E2E against the production build served by `vite preview`, which serves the data release under
- * `/data/` like the deployed site (DATA_DIR, default: the contract's example export).
+ * `/data/` like the deployed site (DATA_DIR, default: the contract's example export) and the
+ * registry under `/registry/` (REGISTRY_DIR, default: the contract's golden copy).
  */
 export default defineConfig({
   testDir: 'tests/e2e',
@@ -26,5 +27,6 @@ export default defineConfig({
     // Never reuse a running preview: it would serve a stale build.
     reuseExistingServer: false,
     timeout: 120_000,
+    env: { REGISTRY_DIR: process.env.REGISTRY_DIR ?? 'contract/registry/examples' },
   },
 });

@@ -1,5 +1,5 @@
 /**
- * A DNS provider registry entry as the site reads it (registry/schema/provider.schema.json).
+ * A DNS provider registry entry as the site reads it (contract/registry/schema/provider.schema.json).
  * Entries come from a third-party repository: every field is read defensively, unknown keys are
  * ignored, and a flag that is not `true` or `false` is unknown (`null`).
  */

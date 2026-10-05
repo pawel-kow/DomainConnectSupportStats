@@ -16,9 +16,9 @@ export.py → OUT_DIR/current/  ──push──▶  one release (manifest.json 
                                                                           ├ checkout tag + data repo
                                                                           │   + registry repo
                                                                           ├ npm test, npm run build
-                                                                          ├ validate release vs contract/
+                                                                          ├ validate release vs contract/export/
                                                                           ├ bundle into dist/data/
-                                                                          ├ validate registry vs registry/schema/
+                                                                          ├ validate registry vs contract/registry/
                                                                           ├ bundle into dist/registry/
                                                                           └ publish dist/ to Pages
 ```
@@ -92,8 +92,9 @@ on every push. No workflows, no Pages.
 ### 2.3 The registry repo
 
 Public; one file per DNS provider stack, `providers/<a>/<b>/<providerId>.json`, valid against
-`registry/schema/provider.schema.json`, logos next to the entries (layout and folder rule:
-`registry/examples/`, `src/lib/registry/path.ts`). A registry change is published by the next
+`contract/registry/schema/provider.schema.json`, logos next to the entries (layout and folder rule:
+`contract/registry/REGISTRY_FORMAT.md`, `src/lib/registry/path.ts`). Deploy checks it out into
+`registry/`, the path of the dev registry submodule. A registry change is published by the next
 deploy (daily, or Deploy by hand).
 
 ### 2.4 The Scanner side (publish step)
@@ -166,17 +167,17 @@ Deploy run (Actions → Deploy → Review deployments).
 
 ### 4.3 When a deploy fails
 
-| Failure                                          | Meaning                                                             | Action                                                                                           |
-| ------------------------------------------------ | ------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------ |
-| `Require the data repo variable`                 | `DATA_REPO` unset                                                   | Set it (§2.1)                                                                                    |
-| `Require the registry repo variable`             | `REGISTRY_REPO` unset                                               | Set it (§2.1)                                                                                    |
-| `No site release yet`                            | Data deploy before the first approved site release                  | Release a site version (§4.2)                                                                    |
-| `Release notes`                                  | No CHANGELOG section for the version                                | Add it via PR with a patch bump                                                                  |
-| Data repo checkout                               | Wrong `DATA_REPO`/`DATA_REF`, or private without `DATA_REPO_TOKEN`  | Fix variable/secret                                                                              |
-| `npm test`                                       | The tagged version is broken                                        | Fix via PR with a patch bump                                                                     |
-| `Validate and bundle the release`, schema errors | Format changed beyond the vendored contract, or a corrupt release   | Compare with `contract/`: new contract copy (contract/README.md), or re-publish from the Scanner |
-| … `missing` / `generated_at` errors              | Partial or mixed release pushed                                     | Re-run the Scanner's publish step                                                                |
-| `Validate and bundle the registry`               | An entry fails the schema, sits at the wrong path or lacks its logo | Fix the entry in the registry repo, then run Deploy by hand                                      |
+| Failure                                          | Meaning                                                             | Action                                                                                                  |
+| ------------------------------------------------ | ------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------- |
+| `Require the data repo variable`                 | `DATA_REPO` unset                                                   | Set it (§2.1)                                                                                           |
+| `Require the registry repo variable`             | `REGISTRY_REPO` unset                                               | Set it (§2.1)                                                                                           |
+| `No site release yet`                            | Data deploy before the first approved site release                  | Release a site version (§4.2)                                                                           |
+| `Release notes`                                  | No CHANGELOG section for the version                                | Add it via PR with a patch bump                                                                         |
+| Data repo checkout                               | Wrong `DATA_REPO`/`DATA_REF`, or private without `DATA_REPO_TOKEN`  | Fix variable/secret                                                                                     |
+| `npm test`                                       | The tagged version is broken                                        | Fix via PR with a patch bump                                                                            |
+| `Validate and bundle the release`, schema errors | Format changed beyond the vendored contract, or a corrupt release   | Compare with `contract/export/`: new contract copy (contract/README.md), or re-publish from the Scanner |
+| … `missing` / `generated_at` errors              | Partial or mixed release pushed                                     | Re-run the Scanner's publish step                                                                       |
+| `Validate and bundle the registry`               | An entry fails the schema, sits at the wrong path or lacks its logo | Fix the entry in the registry repo, then run Deploy by hand                                             |
 
 The site keeps serving the last good deploy.
 

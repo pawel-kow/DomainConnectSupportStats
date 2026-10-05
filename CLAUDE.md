@@ -19,12 +19,17 @@ only when far from obvious; never alternatives or justification by contrast; cur
 no references to issues, requirement ids, dates or history. History: [CHANGELOG.md](CHANGELOG.md).
 Details: [DEVELOPING.md](DEVELOPING.md) §1.
 
-## The one external input: the export contract
+## The external inputs: the contracts
 
-[contract/](contract/) is a verbatim copy of the Scanner's export contract:
-[contract/EXPORT_FORMAT.md](contract/EXPORT_FORMAT.md) (every file, table and column; **the
-reference for page work**), `contract/schemas/` (JSON Schemas), `contract/examples/export/`
-(complete example release; dev data set and test fixture).
+[contract/](contract/) holds verbatim copies of two contracts ([contract/README.md](contract/README.md)):
+
+- `contract/export/`: the Scanner's export contract.
+  [contract/export/EXPORT_FORMAT.md](contract/export/EXPORT_FORMAT.md) (every file, table and
+  column; **the reference for page work**), `schemas/` (JSON Schemas), `examples/export/`
+  (complete example release; dev data set and test fixture).
+- `contract/registry/`: the DNS provider registry contract.
+  [contract/registry/REGISTRY_FORMAT.md](contract/registry/REGISTRY_FORMAT.md) (layout, entry
+  format), `schema/` (validation uses this one only), `examples/` (golden copy; test fixture).
 
 - **Never read, copy or depend on DomainConnectScanner source code.** What the contract doesn't
   say is a question for the maintainer or a Scanner issue.
@@ -62,8 +67,8 @@ src/lib/styles.css         global styles, brand tokens (from stats.domainconnect
 public/                    copied as is: brand assets, config.js (runtime config)
 scripts/                   Node scripts (Node TS type stripping): release and registry
                            validation and bundling, version/CHANGELOG check, release notes
-contract/                  vendored export contract
-registry/                  registry entry schema (draft) and example entries with logos
+contract/                  vendored contracts: export/ (Scanner export), registry/ (DNS provider registry)
+registry/                  git submodule: the test registry repository (dev registry)
 tests/                     unit/, contract/, component/ (Vitest), e2e/ (Playwright)
 ```
 
@@ -92,7 +97,8 @@ failure shows `LoadError`. Never a blank page. Card layout: REQUIREMENTS.md F-1a
 **Registry location.** Default `./registry/`. Build time: `VITE_REGISTRY_BASE_URL`. Runtime:
 `window.DC_STATS_CONFIG.registryBaseUrl`. Entry `registry/<a>/<b>/<encoded providerId>.json`,
 logo next to it, `registry.json` `{repository, commit}` (footer, entry link). `vite dev` and
-`vite preview` serve `/registry/` from `REGISTRY_DIR` (default `registry/examples`).
+`vite preview` serve `/registry/` from `REGISTRY_DIR` (default: the `registry/` submodule;
+e2e: `contract/registry/examples/`).
 
 **Version.** `package.json` `version`, injected at build time as `__APP_VERSION__`, shown in the
 footer.
@@ -100,15 +106,17 @@ footer.
 **Deployment.** Merging a new version to `main` tags `v<version>`, waits for approval in
 environment `release`, then deploys. Data releases (`repository_dispatch` `export-published`,
 daily, manual) redeploy the latest GitHub Release with the current data and registry.
-`deploy.yml` validates the release against `contract/schemas/export/` and bundles it into
-`dist/data/`, and the registry (`REGISTRY_REPO`) into `dist/registry/`.
+`deploy.yml` validates the release against `contract/export/schemas/export/` and bundles it into
+`dist/data/`, and the registry (`REGISTRY_REPO`, checked out into `registry/`) against
+`contract/registry/schema/` into `dist/registry/`.
 [DEPLOYMENT.md](DEPLOYMENT.md).
 
 ## Development Commands
 
 ```bash
+git submodule update --init             # dev registry (devcontainer postCreate does this)
 npm ci                                   # install (devcontainer postCreate does this)
-npm run dev                              # dev server on :5173 with the example export
+npm run dev                              # dev server on :5173 with the example export, dev registry
 DATA_DIR=../data-repo npm run dev        # ... against a real release
 REGISTRY_DIR=../registry npm run dev     # ... against a registry checkout
 npm run build                            # dist/ (site only, no data)
@@ -123,7 +131,7 @@ npm run verify                           # all of the above, the pre-PR gate
 
 npm run validate:export -- <releaseDir>  # validate a release against the vendored contract
 npm run bundle:data -- <releaseDir> dist # validate + copy a release into dist/data/
-npm run validate:registry -- <dir>       # validate a registry (default registry/examples)
+npm run validate:registry -- <dir>       # validate a registry (default registry/, the dev registry)
 npm run bundle:registry -- <dir> dist <owner/name> <commit>  # validate + copy into dist/registry/
 npm run release:notes -- <version>       # print the CHANGELOG section of a version
 ```
@@ -151,8 +159,8 @@ Full rules: [DEVELOPING.md](DEVELOPING.md) §3.
 
 Open defects and follow-up work are GitHub issues, not markdown.
 
-The export contract is an input (§3.9): updates arrive verbatim in a `chore/contract-*` PR; data
-the contract lacks is a question for the maintainer.
+The contracts are inputs (§3.9): updates arrive verbatim in a `chore/contract-*` PR; data the
+contracts lack is a question for the maintainer.
 
 **Git in the devcontainer:** `origin` is SSH and no key is available; use HTTPS with `gh`
 credentials:
@@ -189,7 +197,7 @@ Pushing `.github/workflows/` changes needs a token with the `workflow` scope.
 - `playwright.config.ts`: e2e against `vite preview`, desktop + mobile
 - `.github/workflows/ci.yml`: PR/push gates, `.plan/` merge gate
 - `.github/workflows/deploy.yml`: tag on merge, approval, Pages deploy
-- `contract/`: vendored export contract
-- `registry/schema/provider.schema.json`: registry entry schema; `registry/examples/`: example registry (dev, tests)
+- `contract/export/`: vendored export contract; `contract/registry/`: vendored registry contract (schema, golden examples for tests)
+- `registry/`: git submodule, the test registry repository (dev registry)
 - `CHANGELOG.md`: changes per version
 - `README.md`, `REQUIREMENTS.md`, `DEVELOPING.md`, `TESTING.md`, `DEPLOYMENT.md`

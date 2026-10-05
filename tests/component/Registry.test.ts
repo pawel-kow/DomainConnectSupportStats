@@ -9,7 +9,7 @@ import Registry from '../../src/lib/components/Registry.svelte';
 import RegistryContact from '../../src/lib/components/RegistryContact.svelte';
 import { parseEntry } from '../../src/lib/registry/entry';
 
-const EXAMPLES = resolve(import.meta.dirname, '../../registry/examples/providers');
+const EXAMPLES = resolve(import.meta.dirname, '../../contract/registry/examples/providers');
 const example = (path: string) =>
   parseEntry(JSON.parse(readFileSync(resolve(EXAMPLES, path), 'utf8')));
 
