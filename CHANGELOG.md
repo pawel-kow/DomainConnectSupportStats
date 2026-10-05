@@ -4,6 +4,14 @@ Changes per site version. Versions follow [SemVer](https://semver.org/): major f
 parameter removed or changed incompatibly, minor for new pages, features or content, patch for
 fixes, styling and dependencies.
 
+## [0.7.0] - 2026-10-05
+
+### Added
+
+- Service providers list: every service provider with templates (link to its templates in the
+  templates list), supported templates, supporting DNS providers, first added, last updated and
+  reach; search (`?q=`), pages of 20.
+
 ## [0.6.0] - 2026-10-04
 
 ### Added

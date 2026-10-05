@@ -80,7 +80,7 @@ every view is a shareable link:
 | `index.html`                                     | `overview.json`                                     | built       |
 | `dns-providers.html` (`?stack=`, `&q=`, `&all=`) | `dns-providers.json`                                | built       |
 | `stacks.html`                                    | `stacks.json`                                       | placeholder |
-| `service-providers.html`                         | `service-providers.json`                            | placeholder |
+| `service-providers.html` (`?q=`)                 | `service-providers.json`                            | built       |
 | `templates.html` (`?spid=`, `&q=`, `&all=`)      | `templates.json`                                    | built       |
 | `dns-provider.html?id=`                          | `dns-providers/{dns_provider_id}.json`, registry    | built       |
 | `stack.html?id=`                                 | `stacks/{provider_id}.json`                         | placeholder |
