@@ -4,6 +4,13 @@ Changes per site version. Versions follow [SemVer](https://semver.org/): major f
 parameter removed or changed incompatibly, minor for new pages, features or content, patch for
 fixes, styling and dependencies.
 
+## [0.9.0] - 2026-10-05
+
+### Added
+
+- Stacks list: every stack with deployments (link to its DNS providers), support as lowest and
+  highest across deployments with a range bar, and domains; sort, search, pages of 20.
+
 ## [0.8.0] - 2026-10-05
 
 ### Added

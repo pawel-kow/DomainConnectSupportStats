@@ -75,17 +75,17 @@ tests/                     unit/, contract/, component/ (Vitest), e2e/ (Playwrig
 Pages and their data (EXPORT_FORMAT.md "Pages"). Query parameters carry raw ids and filters only;
 every view is a shareable link:
 
-| Page                                             | Data                                                | State       |
-| ------------------------------------------------ | --------------------------------------------------- | ----------- |
-| `index.html`                                     | `overview.json`                                     | built       |
-| `dns-providers.html` (`?stack=`, `&q=`, `&all=`) | `dns-providers.json`                                | built       |
-| `stacks.html`                                    | `stacks.json`                                       | placeholder |
-| `service-providers.html` (`?q=`)                 | `service-providers.json`                            | built       |
-| `templates.html` (`?spid=`, `&q=`, `&all=`)      | `templates.json`                                    | built       |
-| `dns-provider.html?id=`                          | `dns-providers/{dns_provider_id}.json`, registry    | built       |
-| `stack.html?id=`                                 | `stacks/{provider_id}.json`, registry               | built       |
-| `service-provider.html?id=`                      | `service-providers/{service_provider_id}.json`      | built       |
-| `template.html?spid=&sid=`                       | `templates/{service_provider_id}/{service_id}.json` | built       |
+| Page                                             | Data                                                | State |
+| ------------------------------------------------ | --------------------------------------------------- | ----- |
+| `index.html`                                     | `overview.json`                                     | built |
+| `dns-providers.html` (`?stack=`, `&q=`, `&all=`) | `dns-providers.json`                                | built |
+| `stacks.html`                                    | `stacks.json`                                       | built |
+| `service-providers.html` (`?q=`)                 | `service-providers.json`                            | built |
+| `templates.html` (`?spid=`, `&q=`, `&all=`)      | `templates.json`                                    | built |
+| `dns-provider.html?id=`                          | `dns-providers/{dns_provider_id}.json`, registry    | built |
+| `stack.html?id=`                                 | `stacks/{provider_id}.json`, registry               | built |
+| `service-provider.html?id=`                      | `service-providers/{service_provider_id}.json`      | built |
+| `template.html?spid=&sid=`                       | `templates/{service_provider_id}/{service_id}.json` | built |
 
 A card page with a missing parameter or a 404 shows `NotFound` linking to its list; any other load
 failure shows `LoadError`. Never a blank page. Card layout: REQUIREMENTS.md F-1a.
