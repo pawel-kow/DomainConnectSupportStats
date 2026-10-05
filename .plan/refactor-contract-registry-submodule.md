@@ -7,12 +7,12 @@ clones `REGISTRY_REPO` into `registry/`; CI, tests and docs follow.
 
 ## Tasks
 
-- [~] Move export contract to `contract/export/`, fix references
-- [ ] `contract/registry/` from the test registry repo; remove `registry/examples/`, `registry/schema/`
-- [ ] Submodule `registry/`; dev/preview default, e2e on the golden copy, `validate:registry` default
-- [ ] CI (submodule checkout), deploy (`registry/` path), devcontainer, lint ignores
-- [ ] Docs: contract/README.md, CLAUDE.md, README.md, DEVELOPING.md, DEPLOYMENT.md, TESTING.md, REQUIREMENTS.md
-- [ ] `npm run verify`, PR
+- [x] Move export contract to `contract/export/`, fix references
+- [x] `contract/registry/` from the test registry repo; remove `registry/examples/`, `registry/schema/`
+- [x] Submodule `registry/`; dev/preview default, e2e on the golden copy, `validate:registry` default
+- [x] CI (submodule checkout), deploy (`registry/` path), devcontainer, lint ignores
+- [x] Docs: contract/README.md, CLAUDE.md, README.md, DEVELOPING.md, DEPLOYMENT.md, TESTING.md, REQUIREMENTS.md
+- [~] `npm run verify`, PR; maintainer review
 - [ ] Promote findings, delete this file
 
 ## Findings
@@ -24,6 +24,9 @@ clones `REGISTRY_REPO` into `registry/`; CI, tests and docs follow.
   `scripts/registry.ts:22-24`, `scripts/validate-registry.ts`, `tests/fixtures.ts:6`,
   `tests/unit/registry-entry.test.ts:6`, `tests/component/Registry.test.ts:12`,
   `deploy.yml` (`registry-data`).
+
+- `npm run verify` green: 208 Vitest, 180 Playwright. With the submodule deinitialised (as on
+  deploy): Vitest 208 passed, `dns-provider.spec.ts` 39 passed.
 
 ## Decisions
 
