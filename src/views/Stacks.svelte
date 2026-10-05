@@ -8,7 +8,7 @@
   import type { Column, Manifest, Row } from '../lib/data/types';
   import { formatCount, formatPct, UNKNOWN } from '../lib/format';
   import { links } from '../lib/links';
-  import { supportRange } from '../lib/stacks';
+  import { supportLabel, supportRange } from '../lib/stacks';
 
   const client = defaultClient();
   let manifest = $state<Manifest | null>(null);
@@ -45,9 +45,7 @@
       >{:else}{formatCount(n)}{/if}
   {:else if column.key === 'min_supported_pct'}
     {@const range = supportRange(row)}
-    <span class="count"
-      >{formatPct(num(row, 'min_supported_pct'))} – {formatPct(num(row, 'max_supported_pct'))}</span
-    >
+    <span class="count">{supportLabel(row)}</span>
     {#if range}
       <!-- Span from the lowest to the highest deployment. -->
       <div class="range" data-testid="range-bar" aria-hidden="true">

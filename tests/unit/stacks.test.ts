@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { supportRange } from '../../src/lib/stacks';
+import { supportLabel, supportRange } from '../../src/lib/stacks';
 
 describe('supportRange', () => {
   it('places the span on a 0–100 scale', () => {
@@ -31,5 +31,20 @@ describe('supportRange', () => {
       left: 0,
       width: 100,
     });
+  });
+});
+
+describe('supportLabel', () => {
+  it('shows min and max', () => {
+    expect(supportLabel({ min_supported_pct: 0, max_supported_pct: 33.33 })).toBe('0.0% – 33.3%');
+  });
+
+  it('shows one value when the ends are equal as displayed', () => {
+    expect(supportLabel({ min_supported_pct: 9.41, max_supported_pct: 9.41 })).toBe('9.4%');
+    expect(supportLabel({ min_supported_pct: 9.41, max_supported_pct: 9.44 })).toBe('9.4%');
+  });
+
+  it('shows a dash when unknown', () => {
+    expect(supportLabel({})).toBe('–');
   });
 });
