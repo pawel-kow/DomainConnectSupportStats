@@ -214,7 +214,7 @@ test.describe('DNS provider card (dns-provider.html)', () => {
       await expect(templates.getByText('Before scans')).toHaveCount(3);
       await expect(page.getByText('Before scans').first()).toHaveAttribute(
         'title',
-        /scanning began on 20 Sep 2026/,
+        /scanning began on 21 Sep 2026/,
       );
       await expect(page.getByTestId('headline')).toBeVisible();
       await expect(
@@ -225,10 +225,23 @@ test.describe('DNS provider card (dns-provider.html)', () => {
       );
     });
 
+    test('marks nothing without scannerStartDate', async ({ page }) => {
+      await page.route('**/config.js', (route) =>
+        route.fulfill({ contentType: 'text/javascript', body: 'window.DC_STATS_CONFIG = {};' }),
+      );
+      await page.goto('dns-provider.html?id=1');
+      await expect(page.getByTestId('headline')).toBeVisible();
+      await expect(page.getByText('Before scans')).toHaveCount(0);
+      await expect(page.getByTestId('before-scans')).toHaveCount(0);
+    });
+
     test('follows scannerStartDate from config.js', async ({ page }) => {
-      await page.addInitScript(() => {
-        window.DC_STATS_CONFIG = { ...window.DC_STATS_CONFIG, scannerStartDate: '2026-05-01' };
-      });
+      await page.route('**/config.js', (route) =>
+        route.fulfill({
+          contentType: 'text/javascript',
+          body: "window.DC_STATS_CONFIG = { scannerStartDate: '2026-05-01' };",
+        }),
+      );
       await page.goto('dns-provider.html?id=1');
       const templates = section(page, 'Supported templates (current state)');
       await expect(templates.getByText('Before scans')).toHaveCount(2);

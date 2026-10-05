@@ -98,6 +98,10 @@ describe('before scans', () => {
     expect(isBeforeScans('since', '2026-10-01 03:00:00', start)).toBe(false);
   });
 
+  it('marks nothing without a start date', () => {
+    expect(isBeforeScans('since', '2020-01-01 00:00:00', null)).toBe(false);
+  });
+
   it('leaves null, other keys and unreadable values alone', () => {
     expect(isBeforeScans('since', null, start)).toBe(false);
     expect(isBeforeScans('started_at', '2025-01-01 00:00:00', start)).toBe(false);

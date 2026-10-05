@@ -8,9 +8,9 @@ fixes, styling and dependencies.
 
 ### Added
 
-- "Supported since" and "first seen" dates before the scanner start date (default 2026-09-20,
-  `scannerStartDate` in `config.js`) show the badge "Before scans" with a tooltip, and sort as the
-  oldest.
+- "Supported since" and "first seen" dates before the scanner start date (2026-09-21,
+  `scannerStartDate` in `config.js`; unset marks nothing) show the badge "Before scans" with a
+  tooltip, and sort as the oldest.
 - Charts of support over time shade the span before the scanner start date.
 
 ## [0.10.0] - 2026-10-05

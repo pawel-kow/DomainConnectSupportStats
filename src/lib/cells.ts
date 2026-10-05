@@ -121,7 +121,8 @@ export const BEFORE_SCANS = 'Before scans';
  * Whether a cell is a "first seen" or "supported since" date from before scanning began: it then
  * says only that the fact predates the scans, not when it began.
  */
-export function isBeforeScans(key: string, value: CellValue, start: Date): boolean {
+export function isBeforeScans(key: string, value: CellValue, start: Date | null): boolean {
+  if (!start) return false;
   if (key !== 'since' && key !== 'first_seen_at') return false;
   const at = typeof value === 'string' ? parseTimestamp(value) : null;
   return at !== null && at.getTime() < start.getTime();

@@ -151,8 +151,8 @@ registry likewise: `registryBaseUrl`, `VITE_REGISTRY_BASE_URL`, `./registry/`. A
 must send CORS headers.
 
 The day scanning began, before which "first seen" and "supported since" dates show the badge
-"Before scans": `scannerStartDate: '2026-09-20'` (`YYYY-MM-DD`, UTC; this is the default, an
-invalid value falls back to it).
+"Before scans": `scannerStartDate: '2026-09-21'` (`YYYY-MM-DD`, UTC). The shipped `public/config.js`
+sets it; unset or invalid, no date is marked.
 
 ---
 

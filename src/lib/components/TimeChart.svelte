@@ -63,7 +63,7 @@
     /** Draw the legend; off when the page shows its own. */
     legend?: boolean;
     /** Scanner start date: shade the span before it, for charts of sweep series. */
-    beforeScans?: Date;
+    beforeScans?: Date | null;
   }
 
   let {

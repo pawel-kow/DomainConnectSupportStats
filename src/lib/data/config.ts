@@ -7,8 +7,6 @@
 
 export const DEFAULT_DATA_BASE_URL = './data/';
 export const DEFAULT_REGISTRY_BASE_URL = './registry/';
-/** The day scanning began (`YYYY-MM-DD`, UTC): earlier dates only say "already there". */
-export const DEFAULT_SCANNER_START_DATE = '2026-09-20';
 
 declare global {
   interface Window {
@@ -59,15 +57,16 @@ export function registryBaseUrl(): string {
   );
 }
 
-/** The configured scanner start date as UTC midnight; an invalid value falls back to the default. */
-export function resolveScannerStart(runtime: unknown): Date {
-  if (typeof runtime === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(runtime)) {
-    const date = new Date(`${runtime}T00:00:00Z`);
-    if (!Number.isNaN(date.getTime()) && date.toISOString().startsWith(runtime)) return date;
-  }
-  return new Date(`${DEFAULT_SCANNER_START_DATE}T00:00:00Z`);
+/**
+ * The configured scanner start date (`YYYY-MM-DD`) as UTC midnight: earlier dates only say
+ * "already there". `null` when unset or invalid: nothing is marked.
+ */
+export function resolveScannerStart(runtime: unknown): Date | null {
+  if (typeof runtime !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(runtime)) return null;
+  const date = new Date(`${runtime}T00:00:00Z`);
+  return !Number.isNaN(date.getTime()) && date.toISOString().startsWith(runtime) ? date : null;
 }
 
-export function scannerStart(): Date {
+export function scannerStart(): Date | null {
   return resolveScannerStart(window.DC_STATS_CONFIG?.scannerStartDate);
 }

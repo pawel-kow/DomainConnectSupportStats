@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { fireEvent, render, screen, within } from '@testing-library/svelte';
-import { describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import DataTable from '../../src/lib/components/DataTable.svelte';
 import type { Table } from '../../src/lib/data/types';
 import { exampleJson } from '../fixtures';
@@ -172,6 +172,13 @@ describe('DataTable pagination', () => {
   });
 
   describe('before scans', () => {
+    beforeEach(() => {
+      window.DC_STATS_CONFIG = { scannerStartDate: '2026-09-20' };
+    });
+    afterEach(() => {
+      window.DC_STATS_CONFIG = undefined;
+    });
+
     const dnsProvider = () =>
       exampleJson('dns-providers/1.json').tables.supported_templates as Table;
 
@@ -184,6 +191,13 @@ describe('DataTable pagination', () => {
         'title',
         'Already recorded when scanning began on 20 Sep 2026; the real date is unknown.',
       );
+    });
+
+    it('shows every date as is without a start date', () => {
+      window.DC_STATS_CONFIG = {};
+      render(DataTable, { table: dnsProvider(), keys: ['service_name', 'since'] });
+      expect(screen.queryByText('Before scans')).not.toBeInTheDocument();
+      expect(bodyColumn(1)[0]).toBe('01-07-2026 03:00 UTC');
     });
 
     it('keeps null as a dash', () => {
