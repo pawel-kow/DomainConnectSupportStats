@@ -1,4 +1,4 @@
-import Placeholder from '../views/Placeholder.svelte';
+import Stack from '../views/Stack.svelte';
 import { mountPage } from '../lib/mount';
 
-mountPage(Placeholder, { page: 'stack', title: 'Stack' });
+mountPage(Stack, {});
