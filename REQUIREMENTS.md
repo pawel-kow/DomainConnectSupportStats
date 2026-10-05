@@ -213,7 +213,7 @@ times are not shown.
   that. Percent axes start at 0; their ticks carry the decimals their step needs, so a small share
   still shows a readable scale.
 - F-2.13 Scanning began on `scannerStartDate` (`config.js`, `YYYY-MM-DD` UTC; the deployed
-  `public/config.js` sets 2026-09-21; unset or invalid: nothing is marked). A `since` or
+  `public/config.js` sets 2026-09-22; unset or invalid: nothing is marked). A `since` or
   `first_seen_at` value before 00:00 UTC of that day shows the badge "First scan" instead of the
   date, with the tooltip "Already present on the first scan on <recorded date>. The real date is
   unknown."; `null` stays `–`. Badge rows sort as the oldest, in timestamp order among themselves;
