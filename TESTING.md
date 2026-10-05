@@ -130,19 +130,19 @@ Against a real release: `DATA_DIR=<release> REGISTRY_DIR=<registry> npm run test
 
 ## 7. Gates
 
-| Gate                                | Command                                                 | Where                                  |
-| ----------------------------------- | ------------------------------------------------------- | -------------------------------------- |
-| Lint + format                       | `npm run lint`                                          | CI, `verify`                           |
-| Types (svelte-check, warnings fail) | `npm run check`                                         | CI, `verify`                           |
-| Unit + contract + component         | `npm test`                                              | CI, deploy, `verify`                   |
-| Example export valid                | `npm run validate:export`                               | CI                                     |
-| Dev registry valid                  | `npm run validate:registry`                             | CI                                     |
-| Version has a CHANGELOG section     | `npm run check:version`                                 | CI, `verify`                           |
-| Build                               | `npm run build`                                         | CI, deploy, `verify`                   |
-| E2E                                 | `npm run test:e2e`                                      | CI, `verify`                           |
-| Incoming release valid              | `npm run bundle:data -- <release> dist`                 | deploy (refuses to publish on failure) |
-| Incoming registry valid             | `npm run bundle:registry -- <dir> dist <repo> <commit>` | deploy (refuses to publish on failure) |
-| No `.plan/` files                   | `no-plan-files` job                                     | CI on PRs                              |
+| Gate                                | Command                                                   | Where                                  |
+| ----------------------------------- | --------------------------------------------------------- | -------------------------------------- |
+| Lint + format                       | `npm run lint`                                            | CI, `verify`                           |
+| Types (svelte-check, warnings fail) | `npm run check`                                           | CI, `verify`                           |
+| Unit + contract + component         | `npm test`                                                | CI, deploy, `verify`                   |
+| Example export valid                | `npm run validate:export`                                 | CI                                     |
+| Golden registry valid               | `npm run validate:registry -- contract/registry/examples` | CI                                     |
+| Version has a CHANGELOG section     | `npm run check:version`                                   | CI, `verify`                           |
+| Build                               | `npm run build`                                           | CI, deploy, `verify`                   |
+| E2E                                 | `npm run test:e2e`                                        | CI, `verify`                           |
+| Incoming release valid              | `npm run bundle:data -- <release> dist`                   | deploy (refuses to publish on failure) |
+| Incoming registry valid             | `npm run bundle:registry -- <dir> dist <repo> <commit>`   | deploy (refuses to publish on failure) |
+| No `.plan/` files                   | `no-plan-files` job                                       | CI on PRs                              |
 
 A fresh container needs `npx playwright install --with-deps chromium` (the devcontainer's
 postCreate runs it).
