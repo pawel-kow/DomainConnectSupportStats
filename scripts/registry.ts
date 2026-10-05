@@ -1,5 +1,6 @@
 /**
- * Validation of a DNS provider registry checkout against the schema in registry/schema/, shared by
+ * Validation of a DNS provider registry checkout against the vendored registry contract
+ * (contract/registry/), shared by
  * `validate-registry.ts` and the contract tests. Run by Node's type stripping: import only
  * extension-qualified, dependency-free modules from `src/`.
  */
@@ -19,9 +20,12 @@ import { entryPath, registryPath } from '../src/lib/registry/path.ts';
 
 export { entryPath };
 
-export const REGISTRY_DIR = resolve(import.meta.dirname, '../registry');
-export const REGISTRY_SCHEMA = join(REGISTRY_DIR, 'schema/provider.schema.json');
-export const EXAMPLE_REGISTRY_DIR = join(REGISTRY_DIR, 'examples');
+export const CONTRACT_DIR = resolve(import.meta.dirname, '../contract/registry');
+export const REGISTRY_SCHEMA = join(CONTRACT_DIR, 'schema/provider.schema.json');
+/** The golden copy of the test registry: the fixture of every test layer. */
+export const EXAMPLE_REGISTRY_DIR = join(CONTRACT_DIR, 'examples');
+/** The dev registry: the test registry repository as git submodule. */
+export const DEV_REGISTRY_DIR = resolve(import.meta.dirname, '../registry');
 
 export interface RegistryEntryFile {
   providerId: string;

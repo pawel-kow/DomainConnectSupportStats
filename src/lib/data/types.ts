@@ -1,5 +1,5 @@
 /**
- * Types of the static export (contract/EXPORT_FORMAT.md). Only what the site reads is typed:
+ * Types of the static export (contract/export/EXPORT_FORMAT.md). Only what the site reads is typed:
  * new tables, columns and keys may appear without a format version bump and must be ignored.
  */
 

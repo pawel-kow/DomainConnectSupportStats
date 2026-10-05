@@ -15,5 +15,5 @@
     }
   },
   "forwardPorts": [5173, 4173],
-  "postCreateCommand": "npm ci && npx playwright install --with-deps chromium"
+  "postCreateCommand": "git submodule update --init && npm ci && npx playwright install --with-deps chromium"
 }

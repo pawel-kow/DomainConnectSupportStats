@@ -1,5 +1,5 @@
 /**
- * Validation of one export release against the vendored contract (contract/), shared by
+ * Validation of one export release against the vendored contract (contract/export/), shared by
  * `validate-export.ts`, `bundle-data.ts` and the contract tests. Run by Node's type stripping:
  * import only extension-qualified, dependency-free modules from `src/`.
  */
@@ -8,7 +8,7 @@ import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { encodeSegment } from '../src/lib/data/encode.ts';
 
-export const CONTRACT_DIR = resolve(import.meta.dirname, '../contract');
+export const CONTRACT_DIR = resolve(import.meta.dirname, '../contract/export');
 export const SCHEMA_DIR = join(CONTRACT_DIR, 'schemas');
 export const EXAMPLE_EXPORT_DIR = join(CONTRACT_DIR, 'examples/export');
 

@@ -3,7 +3,7 @@ import { resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { InvalidEntryError, parseEntry, parseSource } from '../../src/lib/registry/entry';
 
-const EXAMPLES = resolve(import.meta.dirname, '../../registry/examples/providers');
+const EXAMPLES = resolve(import.meta.dirname, '../../contract/registry/examples/providers');
 const example = (path: string): unknown =>
   JSON.parse(readFileSync(resolve(EXAMPLES, path), 'utf8'));
 
