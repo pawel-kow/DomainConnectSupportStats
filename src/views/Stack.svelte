@@ -200,7 +200,6 @@
                 ]}
                 leftTitle="% of scanned domains"
                 formatLeft={formatAxisPct}
-                leftFromZero={false}
               />
             {/await}
           {:else}

@@ -13,7 +13,8 @@ fixes, styling and dependencies.
 - Small percentages keep two significant digits (`0.012%`, `<0.0001%` below that).
 - DNS providers list: the Supported column shows the count and its share; the template version
   total moves to the tooltip.
-- Domain share charts fit the percent axis to the data, so small providers show a readable scale.
+- Percent axes keep their 0 baseline and their ticks carry enough decimals, so small providers
+  show a readable scale.
 
 ## [0.9.0] - 2026-10-05
 

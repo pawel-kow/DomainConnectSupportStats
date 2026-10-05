@@ -210,8 +210,8 @@ times are not shown.
   decimal); below 10,000 exact. In cards, tables, chart axes and tooltips; the exact count is the
   `title` of the card value or table cell. Pagination ranges stay exact. Sorting uses the raw value.
 - F-2.12 Percentages keep two significant digits below 1% (`0.012%`) and show `<0.0001%` below
-  that. Share charts fit the percent axis to the data (not from 0); its ticks carry the decimals
-  their step needs.
+  that. Percent axes start at 0; their ticks carry the decimals their step needs, so a small share
+  still shows a readable scale.
 - F-2.9 Internal ids (`dns_provider_id`, `import_id`, `sweep_id`) are not shown: no columns, titles,
   tooltips or messages. They stay in URLs and lookups. Charts speak of time only: no "import" or
   "sweep" in headings, labels or tooltips. Public ids (`provider_id`,

@@ -56,8 +56,6 @@
     /** Tick text; `step` is the distance between ticks, for decimals that tell them apart. */
     formatLeft?: (v: number, step?: number) => string;
     formatRight?: (v: number, step?: number) => string;
-    /** Left axis starts at 0 (default); off fits the axis to the data. */
-    leftFromZero?: boolean;
     /** Accessible description of what the chart shows. */
     label: string;
     /** Draw the legend; off when the page shows its own. */
@@ -70,7 +68,6 @@
     rightTitle,
     formatLeft,
     formatRight,
-    leftFromZero = true,
     label,
     legend = true,
   }: Props = $props();
@@ -118,7 +115,7 @@
           left: {
             type: 'linear',
             position: 'left',
-            beginAtZero: leftFromZero,
+            beginAtZero: true,
             title: { display: true, text: leftTitle },
             grid: { color: '#e0e0e0' },
             ticks: formatLeft
