@@ -28,6 +28,12 @@ describe('links', () => {
     );
     expect(links.templates({ spid: null, q: '', all: false })).toBe('./templates.html');
   });
+
+  it('carries the service providers search', () => {
+    expect(links.serviceProviders({ q: 'acme mail' })).toBe('./service-providers.html?q=acme+mail');
+    expect(links.serviceProviders({ q: '' })).toBe('./service-providers.html');
+    expect(links.serviceProviders()).toBe('./service-providers.html');
+  });
 });
 
 describe('safeUrl', () => {
