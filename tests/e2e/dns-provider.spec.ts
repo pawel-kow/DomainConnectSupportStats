@@ -212,7 +212,7 @@ test.describe('DNS provider card (dns-provider.html)', () => {
       await page.goto('dns-provider.html?id=1');
       const templates = section(page, 'Supported templates (current state)');
       await expect(templates.getByText('First scan')).toHaveCount(3);
-      await expect(page.getByText('First scan').first()).toHaveAttribute(
+      await expect(templates.getByText('First scan').first()).toHaveAttribute(
         'title',
         /first scan on 01-07-2026\./,
       );
