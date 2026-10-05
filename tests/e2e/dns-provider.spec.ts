@@ -211,8 +211,8 @@ test.describe('DNS provider card (dns-provider.html)', () => {
     test('badges the dates before it and shades the sweep chart', async ({ page }) => {
       await page.goto('dns-provider.html?id=1');
       const templates = section(page, 'Supported templates (current state)');
-      await expect(templates.getByText('Before scans')).toHaveCount(3);
-      await expect(page.getByText('Before scans').first()).toHaveAttribute(
+      await expect(templates.getByText('First scan')).toHaveCount(3);
+      await expect(page.getByText('First scan').first()).toHaveAttribute(
         'title',
         /first scan on 01-07-2026\./,
       );
@@ -231,7 +231,7 @@ test.describe('DNS provider card (dns-provider.html)', () => {
       );
       await page.goto('dns-provider.html?id=1');
       await expect(page.getByTestId('headline')).toBeVisible();
-      await expect(page.getByText('Before scans')).toHaveCount(0);
+      await expect(page.getByText('First scan')).toHaveCount(0);
       await expect(page.getByTestId('before-scans')).toHaveCount(0);
     });
 
@@ -244,9 +244,9 @@ test.describe('DNS provider card (dns-provider.html)', () => {
       );
       await page.goto('dns-provider.html?id=1');
       const templates = section(page, 'Supported templates (current state)');
-      await expect(templates.getByText('Before scans')).toHaveCount(2);
+      await expect(templates.getByText('First scan')).toHaveCount(2);
       await expect(templates.locator('tbody tr').first()).toContainText('01-07-2026');
-      await expect(templates.getByText('Before scans').first()).toHaveAttribute(
+      await expect(templates.getByText('First scan').first()).toHaveAttribute(
         'title',
         /first scan on 01-04-2026\./,
       );

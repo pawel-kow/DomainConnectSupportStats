@@ -97,13 +97,6 @@ export function formatDate(value: Date | string | null | undefined): string {
   return `${pad(date.getUTCDate())}-${pad(date.getUTCMonth() + 1)}-${date.getUTCFullYear()}`;
 }
 
-const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-
-/** `D Mon YYYY`, UTC, for running text. */
-export function formatLongDate(date: Date): string {
-  return `${date.getUTCDate()} ${MONTHS[date.getUTCMonth()]} ${date.getUTCFullYear()}`;
-}
-
 /** `DD-MM-YYYY HH:MM UTC`. */
 export function formatDateTime(value: Date | string | null | undefined): string {
   const date = typeof value === 'string' ? parseTimestamp(value) : value;

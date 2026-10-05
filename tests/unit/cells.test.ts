@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
-  beforeScansSpanTitle,
+  FIRST_SCAN_SPAN_TITLE,
   beforeScansTitle,
   cellKind,
   compareCells,
@@ -115,10 +115,8 @@ describe('before scans', () => {
     );
   });
 
-  it('words the chart span tooltip with the start date', () => {
-    expect(beforeScansSpanTitle(start)).toBe(
-      'Before scanning began on 20 Sep 2026. The real dates are unknown.',
-    );
+  it('words the chart span tooltip', () => {
+    expect(FIRST_SCAN_SPAN_TITLE).toBe('Result of the first scan. State before is unknown.');
   });
 
   it('sorts badge dates as the oldest, in timestamp order', () => {

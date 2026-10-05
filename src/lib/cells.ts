@@ -3,7 +3,6 @@ import {
   formatDate,
   formatDateTime,
   formatExact,
-  formatLongDate,
   formatPct,
   formatPp,
   isCompact,
@@ -116,7 +115,7 @@ export function parseNameservers(value: string | null | undefined): string[] | n
 }
 
 /** Label of the badge that stands for a date before scanning began. */
-export const BEFORE_SCANS = 'Before scans';
+export const FIRST_SCAN = 'First scan';
 
 /**
  * Whether a cell is a "first seen" or "supported since" date from before scanning began: it then
@@ -129,12 +128,10 @@ export function isBeforeScans(key: string, value: CellValue, start: Date | null)
   return at !== null && at.getTime() < start.getTime();
 }
 
-/** Tooltip of the "Before scans" badge: the recorded date is that of the first scan. */
+/** Tooltip of the "First scan" badge: the recorded date is that of the first scan. */
 export function beforeScansTitle(recorded: string): string {
   return `Already present on the first scan on ${formatDate(recorded)}. The real date is unknown.`;
 }
 
 /** Tooltip of the shaded chart span. */
-export function beforeScansSpanTitle(start: Date): string {
-  return `Before scanning began on ${formatLongDate(start)}. The real dates are unknown.`;
-}
+export const FIRST_SCAN_SPAN_TITLE = 'Result of the first scan. State before is unknown.';

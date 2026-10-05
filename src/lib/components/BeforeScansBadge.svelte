@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { BEFORE_SCANS, beforeScansTitle } from '../cells';
+  import { FIRST_SCAN, beforeScansTitle } from '../cells';
 
   interface Props {
     /** The recorded timestamp the badge stands for. */
@@ -9,4 +9,4 @@
   let { value }: Props = $props();
 </script>
 
-<span class="badge badge-muted" title={beforeScansTitle(value)}>{BEFORE_SCANS}</span>
+<span class="badge badge-muted" title={beforeScansTitle(value)}>{FIRST_SCAN}</span>

@@ -48,7 +48,7 @@
 
 <script lang="ts">
   import { onDestroy } from 'svelte';
-  import { BEFORE_SCANS, beforeScansSpanTitle } from '../cells';
+  import { FIRST_SCAN, FIRST_SCAN_SPAN_TITLE } from '../cells';
   import { formatDate } from '../format';
 
   interface Props {
@@ -201,8 +201,8 @@
       class="before-scans"
       data-testid="before-scans"
       bind:this={spanLabel}
-      title={beforeScansSpanTitle(beforeScans)}
-      hidden>{BEFORE_SCANS}</span
+      title={FIRST_SCAN_SPAN_TITLE}
+      hidden>{FIRST_SCAN}</span
     >
   {/if}
 </div>
