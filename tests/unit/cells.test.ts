@@ -110,7 +110,7 @@ describe('before scans', () => {
 
   it('words the tooltip with the configured date', () => {
     expect(beforeScansTitle(start)).toBe(
-      'Already recorded when scanning began on 20 Sep 2026; the real date is unknown.',
+      'Already present on the first scan on 20 Sep 2026. The real date is unknown.',
     );
   });
 

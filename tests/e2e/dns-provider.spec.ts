@@ -214,7 +214,7 @@ test.describe('DNS provider card (dns-provider.html)', () => {
       await expect(templates.getByText('Before scans')).toHaveCount(3);
       await expect(page.getByText('Before scans').first()).toHaveAttribute(
         'title',
-        /scanning began on 21 Sep 2026/,
+        /first scan on 21 Sep 2026/,
       );
       await expect(page.getByTestId('headline')).toBeVisible();
       await expect(
@@ -248,7 +248,7 @@ test.describe('DNS provider card (dns-provider.html)', () => {
       await expect(templates.locator('tbody tr').first()).toContainText('01-07-2026');
       await expect(templates.getByText('Before scans').first()).toHaveAttribute(
         'title',
-        /scanning began on 1 May 2026/,
+        /first scan on 1 May 2026/,
       );
     });
   });

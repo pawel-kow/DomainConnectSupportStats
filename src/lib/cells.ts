@@ -130,5 +130,5 @@ export function isBeforeScans(key: string, value: CellValue, start: Date | null)
 
 /** Tooltip of the "Before scans" badge and of the chart span. */
 export function beforeScansTitle(start: Date): string {
-  return `Already recorded when scanning began on ${formatLongDate(start)}; the real date is unknown.`;
+  return `Already present on the first scan on ${formatLongDate(start)}. The real date is unknown.`;
 }

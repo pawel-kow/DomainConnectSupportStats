@@ -214,8 +214,8 @@ times are not shown.
   still shows a readable scale.
 - F-2.13 Scanning began on `scannerStartDate` (`config.js`, `YYYY-MM-DD` UTC; the deployed
   `public/config.js` sets 2026-09-21; unset or invalid: nothing is marked). A `since` or `first_seen_at` value before 00:00 UTC of
-  that day shows the badge "Before scans" instead of the date, with the tooltip "Already recorded
-  when scanning began on 21 Sep 2026; the real date is unknown."; `null` stays `–`. Badge rows sort
+  that day shows the badge "Before scans" instead of the date, with the tooltip "Already present on
+  the first scan on 21 Sep 2026. The real date is unknown."; `null` stays `–`. Badge rows sort
   as the oldest, in timestamp order among themselves; the filter matches the underlying value.
   Charts of support-sweep series shade the span before the start date and label it "Before scans"
   (same tooltip); points inside it are drawn. Domain share per import is not shaded: zone scans
