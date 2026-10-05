@@ -1,5 +1,6 @@
 import {
   formatCount,
+  formatDate,
   formatDateTime,
   formatExact,
   formatLongDate,
@@ -128,7 +129,12 @@ export function isBeforeScans(key: string, value: CellValue, start: Date | null)
   return at !== null && at.getTime() < start.getTime();
 }
 
-/** Tooltip of the "Before scans" badge and of the chart span. */
-export function beforeScansTitle(start: Date): string {
-  return `Already present on the first scan on ${formatLongDate(start)}. The real date is unknown.`;
+/** Tooltip of the "Before scans" badge: the recorded date is that of the first scan. */
+export function beforeScansTitle(recorded: string): string {
+  return `Already present on the first scan on ${formatDate(recorded)}. The real date is unknown.`;
+}
+
+/** Tooltip of the shaded chart span. */
+export function beforeScansSpanTitle(start: Date): string {
+  return `Before scanning began on ${formatLongDate(start)}. The real dates are unknown.`;
 }

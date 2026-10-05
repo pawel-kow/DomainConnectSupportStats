@@ -189,7 +189,7 @@ describe('DataTable pagination', () => {
       expect(bodyColumn(1)).toEqual(['01-10-2026 03:00 UTC', 'Before scans', 'Before scans']);
       expect(screen.getAllByText('Before scans')[0]).toHaveAttribute(
         'title',
-        'Already present on the first scan on 20 Sep 2026. The real date is unknown.',
+        'Already present on the first scan on 01-04-2026. The real date is unknown.',
       );
     });
 

@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
+  beforeScansSpanTitle,
   beforeScansTitle,
   cellKind,
   compareCells,
@@ -108,9 +109,15 @@ describe('before scans', () => {
     expect(isBeforeScans('since', 'soon', start)).toBe(false);
   });
 
-  it('words the tooltip with the configured date', () => {
-    expect(beforeScansTitle(start)).toBe(
-      'Already present on the first scan on 20 Sep 2026. The real date is unknown.',
+  it('words the tooltip with the recorded date', () => {
+    expect(beforeScansTitle('2026-07-01 03:00:00')).toBe(
+      'Already present on the first scan on 01-07-2026. The real date is unknown.',
+    );
+  });
+
+  it('words the chart span tooltip with the start date', () => {
+    expect(beforeScansSpanTitle(start)).toBe(
+      'Before scanning began on 20 Sep 2026. The real dates are unknown.',
     );
   });
 

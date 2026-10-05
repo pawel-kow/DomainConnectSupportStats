@@ -296,7 +296,7 @@
           <dt>First seen</dt>
           <dd>
             {#if isBeforeScans('first_seen_at', text(provider, 'first_seen_at'), scannerStart())}
-              <BeforeScansBadge />
+              <BeforeScansBadge value={text(provider, 'first_seen_at') ?? ''} />
             {:else}
               {formatDateTime(text(provider, 'first_seen_at'))}
             {/if}

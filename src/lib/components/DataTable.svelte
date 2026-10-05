@@ -178,7 +178,7 @@
               {#if cell && customKeys.includes(column.key)}
                 {@render cell(column, row)}
               {:else if isBeforeScans(column.key, value, start)}
-                <BeforeScansBadge />
+                <BeforeScansBadge value={String(value)} />
               {:else}
                 {formatCell(column.key, value)}
               {/if}
