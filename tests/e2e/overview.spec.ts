@@ -15,7 +15,7 @@ test.describe('overview (index.html)', () => {
   test('shows the latest values as headline numbers', async ({ page }) => {
     const headline = page.getByTestId('headline');
     await expect(headline).toContainText('60.1%');
-    await expect(headline).toContainText('7,210 of 12,000 scanned domains');
+    await expect(headline).toContainText('7,210 of 12K scanned domains');
     await expect(headline).toContainText('Supporting DNS providers');
     await expect(headline).toContainText('of 6');
   });

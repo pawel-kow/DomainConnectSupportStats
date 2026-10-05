@@ -13,7 +13,7 @@
   import { defaultClient, NotFoundError } from '../lib/data/load';
   import { findTable, oneRecord } from '../lib/data/tables';
   import type { Column, ExportFile, Manifest, Row } from '../lib/data/types';
-  import { formatCount, formatPct, UNKNOWN } from '../lib/format';
+  import { formatAxisPct, formatCount, formatPct, UNKNOWN } from '../lib/format';
   import { links } from '../lib/links';
   import { textParam } from '../lib/params';
   import { defaultRegistryClient, entryFileUrl } from '../lib/registry/load';
@@ -154,6 +154,7 @@
       >
         <StatCard
           value={formatCount(deploymentCount)}
+          exact={deploymentCount}
           label="Deployments"
           detail="DNS providers in the stack"
         />
@@ -164,6 +165,7 @@
         />
         <StatCard
           value={formatCount(num(record, 'domains'))}
+          exact={num(record, 'domains')}
           label="Domains"
           detail={num(record, 'domains') === null
             ? 'no domain-share import'
@@ -197,7 +199,8 @@
                   },
                 ]}
                 leftTitle="% of scanned domains"
-                formatLeft={(v) => `${Number(v.toFixed(2))}%`}
+                formatLeft={formatAxisPct}
+                leftFromZero={false}
               />
             {/await}
           {:else}

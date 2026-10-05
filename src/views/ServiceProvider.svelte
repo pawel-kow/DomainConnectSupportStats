@@ -100,16 +100,19 @@
       <section class="summary-stats" aria-label="Templates and reach" data-testid="headline">
         <StatCard
           value={formatCount(num(support, 'templates'))}
+          exact={num(support, 'templates')}
           label="Templates"
           detail={`${formatCount(num(support, 'supported_templates'))} supported by a DNS provider`}
         />
         <StatCard
           value={formatCount(num(support, 'supporting_dns_providers'))}
+          exact={num(support, 'supporting_dns_providers')}
           label="Supporting DNS providers"
           detail="of any of its templates, in the latest probes"
         />
         <StatCard
           value={formatCount(num(support, 'reach_domains'))}
+          exact={num(support, 'reach_domains')}
           label="Domains reached"
           detail={num(support, 'reach_domains') === null
             ? 'no domain-share import'

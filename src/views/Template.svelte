@@ -110,6 +110,7 @@
         />
         <StatCard
           value={formatCount(num(total, 'domains'))}
+          exact={num(total, 'domains')}
           label="Domains reached"
           detail={num(total, 'domains') === null
             ? 'no domain-share import'

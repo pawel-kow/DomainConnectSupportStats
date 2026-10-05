@@ -12,7 +12,9 @@ test.describe('DNS providers list (dns-providers.html)', () => {
     await expect(names(page)).toHaveText(['Cloudflare', 'IONOS', 'Plesk']);
     const cloudflare = page.locator('tbody tr', { hasText: 'Cloudflare' });
     await expect(cloudflare).toContainText('api.cloudflare.com');
-    await expect(cloudflare).toContainText(/4 of 6\s*66.7%/);
+    await expect(cloudflare).toContainText(/4\s*66.7%/);
+    await expect(cloudflare).not.toContainText('4 of 6');
+    await expect(cloudflare.getByTitle('of 6 template versions')).toHaveText('4');
     await expect(cloudflare).toContainText(/1\s*16.7%/);
     await expect(cloudflare).toContainText(/4,000\s*33.3%/);
     await expect(page.getByTestId('caveats')).toContainText('total of 1');

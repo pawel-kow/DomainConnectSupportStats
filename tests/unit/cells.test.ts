@@ -12,7 +12,8 @@ describe('formatCell', () => {
   it('formats by column key', () => {
     expect(formatCell('domains_pct', 33.33333333333333)).toBe('33.3%');
     expect(formatCell('change_pct', -0.4166666666666661)).toBe('-0.42 pp');
-    expect(formatCell('domains', 12000)).toBe('12,000');
+    expect(formatCell('domains', 9000)).toBe('9,000');
+    expect(formatCell('domains', 38531012)).toBe('38.5M');
     expect(formatCell('import_id', 1780272000)).toBe('1780272000');
     expect(formatCell('completed_at', '2026-06-01 07:00:00')).toBe('01-06-2026 07:00 UTC');
     expect(formatCell('versions', [1, 2])).toBe('1, 2');

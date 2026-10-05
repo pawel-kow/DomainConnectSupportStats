@@ -4,6 +4,17 @@ Changes per site version. Versions follow [SemVer](https://semver.org/): major f
 parameter removed or changed incompatibly, minor for new pages, features or content, patch for
 fixes, styling and dependencies.
 
+## [0.10.0] - 2026-10-05
+
+### Changed
+
+- Counts from 10,000 show compact (`38.5M`, `12.3K`) in cards, tables, charts and tooltips; the
+  exact count is the tooltip.
+- Small percentages keep two significant digits (`0.012%`, `<0.0001%` below that).
+- DNS providers list: the Supported column shows the count and its share; the template version
+  total moves to the tooltip.
+- Domain share charts fit the percent axis to the data, so small providers show a readable scale.
+
 ## [0.9.0] - 2026-10-05
 
 ### Added

@@ -206,6 +206,12 @@ times are not shown.
 - F-2.10 Tables that can grow long have a filter and pages (`DataTable` `searchable`, `pageSize`):
   20 rows by default, 20 / 50 / 100 / All on request; back to the first page when the search, sort,
   filters or page size change. Neither the page nor its size is in the URL.
+- F-2.11 Counts from 10,000 are compact: `12.3K`, `38.5M`, `1.2B` (one decimal, `.0` dropped, dot
+  decimal); below 10,000 exact. In cards, tables, chart axes and tooltips; the exact count is the
+  `title` of the card value or table cell. Pagination ranges stay exact. Sorting uses the raw value.
+- F-2.12 Percentages keep two significant digits below 1% (`0.012%`) and show `<0.0001%` below
+  that. Share charts fit the percent axis to the data (not from 0); its ticks carry the decimals
+  their step needs.
 - F-2.9 Internal ids (`dns_provider_id`, `import_id`, `sweep_id`) are not shown: no columns, titles,
   tooltips or messages. They stay in URLs and lookups. Charts speak of time only: no "import" or
   "sweep" in headings, labels or tooltips. Public ids (`provider_id`,

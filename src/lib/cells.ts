@@ -1,4 +1,12 @@
-import { formatCount, formatDateTime, formatPct, formatPp, UNKNOWN } from './format';
+import {
+  formatCount,
+  formatDateTime,
+  formatExact,
+  formatPct,
+  formatPp,
+  isCompact,
+  UNKNOWN,
+} from './format';
 import type { CellValue } from './data/types';
 
 /**
@@ -57,6 +65,13 @@ export function formatCell(key: string, value: CellValue): string {
     default:
       return String(value);
   }
+}
+
+/** Tooltip of a cell: the exact count behind a compacted one. */
+export function cellTitle(key: string, value: CellValue): string | undefined {
+  return typeof value === 'number' && cellKind(key, value) === 'count' && isCompact(value)
+    ? formatExact(value)
+    : undefined;
 }
 
 /**
