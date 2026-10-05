@@ -1,4 +1,5 @@
 <script lang="ts">
+  import BeforeScansBadge from '../lib/components/BeforeScansBadge.svelte';
   import CardTitle from '../lib/components/CardTitle.svelte';
   import DataTable from '../lib/components/DataTable.svelte';
   import ExternalLink from '../lib/components/ExternalLink.svelte';
@@ -10,7 +11,8 @@
   import RegistryContact from '../lib/components/RegistryContact.svelte';
   import StatCard from '../lib/components/StatCard.svelte';
   import TimeChart from '../lib/components/TimeChart.svelte';
-  import { parseNameservers } from '../lib/cells';
+  import { isBeforeScans, parseNameservers } from '../lib/cells';
+  import { scannerStart } from '../lib/data/config';
   import { defaultClient, NotFoundError } from '../lib/data/load';
   import { undeterminedCount } from '../lib/dns-providers';
   import { findTable, oneRecord } from '../lib/data/tables';
@@ -231,6 +233,7 @@
           {#if supportHistory.rows.length}
             <TimeChart
               label="Supported templates over time"
+              beforeScans={scannerStart()}
               series={[
                 {
                   label: 'Supported templates',
@@ -291,7 +294,13 @@
             {/if}
           </dd>
           <dt>First seen</dt>
-          <dd>{formatDateTime(text(provider, 'first_seen_at'))}</dd>
+          <dd>
+            {#if isBeforeScans('first_seen_at', text(provider, 'first_seen_at'), scannerStart())}
+              <BeforeScansBadge value={text(provider, 'first_seen_at') ?? ''} />
+            {:else}
+              {formatDateTime(text(provider, 'first_seen_at'))}
+            {/if}
+          </dd>
         </dl>
       </section>
 

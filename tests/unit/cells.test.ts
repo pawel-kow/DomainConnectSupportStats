@@ -1,8 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import {
+  FIRST_SCAN_SPAN_TITLE,
+  beforeScansTitle,
   cellKind,
   compareCells,
   formatCell,
+  isBeforeScans,
   isPublicKey,
   parseNameservers,
   rowMatches,
@@ -80,5 +83,55 @@ describe('isPublicKey', () => {
     for (const key of ['provider_id', 'service_provider_id', 'service_id', 'domains']) {
       expect(isPublicKey(key)).toBe(true);
     }
+  });
+});
+
+describe('before scans', () => {
+  const start = new Date('2026-09-20T00:00:00Z');
+
+  it('flags since and first_seen_at before the start date', () => {
+    expect(isBeforeScans('since', '2026-09-19 23:59:59', start)).toBe(true);
+    expect(isBeforeScans('first_seen_at', '2025-12-01 10:00:00', start)).toBe(true);
+  });
+
+  it('shows the start date itself and later as a date', () => {
+    expect(isBeforeScans('since', '2026-09-20 00:00:00', start)).toBe(false);
+    expect(isBeforeScans('since', '2026-10-01 03:00:00', start)).toBe(false);
+  });
+
+  it('marks nothing without a start date', () => {
+    expect(isBeforeScans('since', '2020-01-01 00:00:00', null)).toBe(false);
+  });
+
+  it('leaves null, other keys and unreadable values alone', () => {
+    expect(isBeforeScans('since', null, start)).toBe(false);
+    expect(isBeforeScans('started_at', '2025-01-01 00:00:00', start)).toBe(false);
+    expect(isBeforeScans('since', 'soon', start)).toBe(false);
+  });
+
+  it('words the tooltip with the recorded date', () => {
+    expect(beforeScansTitle('2026-07-01 03:00:00')).toBe(
+      'Already present on the first scan on 01-07-2026. The real date is unknown.',
+    );
+  });
+
+  it('words the chart span tooltip', () => {
+    expect(FIRST_SCAN_SPAN_TITLE).toBe('Result of the first scan. State before is unknown.');
+  });
+
+  it('sorts badge dates as the oldest, in timestamp order', () => {
+    const dates = [
+      '2026-10-01 03:00:00',
+      '2026-03-02 03:00:00',
+      '2026-09-30 00:00:00',
+      '2026-04-01 03:00:00',
+    ];
+    const sorted = [...dates].sort((a, b) => compareCells(a, b, 1));
+    expect(sorted).toEqual([
+      '2026-03-02 03:00:00',
+      '2026-04-01 03:00:00',
+      '2026-09-30 00:00:00',
+      '2026-10-01 03:00:00',
+    ]);
   });
 });

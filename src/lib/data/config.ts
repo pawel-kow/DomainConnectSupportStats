@@ -10,7 +10,11 @@ export const DEFAULT_REGISTRY_BASE_URL = './registry/';
 
 declare global {
   interface Window {
-    DC_STATS_CONFIG?: { dataBaseUrl?: string; registryBaseUrl?: string };
+    DC_STATS_CONFIG?: {
+      dataBaseUrl?: string;
+      registryBaseUrl?: string;
+      scannerStartDate?: string;
+    };
   }
 }
 
@@ -51,4 +55,18 @@ export function registryBaseUrl(): string {
     DEFAULT_REGISTRY_BASE_URL,
     window.location.href,
   );
+}
+
+/**
+ * The configured scanner start date (`YYYY-MM-DD`) as UTC midnight: earlier dates only say
+ * "already there". `null` when unset or invalid: nothing is marked.
+ */
+export function resolveScannerStart(runtime: unknown): Date | null {
+  if (typeof runtime !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(runtime)) return null;
+  const date = new Date(`${runtime}T00:00:00Z`);
+  return !Number.isNaN(date.getTime()) && date.toISOString().startsWith(runtime) ? date : null;
+}
+
+export function scannerStart(): Date | null {
+  return resolveScannerStart(window.DC_STATS_CONFIG?.scannerStartDate);
 }

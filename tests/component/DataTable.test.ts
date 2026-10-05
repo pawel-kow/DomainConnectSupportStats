@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { fireEvent, render, screen, within } from '@testing-library/svelte';
-import { describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import DataTable from '../../src/lib/components/DataTable.svelte';
 import type { Table } from '../../src/lib/data/types';
 import { exampleJson } from '../fixtures';
@@ -169,5 +169,51 @@ describe('DataTable pagination', () => {
   it('shows no pager when every row fits on one page', () => {
     render(DataTable, { table: stacks(), pageSize: 20 });
     expect(screen.queryByTestId('page-range')).not.toBeInTheDocument();
+  });
+
+  describe('before scans', () => {
+    beforeEach(() => {
+      window.DC_STATS_CONFIG = { scannerStartDate: '2026-09-20' };
+    });
+    afterEach(() => {
+      window.DC_STATS_CONFIG = undefined;
+    });
+
+    const dnsProvider = () =>
+      exampleJson('dns-providers/1.json').tables.supported_templates as Table;
+
+    it('shows a badge with the tooltip instead of a date before the start date', () => {
+      const table = dnsProvider();
+      table.rows[0]!.since = '2026-10-01 03:00:00';
+      render(DataTable, { table, keys: ['service_name', 'since'] });
+      expect(bodyColumn(1)).toEqual(['01-10-2026 03:00 UTC', 'First scan', 'First scan']);
+      expect(screen.getAllByText('First scan')[0]).toHaveAttribute(
+        'title',
+        'Already present on the first scan on 01-04-2026. The real date is unknown.',
+      );
+    });
+
+    it('shows every date as is without a start date', () => {
+      window.DC_STATS_CONFIG = {};
+      render(DataTable, { table: dnsProvider(), keys: ['service_name', 'since'] });
+      expect(screen.queryByText('First scan')).not.toBeInTheDocument();
+      expect(bodyColumn(1)[0]).toBe('01-07-2026 03:00 UTC');
+    });
+
+    it('keeps null as a dash', () => {
+      const table = dnsProvider();
+      table.rows[0]!.since = null;
+      render(DataTable, { table, keys: ['service_name', 'since'] });
+      expect(bodyColumn(1)[0]).toBe('–');
+    });
+
+    it('sorts badge rows before real dates, by their own timestamp', async () => {
+      const table = dnsProvider();
+      table.rows[0]!.since = '2026-10-01 03:00:00';
+      render(DataTable, { table, keys: ['service_name', 'since'] });
+      await fireEvent.click(screen.getByRole('button', { name: /SUPPORTED SINCE/ }));
+      expect(bodyColumn(1)).toEqual(['First scan', 'First scan', '01-10-2026 03:00 UTC']);
+      expect(bodyColumn(0)).toEqual(['Example Website', 'Domain Verification', 'Acme Mail']);
+    });
   });
 });

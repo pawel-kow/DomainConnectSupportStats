@@ -8,6 +8,7 @@
     PointElement,
     Tooltip,
     type ChartConfiguration,
+    type Plugin,
   } from 'chart.js';
   import type { Point } from '../series';
 
@@ -47,6 +48,7 @@
 
 <script lang="ts">
   import { onDestroy } from 'svelte';
+  import { FIRST_SCAN, FIRST_SCAN_SPAN_TITLE } from '../cells';
   import { formatDate } from '../format';
 
   interface Props {
@@ -60,6 +62,8 @@
     label: string;
     /** Draw the legend; off when the page shows its own. */
     legend?: boolean;
+    /** Scanner start date: shade the span before it, for charts of sweep series. */
+    beforeScans?: Date | null;
   }
 
   let {
@@ -70,15 +74,42 @@
     formatRight,
     label,
     legend = true,
+    beforeScans,
   }: Props = $props();
 
   let canvas: HTMLCanvasElement | undefined = $state();
   let chart: Chart<'line', Point[]> | undefined;
+  let spanLabel: HTMLElement | undefined = $state();
+
+  /** Shades the span before the scanner start date and places its label over it. */
+  function beforeScansPlugin(until: Date): Plugin<'line'> {
+    return {
+      id: 'beforeScans',
+      beforeDatasetsDraw(c) {
+        const { left, right, top, bottom } = c.chartArea;
+        const scale = c.scales.x;
+        const edge = scale ? Math.min(scale.getPixelForValue(until.getTime()), right) : left;
+        const shown = edge > left;
+        if (spanLabel) {
+          spanLabel.hidden = !shown;
+          spanLabel.style.left = `${left}px`;
+          spanLabel.style.top = `${top}px`;
+        }
+        if (!shown) return;
+        const ctx = c.ctx;
+        ctx.save();
+        ctx.fillStyle = 'rgba(3, 38, 59, 0.07)';
+        ctx.fillRect(left, top, edge - left, bottom - top);
+        ctx.restore();
+      },
+    };
+  }
 
   function config(): ChartConfiguration<'line', Point[]> {
     const hasRight = series.some((s) => s.axis === 'right');
     return {
       type: 'line',
+      plugins: beforeScans ? [beforeScansPlugin(beforeScans)] : [],
       data: {
         datasets: series.map((s, i) => {
           const color = s.color ?? SERIES_COLORS[i % SERIES_COLORS.length]!;
@@ -165,12 +196,36 @@
 
 <div class="chart-box" role="img" aria-label={label}>
   <canvas bind:this={canvas}></canvas>
+  {#if beforeScans}
+    <span
+      class="before-scans"
+      data-testid="before-scans"
+      bind:this={spanLabel}
+      title={FIRST_SCAN_SPAN_TITLE}
+      hidden>{FIRST_SCAN}</span
+    >
+  {/if}
 </div>
 
 <style>
   .chart-box {
     position: relative;
     height: 400px;
+  }
+
+  .before-scans {
+    position: absolute;
+    padding: 2px 6px;
+    font-size: 0.7rem;
+    font-weight: var(--font-weight-semibold);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--text-secondary);
+    cursor: help;
+  }
+
+  .before-scans[hidden] {
+    display: none;
   }
 
   @media (max-width: 768px) {

@@ -5,10 +5,13 @@
     cellTitle,
     compareCells,
     formatCell,
+    isBeforeScans,
     isNumericKind,
     isPublicKey,
     rowMatches,
   } from '../cells';
+  import BeforeScansBadge from './BeforeScansBadge.svelte';
+  import { scannerStart } from '../data/config';
   import type { Column, Row, Table } from '../data/types';
   import { formatExact } from '../format';
   import { clampPage, PAGE_SIZES, pageCount, pageRange, pageRows } from '../paging';
@@ -52,6 +55,8 @@
       (c) => isPublicKey(c.key),
     ),
   );
+
+  const start = scannerStart();
 
   // `null` sort key = the export's own order, which is the meaningful default (by domains/reach).
   let sortKey = $state<string | null>(null);
@@ -172,6 +177,8 @@
             >
               {#if cell && customKeys.includes(column.key)}
                 {@render cell(column, row)}
+              {:else if isBeforeScans(column.key, value, start)}
+                <BeforeScansBadge value={String(value)} />
               {:else}
                 {formatCell(column.key, value)}
               {/if}

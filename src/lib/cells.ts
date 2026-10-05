@@ -1,10 +1,12 @@
 import {
   formatCount,
+  formatDate,
   formatDateTime,
   formatExact,
   formatPct,
   formatPp,
   isCompact,
+  parseTimestamp,
   UNKNOWN,
 } from './format';
 import type { CellValue } from './data/types';
@@ -111,3 +113,25 @@ export function parseNameservers(value: string | null | undefined): string[] | n
     return null;
   }
 }
+
+/** Label of the badge that stands for a date before scanning began. */
+export const FIRST_SCAN = 'First scan';
+
+/**
+ * Whether a cell is a "first seen" or "supported since" date from before scanning began: it then
+ * says only that the fact predates the scans, not when it began.
+ */
+export function isBeforeScans(key: string, value: CellValue, start: Date | null): boolean {
+  if (!start) return false;
+  if (key !== 'since' && key !== 'first_seen_at') return false;
+  const at = typeof value === 'string' ? parseTimestamp(value) : null;
+  return at !== null && at.getTime() < start.getTime();
+}
+
+/** Tooltip of the "First scan" badge: the recorded date is that of the first scan. */
+export function beforeScansTitle(recorded: string): string {
+  return `Already present on the first scan on ${formatDate(recorded)}. The real date is unknown.`;
+}
+
+/** Tooltip of the shaded chart span. */
+export const FIRST_SCAN_SPAN_TITLE = 'Result of the first scan. State before is unknown.';

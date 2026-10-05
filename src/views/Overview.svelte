@@ -3,6 +3,7 @@
   import LoadError from '../lib/components/LoadError.svelte';
   import Notes from '../lib/components/Notes.svelte';
   import StatCard from '../lib/components/StatCard.svelte';
+  import { scannerStart } from '../lib/data/config';
   import TimeChart, { type Series } from '../lib/components/TimeChart.svelte';
   import { defaultClient } from '../lib/data/load';
   import { findTable } from '../lib/data/tables';
@@ -125,6 +126,7 @@
       <h2>Domain Connect support over time</h2>
       {#if adoptionRows.length || ecosystemRows.length}
         <TimeChart
+          beforeScans={scannerStart()}
           label="Domain Connect adoption per import and support per full sweep over time"
           series={chartSeries(adoptionRows, ecosystemRows)}
           leftTitle="% of scanned domains"

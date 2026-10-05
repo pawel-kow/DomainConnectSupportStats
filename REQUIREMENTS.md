@@ -212,6 +212,15 @@ times are not shown.
 - F-2.12 Percentages keep two significant digits below 1% (`0.012%`) and show `<0.0001%` below
   that. Percent axes start at 0; their ticks carry the decimals their step needs, so a small share
   still shows a readable scale.
+- F-2.13 Scanning began on `scannerStartDate` (`config.js`, `YYYY-MM-DD` UTC; the deployed
+  `public/config.js` sets 2026-09-22; unset or invalid: nothing is marked). A `since` or
+  `first_seen_at` value before 00:00 UTC of that day shows the badge "First scan" instead of the
+  date, with the tooltip "Already present on the first scan on <recorded date>. The real date is
+  unknown."; `null` stays `–`. Badge rows sort as the oldest, in timestamp order among themselves;
+  the filter matches the underlying value. Charts of support-sweep series shade the span before the
+  start date and label it "First scan" (tooltip: "Result of the first scan. State before is
+  unknown."); points inside it are drawn. Domain share per import is not shaded: zone scans predate
+  the start date.
 - F-2.9 Internal ids (`dns_provider_id`, `import_id`, `sweep_id`) are not shown: no columns, titles,
   tooltips or messages. They stay in URLs and lookups. Charts speak of time only: no "import" or
   "sweep" in headings, labels or tooltips. Public ids (`provider_id`,
