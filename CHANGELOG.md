@@ -4,6 +4,18 @@ Changes per site version. Versions follow [SemVer](https://semver.org/): major f
 parameter removed or changed incompatibly, minor for new pages, features or content, patch for
 fixes, styling and dependencies.
 
+## [0.6.0] - 2026-10-04
+
+### Added
+
+- Service provider card: templates, supporting DNS providers and reach, templates with support
+  and reach (filter, pages of 20), supporting DNS providers per template over time with a picker
+  (the 7 templates with most reach by default), link to its templates in the templates list.
+
+### Changed
+
+- Charts can hide their legend when the page shows its own.
+
 ## [0.5.0] - 2026-10-04
 
 ### Added
