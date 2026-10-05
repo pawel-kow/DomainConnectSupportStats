@@ -1,7 +1,7 @@
 # Requirements
 
 What the site must do and the constraints that bind it. The data's meaning is defined by
-[contract/EXPORT_FORMAT.md](contract/EXPORT_FORMAT.md).
+[contract/export/EXPORT_FORMAT.md](contract/export/EXPORT_FORMAT.md).
 
 ## 0. Product
 
@@ -210,7 +210,7 @@ times are not shown.
 - F-3.4 A release that fails validation against the vendored contract is not published.
 - F-3.5 Only approved, tagged site versions are published.
 - F-3.6 The DNS provider registry (entries and logos, keyed by `provider_id`) is a separate public
-  repository, validated against `registry/schema/` and published with every deploy under
+  repository, validated against `contract/registry/schema/` and published with every deploy under
   `registry/`, with its repository and commit (no repository link and no footer commit when that
   is missing). Base URL: build time `VITE_REGISTRY_BASE_URL`,
   runtime `config.js`, default `./registry/`. The footer shows the registry commit.
@@ -230,7 +230,7 @@ times are not shown.
 | ---- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | C-1  | Static and stateless: no backend, no write path, no state between pages beyond the URL                                                                                             |
 | C-2  | One HTML file per page (multi-page build)                                                                                                                                          |
-| C-3  | Built only from `contract/`, never from Scanner source                                                                                                                             |
+| C-3  | Built only from `contract/` (export, registry), never from Scanner source                                                                                                          |
 | C-4  | Unknown files, tables, columns and keys ignored; tables found by id                                                                                                                |
 | C-5  | `null` is unknown: `–`, a gap, sorted last, never 0                                                                                                                                |
 | C-6  | Third-party text escaped; data URLs pass `safeUrl` (e-mail addresses `safeMailto`) and open with `rel="nofollow noopener noreferrer"`                                              |
@@ -246,7 +246,8 @@ times are not shown.
 - Svelte 5 + TypeScript, Vite multi-page; Chart.js.
 - Data in a separate data repo; deploy on `repository_dispatch`, daily fallback.
 - GitHub Pages on github.io; custom domain possible without rebuild (relative base).
-- Contract vendored under `contract/`, updated by PR.
+- Export and registry contracts vendored under `contract/`, updated by PR; test registry as git
+  submodule `registry/` (dev).
 - Node-only tooling; Vitest (unit, contract, component) and Playwright.
 - SemVer site versions, [CHANGELOG.md](CHANGELOG.md).
 

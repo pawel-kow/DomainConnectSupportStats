@@ -3,7 +3,7 @@
 Test layers, conventions and gates.
 
 Related: [DEVELOPING.md](DEVELOPING.md) §3.2 (when tests are written),
-[contract/EXPORT_FORMAT.md](contract/EXPORT_FORMAT.md) (what the tests hold the site to).
+[contract/export/EXPORT_FORMAT.md](contract/export/EXPORT_FORMAT.md) (what the tests hold the site to).
 
 Tests pin the contract's rules and the meaning of what is shown, not the markup.
 
@@ -31,7 +31,8 @@ text and `data-testid`; never by CSS class or by which helper was called.
 
 ### 1.3 The example export is the fixture
 
-Fixtures come from `contract/examples/export/` (`tests/fixtures.ts`) and `registry/examples/`.
+Fixtures come from `contract/export/examples/export/` (`tests/fixtures.ts`) and
+`contract/registry/examples/`, never from the `registry/` submodule.
 Variants copy an example file and change the one field under test.
 
 ### 1.4 Real data before review
@@ -87,7 +88,7 @@ Page changes are run against the current real release before review (DEVELOPING.
 
 `example-registry.test.ts`:
 
-- The example registry is valid under `validateRegistry` (schema, entry path, logo).
+- The golden registry copy is valid under `validateRegistry` (schema, entry path, logo).
 - The schema: `providerId` and `name` required, unknown keys allowed, tri-state flags, onboarding
   modes, contacts, http(s) URLs, logo file names.
 - `validateRegistry` catches a missing `providers/` folder, an entry at the wrong path, a missing
@@ -109,7 +110,7 @@ Page changes are run against the current real release before review (DEVELOPING.
 
 Playwright builds the site and serves it with `vite preview`, with the release under `/data/`
 (`DATA_DIR`, default: the example export) and the registry under `/registry/` (`REGISTRY_DIR`,
-default: `registry/examples`). Projects: `desktop` (Desktop Chrome), `mobile`
+default: `contract/registry/examples`). Projects: `desktop` (Desktop Chrome), `mobile`
 (Pixel 7). The `consoleErrors` fixture fails a test on any page or console error unless it sets
 `expectErrors`.
 
@@ -134,7 +135,7 @@ Against a real release: `DATA_DIR=<release> REGISTRY_DIR=<registry> npm run test
 | Types (svelte-check, warnings fail) | `npm run check`                                         | CI, `verify`                           |
 | Unit + contract + component         | `npm test`                                              | CI, deploy, `verify`                   |
 | Example export valid                | `npm run validate:export`                               | CI                                     |
-| Example registry valid              | `npm run validate:registry`                             | CI                                     |
+| Dev registry valid                  | `npm run validate:registry`                             | CI                                     |
 | Version has a CHANGELOG section     | `npm run check:version`                                 | CI, `verify`                           |
 | Build                               | `npm run build`                                         | CI, deploy, `verify`                   |
 | E2E                                 | `npm run test:e2e`                                      | CI, `verify`                           |
