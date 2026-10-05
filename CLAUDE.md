@@ -57,7 +57,7 @@ src/entries/<page>.ts      mounts the page's view into #app
 src/views/*.svelte         one view per page (Overview, DnsProvider, Placeholder, ...)
 src/lib/components/        shared UI: Layout (header/nav/footer), DataTable, TimeChart, StatCard,
                            NotFound, LoadError, Notes, CardTitle, RegistryContact, Registry,
-                           ContactList, ExternalLink
+                           ContactList, ExternalLink, StatusBadge
 src/lib/data/              the contract in code: types, id encoding, manifest paths, loader
                            (ExportClient), table lookup, data and registry base URL config
 src/lib/registry/          the registry in code: entry path, entry parsing, loader (RegistryClient)
@@ -83,7 +83,7 @@ every view is a shareable link:
 | `service-providers.html` (`?q=`)                 | `service-providers.json`                            | built       |
 | `templates.html` (`?spid=`, `&q=`, `&all=`)      | `templates.json`                                    | built       |
 | `dns-provider.html?id=`                          | `dns-providers/{dns_provider_id}.json`, registry    | built       |
-| `stack.html?id=`                                 | `stacks/{provider_id}.json`                         | placeholder |
+| `stack.html?id=`                                 | `stacks/{provider_id}.json`, registry               | built       |
 | `service-provider.html?id=`                      | `service-providers/{service_provider_id}.json`      | built       |
 | `template.html?spid=&sid=`                       | `templates/{service_provider_id}/{service_id}.json` | built       |
 

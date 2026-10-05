@@ -4,6 +4,15 @@ Changes per site version. Versions follow [SemVer](https://semver.org/): major f
 parameter removed or changed incompatibly, minor for new pages, features or content, patch for
 fixes, styling and dependencies.
 
+## [0.8.0] - 2026-10-05
+
+### Added
+
+- Stack card: deployments (links to DNS provider cards), supporting deployments per template
+  (links to template and service provider cards), domain share over time (summed over the
+  current deployments), the stack's registry entry (logo, contact, details), link to its
+  deployments in the DNS providers list.
+
 ## [0.7.0] - 2026-10-05
 
 ### Added

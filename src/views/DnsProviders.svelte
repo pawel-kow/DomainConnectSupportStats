@@ -3,10 +3,11 @@
   import Layout from '../lib/components/Layout.svelte';
   import LoadError from '../lib/components/LoadError.svelte';
   import Notes from '../lib/components/Notes.svelte';
+  import StatusBadge from '../lib/components/StatusBadge.svelte';
   import { defaultClient } from '../lib/data/load';
   import { findTable } from '../lib/data/tables';
   import type { Column, Manifest, Row } from '../lib/data/types';
-  import { dnsProviderList, statusBadge, UNDETERMINED_KEY } from '../lib/dns-providers';
+  import { dnsProviderList, UNDETERMINED_KEY } from '../lib/dns-providers';
   import { formatCount, formatPct, UNKNOWN } from '../lib/format';
   import { links } from '../lib/links';
   import { flagParam, textParam } from '../lib/params';
@@ -66,11 +67,6 @@
   {#if count !== UNKNOWN}<div class="muted">{formatPct(pct)}</div>{/if}
 {/snippet}
 
-{#snippet badge(status: Row[string])}
-  {@const b = statusBadge(status)}
-  <span class="badge badge-{b.tone}" title={b.title}>{b.label}</span>
-{/snippet}
-
 {#snippet providerCell(column: Column, row: Row)}
   {@const id = num(row, 'dns_provider_id')}
   {#if column.key === 'name'}
@@ -81,7 +77,7 @@
     {@const s = text(row, 'provider_id')}
     {#if s}<a href={links.stack(s)}>{s}</a>{:else}{UNKNOWN}{/if}
   {:else if column.key === 'settings_status' || column.key === 'support_status'}
-    {@render badge(row[column.key] ?? null)}
+    <StatusBadge status={row[column.key] ?? null} />
   {:else if column.key === 'supported_count'}
     {@const n = num(row, 'supported_count')}
     {@render countPct(
@@ -167,17 +163,12 @@
   }
 
   /* Wide screens: long labels and hosts wrap so the table fits. Phones: the table scrolls. */
-  .badge,
   .host,
   .count {
     white-space: nowrap;
   }
 
   @media (min-width: 769px) {
-    .badge {
-      white-space: normal;
-    }
-
     .host {
       white-space: normal;
       overflow-wrap: anywhere;
