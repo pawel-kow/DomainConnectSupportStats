@@ -2,6 +2,7 @@
   import { untrack, type Snippet } from 'svelte';
   import {
     cellKind,
+    cellTitle,
     compareCells,
     formatCell,
     isNumericKind,
@@ -9,7 +10,7 @@
     rowMatches,
   } from '../cells';
   import type { Column, Row, Table } from '../data/types';
-  import { formatCount } from '../format';
+  import { formatExact } from '../format';
   import { clampPage, PAGE_SIZES, pageCount, pageRange, pageRows } from '../paging';
 
   interface Props {
@@ -131,7 +132,7 @@
       <input type="search" placeholder="Filter…" bind:value={query} />
     </label>
     <span class="muted" data-testid="row-count"
-      >{formatCount(rows.length)} of {formatCount(table.rows.length)}</span
+      >{formatExact(rows.length)} of {formatExact(table.rows.length)}</span
     >
   </div>
 {/if}
@@ -164,6 +165,7 @@
           {#each columns as column (column.key)}
             {@const value = row[column.key] ?? null}
             <td
+              title={cellTitle(column.key, value)}
               class:num={isNumeric(column.key)}
               class:nowrap={isTimestamp(column.key)}
               class:wide-only={isWideOnly(column.key)}
@@ -186,6 +188,7 @@
           {#each columns as column (column.key)}
             {@const value = table.footer[column.key] ?? null}
             <td
+              title={cellTitle(column.key, value)}
               class:num={isNumeric(column.key)}
               class:nowrap={isTimestamp(column.key)}
               class:wide-only={isWideOnly(column.key)}
@@ -202,7 +205,7 @@
 {#if paged && rows.length > smallestPage}
   <nav class="pager" aria-label="Pages of {caption ?? table.title}">
     <span class="muted" data-testid="page-range"
-      >{formatCount(range.first)}–{formatCount(range.last)} of {formatCount(rows.length)}</span
+      >{formatExact(range.first)}–{formatExact(range.last)} of {formatExact(rows.length)}</span
     >
     <button type="button" disabled={shownPage <= 1} onclick={() => (page = shownPage - 1)}
       >‹ Previous</button

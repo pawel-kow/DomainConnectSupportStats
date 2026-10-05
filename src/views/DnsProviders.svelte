@@ -8,7 +8,7 @@
   import { findTable } from '../lib/data/tables';
   import type { Column, Manifest, Row } from '../lib/data/types';
   import { dnsProviderList, UNDETERMINED_KEY } from '../lib/dns-providers';
-  import { formatCount, formatPct, UNKNOWN } from '../lib/format';
+  import { formatCount, formatExact, formatPct, UNKNOWN } from '../lib/format';
   import { links } from '../lib/links';
   import { flagParam, textParam } from '../lib/params';
 
@@ -62,8 +62,8 @@
   }
 </script>
 
-{#snippet countPct(count: string, pct: number | null)}
-  <span class="count">{count}</span>
+{#snippet countPct(count: string, pct: number | null, title?: string)}
+  <span class="count" {title}>{count}</span>
   {#if count !== UNKNOWN}<div class="muted">{formatPct(pct)}</div>{/if}
 {/snippet}
 
@@ -81,8 +81,9 @@
   {:else if column.key === 'supported_count'}
     {@const n = num(row, 'supported_count')}
     {@render countPct(
-      n === null ? UNKNOWN : `${formatCount(n)} of ${formatCount(num(row, 'total'))}`,
+      formatCount(n),
       num(row, 'supported_pct'),
+      n === null ? undefined : `of ${formatExact(num(row, 'total'))} template versions`,
     )}
   {:else if column.key === 'unsupported_count' || column.key === 'domains'}
     {@render countPct(
@@ -130,8 +131,9 @@
         />
         <ul class="caveats" data-testid="caveats">
           <li>
-            Support counts template versions by the latest probe. Undetermined: not yet determined
-            (never probed, being retried or failed).
+            Support counts template versions by the latest probe; the share is of the provider's
+            template versions on record. Undetermined: not yet determined (never probed, being
+            retried or failed).
           </li>
           <li>
             A DNS provider without template versions on record shows a total of 1, with nothing

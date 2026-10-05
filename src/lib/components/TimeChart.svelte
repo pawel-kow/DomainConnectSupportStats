@@ -28,6 +28,11 @@
   // Register only what the line charts use, so the bundle stays small.
   Chart.register(LineController, LineElement, PointElement, LinearScale, Tooltip, Legend);
 
+  /** Distance between the first two ticks; `undefined` with fewer than two. */
+  function tickStep(ticks: { value: number }[]): number | undefined {
+    return ticks.length > 1 ? Math.abs(ticks[1]!.value - ticks[0]!.value) : undefined;
+  }
+
   /** Brand series colours (stats.domainconnect.org order). */
   export const SERIES_COLORS = [
     '#03263B',
@@ -48,8 +53,9 @@
     series: Series[];
     leftTitle: string;
     rightTitle?: string;
-    formatLeft?: (v: number) => string;
-    formatRight?: (v: number) => string;
+    /** Tick text; `step` is the distance between ticks, for decimals that tell them apart. */
+    formatLeft?: (v: number, step?: number) => string;
+    formatRight?: (v: number, step?: number) => string;
     /** Accessible description of what the chart shows. */
     label: string;
     /** Draw the legend; off when the page shows its own. */
@@ -112,7 +118,9 @@
             beginAtZero: true,
             title: { display: true, text: leftTitle },
             grid: { color: '#e0e0e0' },
-            ticks: formatLeft ? { callback: (v) => formatLeft(Number(v)) } : {},
+            ticks: formatLeft
+              ? { callback: (v, _i, ticks) => formatLeft(Number(v), tickStep(ticks)) }
+              : {},
           },
           right: {
             type: 'linear',
@@ -123,7 +131,9 @@
             grid: { display: false },
             ticks: {
               precision: 0,
-              ...(formatRight ? { callback: (v) => formatRight(Number(v)) } : {}),
+              ...(formatRight
+                ? { callback: (v, _i, ticks) => formatRight(Number(v), tickStep(ticks)) }
+                : {}),
             },
           },
         },

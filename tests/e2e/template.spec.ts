@@ -23,7 +23,7 @@ test.describe('Template card (template.html)', () => {
     await expect(page.getByTestId('service-provider-link')).toHaveText('Example Service');
     const headline = page.getByTestId('headline');
     await expect(headline).toContainText(/3\s*Supporting DNS providers/);
-    await expect(headline).toContainText('57.5% of 12,000 scanned domains');
+    await expect(headline).toContainText('57.5% of 12K scanned domains');
     await expect(headline).toContainText('stored versions: 2, 1');
     const about = page.getByTestId('template-record');
     await expect(about).toContainText('Now with a www CNAME.');

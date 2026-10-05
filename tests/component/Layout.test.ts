@@ -35,7 +35,7 @@ describe('Layout', () => {
       .poll(() => screen.getByTestId('share-import').textContent)
       .toBe('scan completed 01-06-2026 07:00 UTC');
     expect(document.body).not.toHaveTextContent('1780272000');
-    expect(screen.getByText(/12,000 domains scanned/)).toBeInTheDocument();
+    expect(screen.getByText(/12K domains scanned/)).toBeInTheDocument();
     expect(screen.getByText('page body')).toBeInTheDocument();
   });
 

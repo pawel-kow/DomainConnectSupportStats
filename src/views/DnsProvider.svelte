@@ -15,7 +15,7 @@
   import { undeterminedCount } from '../lib/dns-providers';
   import { findTable, oneRecord } from '../lib/data/tables';
   import type { Column, ExportFile, Manifest, Row } from '../lib/data/types';
-  import { formatCount, formatDateTime, formatPct, UNKNOWN } from '../lib/format';
+  import { formatAxisPct, formatCount, formatDateTime, formatPct, UNKNOWN } from '../lib/format';
   import { links } from '../lib/links';
   import { integerParam } from '../lib/params';
   import { defaultRegistryClient, entryFileUrl } from '../lib/registry/load';
@@ -160,21 +160,25 @@
       <section class="summary-stats" aria-label="Support and domain share" data-testid="headline">
         <StatCard
           value={formatCount(num(support, 'supported_count'))}
+          exact={num(support, 'supported_count')}
           label="Supported"
           detail={`of ${formatCount(num(support, 'total'))} template versions (${formatPct(num(support, 'supported_pct'))})`}
         />
         <StatCard
           value={formatCount(num(support, 'unsupported_count'))}
+          exact={num(support, 'unsupported_count')}
           label="Not supported"
           detail={formatPct(num(support, 'unsupported_pct'))}
         />
         <StatCard
           value={formatCount(undeterminedCount(support))}
+          exact={undeterminedCount(support)}
           label="Not yet determined"
           detail="never probed, retried or failed"
         />
         <StatCard
           value={formatCount(num(share, 'domains'))}
+          exact={num(share, 'domains')}
           label="Domains"
           detail={share
             ? `${formatPct(num(share, 'share_pct'))} of ${formatCount(num(share, 'scanned_domains'))} scanned domains`
@@ -212,7 +216,7 @@
                   },
                 ]}
                 leftTitle="% of scanned domains"
-                formatLeft={(v) => `${Number(v.toFixed(2))}%`}
+                formatLeft={formatAxisPct}
               />
             {/await}
           {:else}

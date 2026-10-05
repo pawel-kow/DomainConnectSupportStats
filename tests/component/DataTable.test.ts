@@ -45,6 +45,21 @@ describe('DataTable', () => {
     expect(bodyColumn(0)).toEqual(['Cloudflare', 'IONOS', 'Plesk', 'Quiet Host']);
   });
 
+  it('compacts big counts with the exact count as tooltip, and sorts on the raw value', async () => {
+    const table = stacks();
+    const big = [38531012, 9999, 12345, 1234567];
+    table.rows.forEach((row, i) => (row.domains = big[i]!));
+    render(DataTable, { table, keys: ['name', 'domains'] });
+    expect(bodyColumn(1)).toEqual(['38.5M', '9,999', '12.3K', '1.2M']);
+    const cell = within(screen.getAllByRole('row')[1]!).getAllByRole('cell')[1]!;
+    expect(cell).toHaveAttribute('title', '38,531,012');
+    expect(within(screen.getAllByRole('row')[2]!).getAllByRole('cell')[1]!).not.toHaveAttribute(
+      'title',
+    );
+    await fireEvent.click(screen.getByRole('button', { name: /DOMAINS/ }));
+    expect(bodyColumn(1)).toEqual(['38.5M', '1.2M', '12.3K', '9,999']);
+  });
+
   it('marks the columns outside phoneKeys as wide-screen only', () => {
     render(DataTable, {
       table: stacks(),

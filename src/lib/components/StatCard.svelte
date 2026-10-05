@@ -1,16 +1,20 @@
 <script lang="ts">
+  import { formatExact, isCompact } from '../format';
+
   interface Props {
     value: string;
     label: string;
     /** Context for the value, e.g. its denominator or the date it was measured. */
     detail?: string;
+    /** The count behind `value`; shown as a tooltip when `value` is compacted. */
+    exact?: number | null;
   }
 
-  let { value, label, detail }: Props = $props();
+  let { value, label, detail, exact }: Props = $props();
 </script>
 
 <div class="stat-card">
-  <div class="stat-value">{value}</div>
+  <div class="stat-value" title={isCompact(exact) ? formatExact(exact) : undefined}>{value}</div>
   <div class="stat-label">{label}</div>
   {#if detail}<div class="stat-detail">{detail}</div>{/if}
 </div>

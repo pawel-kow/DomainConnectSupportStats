@@ -7,7 +7,7 @@
   import { defaultClient } from '../lib/data/load';
   import { findTable } from '../lib/data/tables';
   import type { ExportFile, Manifest, Row } from '../lib/data/types';
-  import { formatCount, formatDate, formatPct, UNKNOWN } from '../lib/format';
+  import { formatAxisPct, formatCount, formatDate, formatPct, UNKNOWN } from '../lib/format';
   import { importSeries, latestWith, sweepSeries } from '../lib/series';
 
   const client = defaultClient();
@@ -92,25 +92,30 @@
       />
       <StatCard
         value={formatCount(num(latestImport, 'dns_providers'))}
+        exact={num(latestImport, 'dns_providers')}
         label="DNS providers with domains"
         detail={scanDate(latestImport)}
       />
       <StatCard
         value={formatCount(num(latestSweep, 'supporting_dns_providers'))}
+        exact={num(latestSweep, 'supporting_dns_providers')}
         label="Supporting DNS providers"
         detail={ofTotal(latestSweep, 'known_dns_providers')}
       />
       <StatCard
         value={formatCount(num(latestSweep, 'supporting_stacks'))}
+        exact={num(latestSweep, 'supporting_stacks')}
         label="Supporting stacks"
       />
       <StatCard
         value={formatCount(num(latestSweep, 'supported_templates'))}
+        exact={num(latestSweep, 'supported_templates')}
         label="Supported templates"
         detail={ofTotal(latestSweep, 'published_templates')}
       />
       <StatCard
         value={formatCount(num(latestSweep, 'supported_combinations'))}
+        exact={num(latestSweep, 'supported_combinations')}
         label="Supported pairs"
         detail={latestSweep ? `sweep of ${formatDate(latestSweep.started_at as string)}` : UNKNOWN}
       />
@@ -124,7 +129,8 @@
           series={chartSeries(adoptionRows, ecosystemRows)}
           leftTitle="% of scanned domains"
           rightTitle="Count"
-          formatLeft={(v) => formatPct(v, 0)}
+          formatLeft={formatAxisPct}
+          formatRight={(v) => formatCount(v)}
         />
         <p class="muted chart-note">
           Adoption is measured per zone scan (import), support per full support sweep: two clocks on
