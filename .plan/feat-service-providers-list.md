@@ -7,11 +7,11 @@ templates list, reach as a share of the scanned domains.
 
 ## Tasks
 
-- [~] `links.serviceProviders({ q })` (test first)
-- [ ] View `ServiceProviders.svelte`, entry
-- [ ] E2E spec `service-providers.spec.ts` (content, links, search in URL, mobile columns)
-- [ ] Docs: CLAUDE.md page table, REQUIREMENTS.md F-1.4 + F-1f; version 0.7.0, CHANGELOG
-- [ ] `npm run verify`; stress copy of the example; screenshots accepted
+- [x] `links.serviceProviders({ q })` (test first)
+- [x] View `ServiceProviders.svelte`, entry
+- [x] E2E spec `service-providers.spec.ts` (content, links, search in URL, mobile columns)
+- [x] Docs: CLAUDE.md page table, REQUIREMENTS.md F-1.4 + F-1f; version 0.7.0, CHANGELOG
+- [~] `npm run verify`; stress copy of the example; screenshots accepted
 - [ ] PR ready; promote findings, delete this file
 
 ## Decisions (maintainer, 2026-10-05)
@@ -28,6 +28,13 @@ templates list, reach as a share of the scanned domains.
 - Example export: 3 service providers; `unnamed.example` has `name` = its id, 0 supported, reach 0.
 - No real release yet (#12): real-release check by a stress copy of the example.
 
+- `npm run verify` green: 201 Playwright (21 new), Vitest green.
+- Stress copy (60 providers, long names and hosts, `null` reach and dates, 0 templates): no
+  horizontal scroll at Pixel 7; 3 pages of 20.
+
 ## Corrections
+
+- Phone width overflowed by 1 px with the id `nowrap` (`exampleservice.domainconnect.org`): ids
+  now wrap anywhere at every width.
 
 ## Open questions
