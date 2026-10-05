@@ -206,4 +206,37 @@ test.describe('DNS provider card (dns-provider.html)', () => {
     );
     expect(overflow).toBeLessThanOrEqual(0);
   });
+
+  test.describe('before the scanner start date', () => {
+    test('badges the dates before it and shades the sweep chart', async ({ page }) => {
+      await page.goto('dns-provider.html?id=1');
+      const templates = section(page, 'Supported templates (current state)');
+      await expect(templates.getByText('Before scans')).toHaveCount(3);
+      await expect(page.getByText('Before scans').first()).toHaveAttribute(
+        'title',
+        /scanning began on 20 Sep 2026/,
+      );
+      await expect(page.getByTestId('headline')).toBeVisible();
+      await expect(
+        section(page, 'Supported templates over time').getByTestId('before-scans'),
+      ).toBeVisible();
+      await expect(section(page, 'Domain share over time').getByTestId('before-scans')).toHaveCount(
+        0,
+      );
+    });
+
+    test('follows scannerStartDate from config.js', async ({ page }) => {
+      await page.addInitScript(() => {
+        window.DC_STATS_CONFIG = { ...window.DC_STATS_CONFIG, scannerStartDate: '2026-05-01' };
+      });
+      await page.goto('dns-provider.html?id=1');
+      const templates = section(page, 'Supported templates (current state)');
+      await expect(templates.getByText('Before scans')).toHaveCount(2);
+      await expect(templates.locator('tbody tr').first()).toContainText('01-07-2026');
+      await expect(templates.getByText('Before scans').first()).toHaveAttribute(
+        'title',
+        /scanning began on 1 May 2026/,
+      );
+    });
+  });
 });

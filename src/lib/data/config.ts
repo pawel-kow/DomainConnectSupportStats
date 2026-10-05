@@ -7,10 +7,16 @@
 
 export const DEFAULT_DATA_BASE_URL = './data/';
 export const DEFAULT_REGISTRY_BASE_URL = './registry/';
+/** The day scanning began (`YYYY-MM-DD`, UTC): earlier dates only say "already there". */
+export const DEFAULT_SCANNER_START_DATE = '2026-09-20';
 
 declare global {
   interface Window {
-    DC_STATS_CONFIG?: { dataBaseUrl?: string; registryBaseUrl?: string };
+    DC_STATS_CONFIG?: {
+      dataBaseUrl?: string;
+      registryBaseUrl?: string;
+      scannerStartDate?: string;
+    };
   }
 }
 
@@ -51,4 +57,17 @@ export function registryBaseUrl(): string {
     DEFAULT_REGISTRY_BASE_URL,
     window.location.href,
   );
+}
+
+/** The configured scanner start date as UTC midnight; an invalid value falls back to the default. */
+export function resolveScannerStart(runtime: unknown): Date {
+  if (typeof runtime === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(runtime)) {
+    const date = new Date(`${runtime}T00:00:00Z`);
+    if (!Number.isNaN(date.getTime()) && date.toISOString().startsWith(runtime)) return date;
+  }
+  return new Date(`${DEFAULT_SCANNER_START_DATE}T00:00:00Z`);
+}
+
+export function scannerStart(): Date {
+  return resolveScannerStart(window.DC_STATS_CONFIG?.scannerStartDate);
 }

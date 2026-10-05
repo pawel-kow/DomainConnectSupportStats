@@ -170,4 +170,36 @@ describe('DataTable pagination', () => {
     render(DataTable, { table: stacks(), pageSize: 20 });
     expect(screen.queryByTestId('page-range')).not.toBeInTheDocument();
   });
+
+  describe('before scans', () => {
+    const dnsProvider = () =>
+      exampleJson('dns-providers/1.json').tables.supported_templates as Table;
+
+    it('shows a badge with the tooltip instead of a date before the start date', () => {
+      const table = dnsProvider();
+      table.rows[0]!.since = '2026-10-01 03:00:00';
+      render(DataTable, { table, keys: ['service_name', 'since'] });
+      expect(bodyColumn(1)).toEqual(['01-10-2026 03:00 UTC', 'Before scans', 'Before scans']);
+      expect(screen.getAllByText('Before scans')[0]).toHaveAttribute(
+        'title',
+        'Already recorded when scanning began on 20 Sep 2026; the real date is unknown.',
+      );
+    });
+
+    it('keeps null as a dash', () => {
+      const table = dnsProvider();
+      table.rows[0]!.since = null;
+      render(DataTable, { table, keys: ['service_name', 'since'] });
+      expect(bodyColumn(1)[0]).toBe('–');
+    });
+
+    it('sorts badge rows before real dates, by their own timestamp', async () => {
+      const table = dnsProvider();
+      table.rows[0]!.since = '2026-10-01 03:00:00';
+      render(DataTable, { table, keys: ['service_name', 'since'] });
+      await fireEvent.click(screen.getByRole('button', { name: /SUPPORTED SINCE/ }));
+      expect(bodyColumn(1)).toEqual(['Before scans', 'Before scans', '01-10-2026 03:00 UTC']);
+      expect(bodyColumn(0)).toEqual(['Example Website', 'Domain Verification', 'Acme Mail']);
+    });
+  });
 });

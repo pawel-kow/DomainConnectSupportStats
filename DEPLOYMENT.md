@@ -150,6 +150,10 @@ Build time: `VITE_DATA_BASE_URL=… npm run build`. Precedence: runtime → buil
 registry likewise: `registryBaseUrl`, `VITE_REGISTRY_BASE_URL`, `./registry/`. A cross-origin host
 must send CORS headers.
 
+The day scanning began, before which "first seen" and "supported since" dates show the badge
+"Before scans": `scannerStartDate: '2026-09-20'` (`YYYY-MM-DD`, UTC; this is the default, an
+invalid value falls back to it).
+
 ---
 
 ## 4. Operations

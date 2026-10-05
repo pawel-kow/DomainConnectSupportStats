@@ -4,6 +4,15 @@ Changes per site version. Versions follow [SemVer](https://semver.org/): major f
 parameter removed or changed incompatibly, minor for new pages, features or content, patch for
 fixes, styling and dependencies.
 
+## [0.11.0] - 2026-10-05
+
+### Added
+
+- "Supported since" and "first seen" dates before the scanner start date (default 2026-09-20,
+  `scannerStartDate` in `config.js`) show the badge "Before scans" with a tooltip, and sort as the
+  oldest.
+- Charts of support over time shade the span before the scanner start date.
+
 ## [0.10.0] - 2026-10-05
 
 ### Changed

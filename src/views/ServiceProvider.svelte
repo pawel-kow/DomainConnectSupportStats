@@ -6,6 +6,7 @@
   import NotFound from '../lib/components/NotFound.svelte';
   import Notes from '../lib/components/Notes.svelte';
   import StatCard from '../lib/components/StatCard.svelte';
+  import { scannerStart } from '../lib/data/config';
   import TimeChart, { SERIES_COLORS } from '../lib/components/TimeChart.svelte';
   import { defaultClient, NotFoundError } from '../lib/data/load';
   import { findTable, oneRecord } from '../lib/data/tables';
@@ -141,6 +142,7 @@
             {#if lines.length}
               <TimeChart
                 label="Supporting DNS providers per template over time"
+                beforeScans={scannerStart()}
                 series={lines}
                 legend={drawable.length === 1}
                 leftTitle="DNS providers"
