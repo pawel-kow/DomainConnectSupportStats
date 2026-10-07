@@ -48,4 +48,5 @@ export const PAGES = [
   'stack',
   'service-provider',
   'template',
+  'leaderboards',
 ] as const;

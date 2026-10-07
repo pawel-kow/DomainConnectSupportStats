@@ -1,6 +1,6 @@
 import type { Leaderboards } from './data/derived';
 import type { Row } from './data/types';
-import { parseTimestamp } from './format';
+import { formatCount, formatExact, parseTimestamp } from './format';
 import { links } from './links';
 
 /**
@@ -17,6 +17,11 @@ export type ImprovedWindow = 'sweep' | '90d';
 const CHANGE_KEY: Record<ImprovedWindow, string> = {
   sweep: 'supported_templates_change',
   '90d': 'supported_templates_change_90d',
+};
+
+export const WINDOW_LABELS: Record<ImprovedWindow, string> = {
+  sweep: 'Since the previous sweep',
+  '90d': 'Over about 90 days',
 };
 
 /** The `?window=` parameter: `90d`, else since the previous sweep. */
@@ -215,4 +220,37 @@ export function newSupporting(
       },
     ];
   });
+}
+
+/** A board's table row. */
+export interface BoardRow {
+  rank: number;
+  name: string;
+  href: string;
+  /** Second line under the name. */
+  detail: string | null;
+  value: string;
+  /** Hover text of the value: the exact count when shortened. */
+  title?: string;
+}
+
+/** Display rows of a DNS provider board; a stack says so in its second line. */
+export function entrantRows(
+  ranked: Ranked<Entrant>[],
+  value: 'count' | 'change' = 'count',
+): BoardRow[] {
+  return ranked.map(({ rank, value: v, entry }) => ({
+    rank,
+    name: entry.name,
+    href: entry.href,
+    detail:
+      entry.kind === 'stack' ? ['Stack', entry.detail].filter(Boolean).join(' · ') : entry.detail,
+    value: value === 'change' ? `+${formatExact(v)}` : formatCount(v),
+    title: formatExact(v),
+  }));
+}
+
+/** Whether any entrant has a known change in the window: an empty board then means no gain. */
+export function isMeasured(list: Entrant[], window: ImprovedWindow): boolean {
+  return list.some((e) => num(e.row, CHANGE_KEY[window]) !== null);
 }

@@ -25,8 +25,11 @@ providers (30 days)" plus a Most improved top 5, from the current export and a d
       `topByDomains`, `mostImproved(window)`, `topReach`, `newSupporting`, `improvedWindow`
       (`?window=90d`, else `sweep`). Types in `src/lib/data/derived.ts` (shared with
       `scripts/derive.ts`); `ExportClient.leaderboards()` rejects another `generated_at`.
-- [~] Step 4: `leaderboards.html` page, nav entry, e2e
-- [ ] Step 5: overview: new supporting DNS providers (30 days), Most improved top 5
+- [x] Step 4: `leaderboards.html` (`src/views/Leaderboards.svelte`, components `Board`,
+      `NewSupporters`), nav entry "Leaderboards", e2e `tests/e2e/leaderboards.spec.ts`. Six boards:
+      templates, domains reached, most improved (`?window=90d`), new supporting (30 days, derived
+      file; its load error stays inside its panel), template reach, service provider reach.
+- [~] Step 5: overview: new supporting DNS providers (30 days), Most improved top 5
 - [ ] Step 6: real-release check, docs (CLAUDE.md, REQUIREMENTS.md F-4, DEPLOYMENT.md,
       DEVELOPING.md), minor version + CHANGELOG, screenshots to the maintainer
 - [ ] Promote findings, `git rm -r .plan`

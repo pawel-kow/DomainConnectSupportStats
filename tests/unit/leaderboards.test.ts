@@ -2,7 +2,9 @@ import { describe, expect, it } from 'vitest';
 import type { Leaderboards } from '../../src/lib/data/derived';
 import type { Row, Table } from '../../src/lib/data/types';
 import {
+  entrantRows,
   entrants,
+  isMeasured,
   improvedWindow,
   mostImproved,
   newSupporting,
@@ -270,5 +272,43 @@ describe('newSupporting', () => {
       ],
     };
     expect(newSupporting(example, dnsProviders(), stacks(), null)).toEqual([]);
+  });
+});
+
+describe('entrantRows', () => {
+  it('formats counts and marks stacks', () => {
+    const rows = entrantRows(topByDomains(entrants(dnsProviders(), stacks())));
+    expect(rows[0]).toEqual({
+      rank: 1,
+      name: 'Cloudflare',
+      href: './stack.html?id=cloudflare.com',
+      detail: 'Stack · 1 deployment',
+      value: '4,000',
+      title: '4,000',
+    });
+  });
+
+  it('formats a change with its sign and keeps a DNS provider detail', () => {
+    const rows = entrantRows(
+      mostImproved(entrants([provider(1, { supported_templates_change: 12 })], []), 'sweep'),
+      'change',
+    );
+    expect(rows[0]).toMatchObject({ value: '+12', detail: 'dc.dns1.example' });
+  });
+
+  it('shortens large counts, the exact one in the hover text', () => {
+    const rows = entrantRows(
+      topByDomains(entrants([provider(1, { supported_templates: 1, domains: 123_456 })], [])),
+    );
+    expect(rows[0]).toMatchObject({ value: '123.5K', title: '123,456' });
+  });
+});
+
+describe('isMeasured', () => {
+  it('tells an unmeasured window from one without gains', () => {
+    const list = entrants(dnsProviders(), stacks());
+    expect(isMeasured(list, 'sweep')).toBe(true);
+    const unmeasured = entrants([provider(1, { supported_templates_change_90d: null })], []);
+    expect(isMeasured(unmeasured, '90d')).toBe(false);
   });
 });
