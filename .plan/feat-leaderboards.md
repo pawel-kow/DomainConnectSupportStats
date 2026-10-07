@@ -8,11 +8,10 @@ providers (30 days)" plus a Most improved top 5, from the current export and a d
 
 - [x] Investigate: issue, Scanner #229 (merged 2026-10-06), real release 20261007T151005Z
 - [x] Decisions with the maintainer (below)
-- [~] Step 1: vendor the contract in its own PR `chore/contract-supported-templates` (upstream
-      `docs/` at Scanner f4c50aa: EXPORT_FORMAT.md, schemas/, examples/export/); `npm test`,
-      `npm run test:e2e`, `npm run validate:export -- .inputs/20261007T151005Z`. Blocked: the
-      copy into `contract/` needs the maintainer's permission.
-- [ ] Step 2: `scripts/derive-data.ts <releaseDir> <outDir>` (TDD): reads every
+- [x] Step 1: contract vendored in PR #38 (`chore/contract-supported-templates`, upstream
+      `docs/` at Scanner f4c50aa, incl. METHODOLOGY.md and report examples). This branch is
+      rebased on it; rebase on `main` once #38 is merged.
+- [~] Step 2: `scripts/derive-data.ts <releaseDir> <outDir>` (TDD): reads every
       `dns_provider` card via the manifest, writes `leaderboards.json` (`generated_at` of the
       release; per DNS provider the first sweep with `supported_templates` > 0, unless that is
       the export's first sweep). Deploy: after `bundle:data`, into `dist/data/derived/`. Dev:
@@ -57,9 +56,14 @@ providers (30 days)" plus a Most improved top 5, from the current export and a d
 - Top by templates: Plesk deployments take 5 of the top 6 → stack folding.
 - `first_seen_at` is only on the DNS provider card; all 2912 are 2026-09.
 - Newly supporting today (rule above): Webnames.ca only (0 → 164 on 2026-09-27).
-- Upstream `EXPORT_FORMAT.md` now links to `METHODOLOGY.md`, which is not part of the vendored
-  set (contract/README.md).
+- `METHODOLOGY.md` is vendored (maintainer copied it).
+
+## Corrections
+
+- The new example export changed values and order (verify template gained a supporter); unit and
+  e2e tests that pinned them were updated in #38. `example.db*` files from the maintainer's copy
+  are not upstream-tracked and were left out (moved to the session scratchpad).
 
 ## Open questions
 
-- Vendor `METHODOLOGY.md` too (link target in EXPORT_FORMAT.md)?
+- none
