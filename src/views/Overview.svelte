@@ -12,6 +12,7 @@
   import { importSeries, latestWith, sweepSeries } from '../lib/series';
   import Board from '../lib/components/Board.svelte';
   import NewSupporters from '../lib/components/NewSupporters.svelte';
+  import Unavailable from '../lib/components/Unavailable.svelte';
   import {
     entrantRows,
     entrants,
@@ -172,8 +173,8 @@
           <p class="no-data">Loading…</p>
         {:then [{ dnsProviders }, leaderboards]}
           <NewSupporters rows={newSupporting(leaderboards, dnsProviders, scannerStart())} />
-        {:catch error}
-          <LoadError {error} />
+        {:catch}
+          <Unavailable />
         {/await}
       </section>
 
@@ -193,8 +194,8 @@
             )}
             emptyText="No DNS provider gained templates over the latest sweep"
           />
-        {:catch error}
-          <LoadError {error} />
+        {:catch}
+          <Unavailable />
         {/await}
         <p class="more"><a href={links.leaderboards()}>All leaderboards</a></p>
       </section>

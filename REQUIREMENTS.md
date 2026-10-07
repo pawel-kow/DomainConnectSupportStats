@@ -262,7 +262,7 @@ Page `leaderboards.html` with every board; each says what it ranks, of what, and
   start date. All of them, newest first, one row per DNS provider.
 - F-4.5 Derived data: `scripts/derive.ts` collects F-4.4 from the cards into
   `derived/leaderboards.json` next to the export at deploy; the site rejects it when its
-  `generated_at` differs from the manifest's. Its load error shows inside its board only.
+  `generated_at` differs from the manifest's. A board whose data fails to load (missing, another release) says "Not available at the moment", without technical details; the rest of the page shows.
 - F-4.6 The overview shows F-4.4 and the most improved top 5 (since the previous sweep) below the chart, side by side on desktop, with a link to the page.
 
 ## 2. Constraints

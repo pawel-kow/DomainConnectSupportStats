@@ -79,6 +79,8 @@ providers (30 days)" plus a Most improved top 5, from the current export and a d
 
 - Maintainer, after the screenshots: every DNS provider board (templates, domains, most improved
   on the page and the overview) ranks DNS providers, not stacks; stack folding removed.
+- Maintainer: a panel whose data fails (e.g. derived file of another release) says "Not available
+  at the moment" (`Unavailable`), no technical details.
 - Maintainer: no stack line under DNS provider rows (name repeated it).
 - Maintainer: the most improved window switches in place (`replaceState`), no reload.
 

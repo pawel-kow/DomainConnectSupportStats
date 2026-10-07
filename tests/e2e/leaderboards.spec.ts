@@ -172,7 +172,7 @@ test.describe('Leaderboards (leaderboards.html)', () => {
 });
 
 test.describe('derived data unavailable', () => {
-  test('shows the boards and an error in place of the new supporters', async ({ page }) => {
+  test('shows the boards and "not available" in place of the new supporters', async ({ page }) => {
     await page.route('**/data/derived/leaderboards.json', (route) =>
       route.fulfill({
         json: { generated_at: '2027-01-01T00:00:00Z', first_sweep: null, first_support: [] },
@@ -180,6 +180,9 @@ test.describe('derived data unavailable', () => {
     );
     await page.goto('leaderboards.html');
     await expect(names(page, 'board-templates')).toHaveCount(3);
-    await expect(page.getByTestId('board-new').getByTestId('load-error')).toBeVisible();
+    await expect(page.getByTestId('board-new').getByTestId('unavailable')).toHaveText(
+      'Not available at the moment',
+    );
+    await expect(page.locator('main')).not.toContainText('leaderboards.json');
   });
 });

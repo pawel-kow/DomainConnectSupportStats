@@ -97,14 +97,17 @@ test('lists every new supporting DNS provider of the last 30 days', async ({ pag
   await expect(page).toHaveURL(/dns-provider\.html\?id=2$/);
 });
 
-test('shows a derived data error in its panel only', async ({ page }) => {
+test('shows "not available" in a panel whose data failed, without details', async ({ page }) => {
   await page.route('**/data/derived/leaderboards.json', (route) =>
     route.fulfill({
       json: { generated_at: '2027-01-01T00:00:00Z', first_sweep: null, first_support: [] },
     }),
   );
   await page.goto('index.html');
-  await expect(page.getByTestId('overview-new').getByTestId('load-error')).toBeVisible();
+  await expect(page.getByTestId('overview-new').getByTestId('unavailable')).toHaveText(
+    'Not available at the moment',
+  );
+  await expect(page.locator('main')).not.toContainText('leaderboards.json');
   await expect(page.getByTestId('overview-improved').locator('tbody tr')).toHaveCount(1);
 });
 

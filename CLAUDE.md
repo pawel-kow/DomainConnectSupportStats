@@ -57,7 +57,8 @@ src/entries/<page>.ts      mounts the page's view into #app
 src/views/*.svelte         one view per page (Overview, DnsProvider, Placeholder, ...)
 src/lib/components/        shared UI: Layout (header/nav/footer), DataTable, TimeChart, StatCard,
                            NotFound, LoadError, Notes, CardTitle, RegistryContact, Registry,
-                           ContactList, ExternalLink, StatusBadge, Board, NewSupporters
+                           ContactList, ExternalLink, StatusBadge, Board, NewSupporters,
+                           Unavailable
 src/lib/data/              the contract in code: types, id encoding, manifest paths, loader
                            (ExportClient), table lookup, data and registry base URL config,
                            derived data types
@@ -91,7 +92,7 @@ every view is a shareable link:
 | `leaderboards.html` (`?window=`)                 | the four lists, `derived/leaderboards.json`         | built |
 
 A card page with a missing parameter or a 404 shows `NotFound` linking to its list; any other load
-failure shows `LoadError`. Never a blank page. Card layout: REQUIREMENTS.md F-1a. Leaderboards:
+failure shows `LoadError`; a section that loads on its own (leaderboard panels) shows `Unavailable` instead. Never a blank page. Card layout: REQUIREMENTS.md F-1a. Leaderboards:
 F-4; the overview also shows new supporting DNS providers and the most improved top 5.
 
 **Data location.** Default `./data/`. Build time: `VITE_DATA_BASE_URL`. Runtime:

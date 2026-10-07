@@ -3,6 +3,7 @@
   import Layout from '../lib/components/Layout.svelte';
   import LoadError from '../lib/components/LoadError.svelte';
   import NewSupporters from '../lib/components/NewSupporters.svelte';
+  import Unavailable from '../lib/components/Unavailable.svelte';
   import Notes from '../lib/components/Notes.svelte';
   import { scannerStart } from '../lib/data/config';
   import { defaultClient } from '../lib/data/load';
@@ -178,8 +179,8 @@
           <p class="no-data">Loading…</p>
         {:then leaderboards}
           <NewSupporters rows={newSupporting(leaderboards, dnsProviders, scannerStart())} />
-        {:catch error}
-          <LoadError {error} />
+        {:catch}
+          <Unavailable />
         {/await}
       </section>
 
