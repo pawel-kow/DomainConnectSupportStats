@@ -42,13 +42,12 @@
   let manifest = $state<Manifest | null>(null);
   const loading = client.manifest().then(async (m) => {
     manifest = m;
-    const [dnsProviders, stacks, templates, serviceProviders] = await Promise.all([
+    const [dnsProviders, templates, serviceProviders] = await Promise.all([
       client.file('dns_providers'),
-      client.file('stacks'),
       client.file('templates'),
       client.file('service_providers'),
     ]);
-    return { dnsProviders, stacks, templates, serviceProviders };
+    return { dnsProviders, templates, serviceProviders };
   });
   const derived = client.leaderboards();
   // Shown by its own {#await}, which may render only after it settles.
@@ -102,15 +101,12 @@
     <p class="no-data">Loading…</p>
   {:then files}
     {@const dnsProviders = rowsOf(files.dnsProviders, 'dns_providers')}
-    {@const stacks = rowsOf(files.stacks, 'stacks')}
-    {@const providers = entrants(dnsProviders, stacks)}
+    {@const providers = entrants(dnsProviders)}
     {@const measured = isMeasured(providers, window_)}
 
     <section class="panel intro">
       <h2>Leaderboards</h2>
-      <Notes
-        notes={notes([files.dnsProviders, files.stacks, files.templates, files.serviceProviders])}
-      />
+      <Notes notes={notes([files.dnsProviders, files.templates, files.serviceProviders])} />
       <p>
         Who leads Domain Connect adoption in the release of
         <strong>{formatDate(manifest?.generated_at)}</strong>: the top {BOARD_SIZE} of each board, positive
@@ -181,7 +177,7 @@
         {#await derived}
           <p class="no-data">Loading…</p>
         {:then leaderboards}
-          <NewSupporters rows={newSupporting(leaderboards, dnsProviders, stacks, scannerStart())} />
+          <NewSupporters rows={newSupporting(leaderboards, dnsProviders, scannerStart())} />
         {:catch error}
           <LoadError {error} />
         {/await}

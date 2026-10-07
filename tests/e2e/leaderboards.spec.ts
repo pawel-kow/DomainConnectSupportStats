@@ -28,7 +28,9 @@ test.describe('Leaderboards (leaderboards.html)', () => {
     await page.goto('leaderboards.html');
     await expect(names(page, 'board-templates')).toHaveText(['Cloudflare', 'IONOS', 'Plesk']);
     const plesk = page.getByTestId('board-templates').locator('tbody tr', { hasText: 'Plesk' });
-    await expect(plesk).toContainText(/domainconnect\.plesk\.com\s*Stack Plesk/);
+    await expect(plesk.locator('td').nth(1)).toHaveText(
+      /^\s*Plesk\s*domainconnect\.plesk\.com\s*$/,
+    );
     await expect(plesk.locator('td').first()).toHaveText('3');
     await expect(names(page, 'board-domains')).toHaveText(['Cloudflare', 'IONOS', 'Plesk']);
     await expect(page.getByTestId('board-domains').locator('tbody tr').nth(2)).toContainText(
@@ -54,20 +56,17 @@ test.describe('Leaderboards (leaderboards.html)', () => {
     ]);
   });
 
-  test('links a DNS provider to its card and its stack', async ({ page }) => {
+  test('links a DNS provider to its card', async ({ page }) => {
     await page.goto('leaderboards.html');
-    const plesk = page.getByTestId('board-templates').locator('tbody tr', { hasText: 'Plesk' });
-    await expect(plesk.getByRole('link', { name: 'Plesk' }).last()).toHaveAttribute(
-      'href',
-      './stack.html?id=plesk.com',
-    );
     await names(page, 'board-templates').filter({ hasText: 'Plesk' }).click();
     await expect(page).toHaveURL(/dns-provider\.html\?id=2$/);
   });
 
   test('ranks most improved DNS providers, linking each to its card', async ({ page }) => {
     await page.goto('leaderboards.html');
-    await expect(page.getByTestId('board-improved')).toContainText(/IONOS.*Stack IONOS.*\+1/s);
+    await expect(page.getByTestId('board-improved')).toContainText(
+      /IONOS.*domainconnect\.ionos\.example.*\+1/s,
+    );
     await names(page, 'board-improved').filter({ hasText: 'IONOS' }).click();
     await expect(page).toHaveURL(/dns-provider\.html\?id=5$/);
   });
@@ -149,7 +148,7 @@ test.describe('Leaderboards (leaderboards.html)', () => {
     );
   });
 
-  test('lists new supporting DNS providers with their stack, newest first', async ({ page }) => {
+  test('lists new supporting DNS providers, newest first', async ({ page }) => {
     await routeDerived(page, [
       [4, '2026-09-29 02:00:00'],
       [5, '2026-09-25 02:00:00'],
@@ -159,7 +158,7 @@ test.describe('Leaderboards (leaderboards.html)', () => {
     const table = page.getByTestId('new-supporters');
     await expect(table.locator('tbody tr')).toHaveCount(2);
     await expect(table.locator('tbody tr').first()).toContainText(/Small Registrar.*29-09-2026/s);
-    await expect(table.locator('tbody tr').nth(1)).toContainText(/IONOS.*Stack IONOS.*25-09-2026/s);
+    await expect(table.locator('tbody tr').nth(1)).toContainText(/IONOS.*25-09-2026/s);
   });
 
   test('fits the screen without horizontal page scroll', async ({ page }) => {

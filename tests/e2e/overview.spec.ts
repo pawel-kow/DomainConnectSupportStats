@@ -42,7 +42,7 @@ test.describe('overview (index.html)', () => {
   }) => {
     const board = page.getByTestId('overview-improved');
     await expect(board.locator('tbody tr')).toHaveCount(1);
-    await expect(board).toContainText(/IONOS.*domainconnect\.ionos\.example.*Stack IONOS.*\+1/s);
+    await expect(board).toContainText(/IONOS.*domainconnect\.ionos\.example.*\+1/s);
     await expect(board.locator('tbody tr td:nth-child(2) > a')).toHaveAttribute(
       'href',
       './dns-provider.html?id=5',

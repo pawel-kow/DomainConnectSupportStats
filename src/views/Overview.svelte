@@ -27,12 +27,9 @@
     manifest = m;
     return client.file('overview');
   });
-  const lists = Promise.all([client.file('dns_providers'), client.file('stacks')]).then(
-    ([dnsProviders, stacks]) => ({
-      dnsProviders: findTable(dnsProviders, 'dns_providers')?.rows ?? [],
-      stacks: findTable(stacks, 'stacks')?.rows ?? [],
-    }),
-  );
+  const lists = client
+    .file('dns_providers')
+    .then((file) => ({ dnsProviders: findTable(file, 'dns_providers')?.rows ?? [] }));
   const derived = client.leaderboards();
   // Shown by their own {#await}, which may render only after they settle.
   derived.catch(() => undefined);
@@ -173,8 +170,8 @@
         </p>
         {#await Promise.all([lists, derived])}
           <p class="no-data">Loading…</p>
-        {:then [{ dnsProviders, stacks }, leaderboards]}
-          <NewSupporters rows={newSupporting(leaderboards, dnsProviders, stacks, scannerStart())} />
+        {:then [{ dnsProviders }, leaderboards]}
+          <NewSupporters rows={newSupporting(leaderboards, dnsProviders, scannerStart())} />
         {:catch error}
           <LoadError {error} />
         {/await}
@@ -185,13 +182,13 @@
         <p class="muted about">Templates gained over the latest sweep; top {IMPROVED_SIZE}.</p>
         {#await lists}
           <p class="no-data">Loading…</p>
-        {:then { dnsProviders, stacks }}
+        {:then { dnsProviders }}
           <Board
             caption="DNS providers by templates gained since the previous sweep"
             nameHeader="DNS provider"
             valueHeader="Gained"
             rows={entrantRows(
-              mostImproved(entrants(dnsProviders, stacks), 'sweep', IMPROVED_SIZE),
+              mostImproved(entrants(dnsProviders), 'sweep', IMPROVED_SIZE),
               'change',
             )}
             emptyText="No DNS provider gained templates over the latest sweep"

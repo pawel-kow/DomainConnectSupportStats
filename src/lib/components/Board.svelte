@@ -30,9 +30,6 @@
           <td>
             <a class="name" href={row.href}>{row.name}</a>
             {#if row.detail}<div class="muted detail">{row.detail}</div>{/if}
-            {#if row.stack}<div class="muted detail">
-                Stack <a href={row.stack.href}>{row.stack.name}</a>
-              </div>{/if}
           </td>
           <td class="num value" title={row.title}>{row.value}</td>
         </tr>

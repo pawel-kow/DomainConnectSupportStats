@@ -248,7 +248,7 @@ Page `leaderboards.html` with every board; each says what it ranks, of what, and
 - F-4.0 Boards rank the top 10 by a positive value; `null` is left out; ties by domains (unknown
   last), then name ignoring case. DNS provider boards have one row per DNS provider: each
   deployment of a stack ranks on its own. A DNS provider row links to its card and shows its API host
-  and its stack (linked).
+  below the name.
 - F-4.1 Most templates supported (`supported_templates`), and most domains reached: `domains` of
   DNS providers with `supported_templates` > 0.
 - F-4.2 Most improved by `supported_templates_change` (since the previous sweep, default) or
@@ -259,7 +259,7 @@ Page `leaderboards.html` with every board; each says what it ranks, of what, and
 - F-4.4 New supporting DNS providers: per DNS provider its first `support_history` row with
   `supported_templates` > 0, dated by that sweep's `started_at`, within 30 days before
   `generated_at`; left out when that sweep is the export's first or started before the scanner
-  start date. All of them, newest first, one row per DNS provider with its stack.
+  start date. All of them, newest first, one row per DNS provider.
 - F-4.5 Derived data: `scripts/derive.ts` collects F-4.4 from the cards into
   `derived/leaderboards.json` next to the export at deploy; the site rejects it when its
   `generated_at` differs from the manifest's. Its load error shows inside its board only.

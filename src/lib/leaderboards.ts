@@ -29,19 +29,12 @@ export function improvedWindow(search: string): ImprovedWindow {
   return new URLSearchParams(search).get('window') === '90d' ? '90d' : 'sweep';
 }
 
-export interface StackLink {
-  name: string;
-  href: string;
-}
-
 /** One row of a DNS provider board. */
 export interface Entrant {
   name: string;
   /** Second line: its API host. */
   detail: string | null;
   href: string;
-  /** Its stack, when `stacks.json` has it. */
-  stack: StackLink | null;
   /** Its row of `dns-providers.json`. */
   row: Row;
   /** Its domains when it supports at least one template, else 0; `null` when unknown. */
@@ -70,18 +63,8 @@ function reachedDomains(row: Row): number | null {
   return supported > 0 ? num(row, 'domains') : 0;
 }
 
-function stackLink(id: string | null, stacks: Map<string | null, Row>): StackLink | null {
-  const row = id === null ? undefined : stacks.get(id);
-  return id === null || !row ? null : { name: text(row, 'name') ?? id, href: links.stack(id) };
-}
-
-function stackRows(stacks: Row[]): Map<string | null, Row> {
-  return new Map(stacks.map((s) => [text(s, 'provider_id'), s]));
-}
-
-/** One row per DNS provider, with its stack: each deployment of a stack ranks on its own. */
-export function entrants(dnsProviders: Row[], stacks: Row[]): Entrant[] {
-  const byId = stackRows(stacks);
+/** One row per DNS provider: each deployment of a stack ranks on its own. */
+export function entrants(dnsProviders: Row[]): Entrant[] {
   return dnsProviders.flatMap((row): Entrant[] => {
     const id = num(row, 'dns_provider_id');
     if (id === null) return [];
@@ -90,7 +73,6 @@ export function entrants(dnsProviders: Row[], stacks: Row[]): Entrant[] {
         name: text(row, 'name') ?? '?',
         detail: text(row, 'api_host'),
         href: links.dnsProvider(id),
-        stack: stackLink(text(row, 'provider_id'), byId),
         row,
         reachedDomains: reachedDomains(row),
       },
@@ -166,7 +148,6 @@ export interface NewSupporter {
   name: string;
   apiHost: string | null;
   href: string;
-  stack: StackLink | null;
   /** When the sweep that found its first support started. */
   since: string;
   /** Templates it supports now. */
@@ -182,7 +163,6 @@ const DAY_MS = 86_400_000;
 export function newSupporting(
   derived: Leaderboards,
   dnsProviders: Row[],
-  stacks: Row[],
   scannerStart: Date | null,
   days = NEW_SUPPORT_DAYS,
 ): NewSupporter[] {
@@ -190,7 +170,6 @@ export function newSupporting(
   if (!generated) return [];
   const from = generated.getTime() - days * DAY_MS;
   const rows = new Map(dnsProviders.map((r) => [num(r, 'dns_provider_id'), r]));
-  const byId = stackRows(stacks);
   return derived.first_support.flatMap((f): NewSupporter[] => {
     const at = parseTimestamp(f.started_at)?.getTime();
     const row = rows.get(f.dns_provider_id);
@@ -202,7 +181,6 @@ export function newSupporting(
         name: text(row, 'name') ?? '?',
         apiHost: text(row, 'api_host'),
         href: links.dnsProvider(f.dns_provider_id),
-        stack: stackLink(text(row, 'provider_id'), byId),
         since: f.started_at,
         supportedTemplates: num(row, 'supported_templates'),
       },
@@ -217,8 +195,6 @@ export interface BoardRow {
   href: string;
   /** Second line under the name. */
   detail: string | null;
-  /** A DNS provider's stack, linked under the name. */
-  stack?: StackLink | null;
   value: string;
   /** Hover text of the value: the exact count when shortened. */
   title?: string;
@@ -234,7 +210,6 @@ export function entrantRows(
     name: entry.name,
     href: entry.href,
     detail: entry.detail,
-    stack: entry.stack,
     value: value === 'change' ? `+${formatExact(v)}` : formatCount(v),
     title: formatExact(v),
   }));

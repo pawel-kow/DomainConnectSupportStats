@@ -21,7 +21,7 @@ providers (30 days)" plus a Most improved top 5, from the current export and a d
       `.derived/`, gitignored) as `/data/derived/`; Playwright runs `npm run derive` before
       preview. Real release: Webnames.ca (2774, sweep 3) only, first sweep 2.
 - [x] Step 3: `src/lib/leaderboards.ts` (tests `tests/unit/leaderboards.test.ts`): `entrants()`
-      (one row per DNS provider with its stack, `reachedDomains`), `topByTemplates`,
+      (one row per DNS provider, `reachedDomains`), `topByTemplates`,
       `topByDomains`, `mostImproved(window)`, `topReach`, `newSupporting`, `improvedWindow`
       (`?window=90d`, else `sweep`). Types in `src/lib/data/derived.ts` (shared with
       `scripts/derive.ts`); `ExportClient.leaderboards()` rejects another `generated_at`.
@@ -46,7 +46,7 @@ providers (30 days)" plus a Most improved top 5, from the current export and a d
 - Most improved window: both, switched with `?window=`; default since the previous sweep
   (`supported_templates_change`), other ~90 days (`supported_templates_change_90d`). Empty
   window says so.
-- DNS provider boards: one row per DNS provider (linking to its card, its stack linked); each
+- DNS provider boards: one row per DNS provider (linking to its card, API host below, no stack line); each
   deployment of a stack ranks on its own (corrected after the screenshots, see Corrections).
 - Board size: top 10; only positive ranked value (positive change for Most improved); `null`
   left out; ties by domains, then name.
@@ -70,7 +70,8 @@ providers (30 days)" plus a Most improved top 5, from the current export and a d
 - `METHODOLOGY.md` is vendored (maintainer copied it).
 
 - Real release: most DNS providers with support declare a one-deployment stack, so the boards
-  show mostly stack rows ("Stack · 1 deployment"). Plesk (2886 deployments) leads templates.
+  showed mostly one-deployment stack rows when stacks were folded. Plesk deployments lead
+  templates.
 - Unhandled rejections: a promise rendered by a nested `{#await}` that shows only after the outer
   load needs its own `.catch`, else a pageerror (overview, leaderboards).
 
@@ -78,6 +79,7 @@ providers (30 days)" plus a Most improved top 5, from the current export and a d
 
 - Maintainer, after the screenshots: every DNS provider board (templates, domains, most improved
   on the page and the overview) ranks DNS providers, not stacks; stack folding removed.
+- Maintainer: no stack line under DNS provider rows (name repeated it).
 - Maintainer: the most improved window switches in place (`replaceState`), no reload.
 
 - The new example export changed values and order (verify template gained a supporter); unit and

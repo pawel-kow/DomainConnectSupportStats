@@ -27,9 +27,6 @@
           <td>
             <a class="name" href={row.href}>{row.name}</a>
             {#if row.apiHost}<div class="muted detail">{row.apiHost}</div>{/if}
-            {#if row.stack}<div class="muted detail">
-                Stack <a href={row.stack.href}>{row.stack.name}</a>
-              </div>{/if}
           </td>
           <td class="date">{formatDate(row.since)}</td>
           <td class="num">{formatExact(row.supportedTemplates)}</td>
