@@ -17,7 +17,6 @@ The only interface to the Scanner: never read, copy or depend on Scanner source 
 | [`export/METHODOLOGY.md`](export/METHODOLOGY.md)       | `docs/METHODOLOGY.md`           | How the numbers are measured, for the public. Basis of a methodology page.                                       |
 | [`export/schemas/`](export/schemas/)                   | `docs/schemas/`                 | JSON Schemas (Draft 2020-12). `schemas/export/` is the export; the report schemas next to it are `$ref`'d by it. |
 | [`export/examples/export/`](export/examples/export/)   | `docs/examples/export/`         | The full export of the Scanner's simulated example database. Used as the dev data set and as test fixtures.      |
-| [`export/examples/`](export/examples/) `*.json`        | `docs/examples/*.json`          | One example per report and variant, as the report schemas describe them.                                         |
 
 Current `format_version`: **1**.
 
