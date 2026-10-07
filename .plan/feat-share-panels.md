@@ -8,10 +8,10 @@ Big story: one PR, steps with a pause for `/clear` after each (mutex and branch 
 
 ## Tasks
 
-- [~] Step 1: `src/lib/share.ts` (TDD): shared URL (location + query + anchor, no sort/page),
+- [x] Step 1: `src/lib/share.ts` (TDD): shared URL (location + query + anchor, no sort/page),
       post text, target URLs (Bluesky, Mastodon, LinkedIn), Mastodon instance validation and
       storage (try/catch `localStorage`), Apple-platform detection for the icon
-- [ ] Step 2: components `Panel.svelte` (section with slug id, h2 with `#` link on hover/focus,
+- [~] Step 2: components `Panel.svelte` (section with slug id, h2 with `#` link on hover/focus,
       share icon in the title row, scroll + brief highlight when the hash matches after the data
       loaded, `prefers-reduced-motion`) and `ShareMenu.svelte` (keyboard menu, inline Mastodon
       form, "Link copied" `aria-live` for 2 s, Web Share "More…" when `navigator.share`);
@@ -65,6 +65,10 @@ Big story: one PR, steps with a pause for `/clear` after each (mutex and branch 
 - Post text: `<panel title> – <page context> – Domain Connect support statistics`; page context
   is the entity name on cards, the page name on lists; dropped when equal to the panel title.
 - Version: minor (issue).
+
+- Step 1 done: `src/lib/share.ts` (`sharedUrl`, `withHash`, `postText`, `blueskyUrl`,
+  `mastodonUrl`, `linkedinUrl`, `parseInstance`, `loadInstance`/`saveInstance` with key
+  `dc-stats.mastodon-instance`, `isApplePlatform`), 18 tests in `tests/unit/share.test.ts`.
 
 ## Corrections
 
