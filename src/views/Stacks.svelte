@@ -87,15 +87,19 @@
         <ul class="caveats" data-testid="caveats">
           <li>
             Support: the share of supported template versions of each deployment with probe
-            combinations; lowest and highest across the stack, shown as a bar on a 0–100% scale.
+            combinations; lowest and highest across the stack, shown as a bar on a 0–100% scale (<a
+              href={links.methodology('52-support-probe')}>methodology 5.2</a
+            >).
           </li>
           <li>
             Deployments: DNS providers running the stack, probed or not. DNS providers without a
-            stack are not listed.
+            stack are not listed (<a href={links.methodology('42-deployments-providers-and-stacks')}
+              >methodology 4.2</a
+            >).
           </li>
           <li>
             Domains: scanned domains behind the stack's DNS providers, as a share of the scanned
-            domains.
+            domains (<a href={links.methodology('43-attribution-of-domains')}>methodology 4.3</a>).
           </li>
         </ul>
       </section>

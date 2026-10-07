@@ -184,7 +184,9 @@
           <h2>Domain share over time</h2>
           {#if shareHistory.rows.length}
             <p class="muted note">
-              Summed over the stack's current deployments, also for past imports.
+              Summed over the stack's current deployments, also for past imports (<a
+                href={links.methodology('42-deployments-providers-and-stacks')}>methodology 4.2</a
+              >).
             </p>
             {#await adoptionFor(shareHistory.rows) then adoption}
               <TimeChart

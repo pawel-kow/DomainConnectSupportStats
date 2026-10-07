@@ -5,7 +5,6 @@
   import { defaultClient } from '../lib/data/load';
   import type { Manifest } from '../lib/data/types';
   import { formatCount, formatPct, UNKNOWN } from '../lib/format';
-  import { links } from '../lib/links';
 
   const client = defaultClient();
   let manifest = $state<Manifest | null>(null);
@@ -93,8 +92,8 @@
         rel="noopener">Report a problem</a
       >
       with the page link and what you observed. A DNS provider's card describes its most recent contact
-      (<a href="#6-status-of-dns-providers-and-handling-of-failures">6</a>); the next run that covers
-      it updates the card.
+      (<a href="#6-status-of-dns-providers-and-handling-of-failures">6</a>); the next run that
+      covers it updates the card.
     </p>
     <p>This site sets no cookies and uses no analytics.</p>
   </section>

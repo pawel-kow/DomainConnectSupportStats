@@ -135,11 +135,14 @@
         <ul class="caveats" data-testid="caveats">
           <li>
             Supported and not supported count pairs of DNS provider and template version by their
-            latest probe; the rest are not yet determined.
+            latest probe; the rest are not yet determined (<a
+              href={links.methodology('52-support-probe')}>methodology 5.2</a
+            >).
           </li>
           <li>
             Reach: scanned domains behind the DNS providers that support it, each counted once, as a
-            share of the scanned domains.
+            share of the scanned domains (<a href={links.methodology('11-terms')}>methodology 1.1</a
+            >).
           </li>
         </ul>
       </section>

@@ -8,16 +8,16 @@ footer and from every caveat.
 ## Tasks
 
 - [x] Investigate: issue, METHODOLOGY.md, caveats on the pages, decisions with the maintainer
-- [~] `scripts/methodology.ts` (TDD): Markdown → HTML with `marked`, GitHub-style heading ids,
+- [x] `scripts/methodology.ts` (TDD): Markdown → HTML with `marked`, GitHub-style heading ids,
       headings one level down, tables in a scroll wrapper
-- [ ] Vite plugin: bakes the HTML into `methodology.html` (`transformIndexHtml`); the view moves
+- [x] Vite plugin: bakes the HTML into `methodology.html` (`transformIndexHtml`); the view moves
       the static node into the layout (no `{@html}`)
-- [ ] `Methodology.svelte`: this release (`share_import` zones, `zone_domains`,
+- [x] `Methodology.svelte`: this release (`share_import` zones, `zone_domains`,
       `sample_percent`, `scanned_domains`), not covered, report a problem, privacy
-- [ ] `links.methodology(anchor)`, footer link, caveat links (overview, lists, template history
+- [x] `links.methodology(anchor)`, footer link, caveat links (overview, lists, template history
       caveat, DNS providers status caveat)
-- [ ] e2e: page renders, anchors exist, caveat links resolve; unit tests for links
-- [ ] Docs (CLAUDE.md, REQUIREMENTS.md F-1.10/F-2.8, README), minor version + CHANGELOG,
+- [x] e2e: page renders, anchors exist, caveat links resolve; unit tests for links
+- [~] Docs (CLAUDE.md, REQUIREMENTS.md F-1.10/F-2.8, README), minor version + CHANGELOG,
       screenshots to the maintainer
 - [ ] Promote findings, `git rm -r .plan`
 
@@ -41,6 +41,14 @@ footer and from every caveat.
   240000, 5.0); `ShareImport` type lacks them.
 - No cookies or storage in `src/`; no external fonts.
 - PR #40 (leaderboards) is open: expect conflicts in `package.json`, CHANGELOG, `links.ts`.
+
+- The heading ids start with digits: CSS `#22-…` is not a valid selector; tests use `[id="…"]`,
+  the page `getElementById`.
+- The document is inserted at mount, after the browser handled the hash: the view scrolls to it,
+  and again once the release facts load.
+- No real release reachable from the devcontainer; the page reads only `manifest.share_import`
+  (example export: e2e).
+- `npm run lint` locally trips over `.derived*/` left untracked by #40; ignored on that branch.
 
 ## Corrections
 

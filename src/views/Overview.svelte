@@ -9,6 +9,7 @@
   import { findTable } from '../lib/data/tables';
   import type { ExportFile, Manifest, Row } from '../lib/data/types';
   import { formatAxisPct, formatCount, formatDate, formatPct, UNKNOWN } from '../lib/format';
+  import { links } from '../lib/links';
   import { importSeries, latestWith, sweepSeries } from '../lib/series';
 
   const client = defaultClient();
@@ -148,19 +149,25 @@
       <ul>
         <li>
           <strong>Attributed domains only.</strong> Domain counts include only domains whose Domain
-          Connect record points to an identified DNS provider; <em>DC total</em> counts every domain with
-          a record.
+          Connect record points to an identified DNS provider; <em>DC total</em> counts every domain
+          with a record (<a href={links.methodology('43-attribution-of-domains')}>methodology 4.3</a
+          >).
         </li>
         <li>
-          <strong>Sampled scans.</strong> A scan may cover a random sample of a zone: percentages are
-          of the scanned domains, an estimate for the zone.
+          <strong>Sampled scans.</strong> A scan may cover a random sample of a zone: percentages
+          are of the scanned domains, an estimate for the zone (<a
+            href={links.methodology('22-census-and-probability-sample')}>methodology 2.2</a
+          >).
         </li>
         <li>
-          <strong>One zone set.</strong> The numbers describe the scanned zones, not the whole Internet.
+          <strong>One zone set.</strong> The numbers describe the scanned zones, not the whole
+          Internet (<a href={links.methodology('21-zone-files')}>methodology 2.1</a>).
         </li>
         <li>
-          <strong>Current stacks.</strong> Stack counts use each DNS provider's current stack, also for
-          past sweeps and scans.
+          <strong>Current stacks.</strong> Stack counts use each DNS provider's current stack, also
+          for past sweeps and scans (<a
+            href={links.methodology('42-deployments-providers-and-stacks')}>methodology 4.2</a
+          >).
         </li>
       </ul>
     </section>
