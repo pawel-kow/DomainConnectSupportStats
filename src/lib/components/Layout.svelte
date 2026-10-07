@@ -4,7 +4,7 @@
   import { findTable } from '../data/tables';
   import type { Manifest } from '../data/types';
   import { formatCount, formatDateTime } from '../format';
-  import { NAV } from '../links';
+  import { links, NAV } from '../links';
   import { defaultRegistryClient, type RegistryClient } from '../registry/load';
 
   interface Props {
@@ -101,6 +101,8 @@
       <a href="https://www.domainconnect.org/" target="_blank" rel="noopener">domainconnect.org</a>
     </p>
     <p>
+      <a href={links.methodology()} data-testid="methodology-link">Methodology</a>
+      ·
       <a href="https://stats.domainconnect.org/" target="_blank" rel="noopener"
         >Templates statistics</a
       >

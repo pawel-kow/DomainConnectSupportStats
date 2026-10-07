@@ -36,6 +36,12 @@ export interface ShareImport {
   status: ImportStatus | string;
   source: ShareSource | string;
   scanned_domains: number;
+  /** Zone names without the trailing dot, sorted; null when not recorded. */
+  zones?: string[] | null;
+  /** Domains of the zones before sampling; null when not recorded. */
+  zone_domains?: number | null;
+  /** 100 for a census; null when not recorded or sampled at different rates. */
+  sample_percent?: number | null;
 }
 
 export interface ListFileKind {
