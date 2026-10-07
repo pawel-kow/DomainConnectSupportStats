@@ -14,6 +14,7 @@ The only interface to the Scanner: never read, copy or depend on Scanner source 
 | Path                                                   | Upstream (DomainConnectScanner) | What it is                                                                                                       |
 | ------------------------------------------------------ | ------------------------------- | ---------------------------------------------------------------------------------------------------------------- |
 | [`export/EXPORT_FORMAT.md`](export/EXPORT_FORMAT.md)   | `docs/EXPORT_FORMAT.md`         | Human description of every file, table and column. The reference for page work.                                  |
+| [`export/METHODOLOGY.md`](export/METHODOLOGY.md)       | `docs/METHODOLOGY.md`           | How the numbers are measured, for the public. Basis of a methodology page.                                       |
 | [`export/schemas/`](export/schemas/)                   | `docs/schemas/`                 | JSON Schemas (Draft 2020-12). `schemas/export/` is the export; the report schemas next to it are `$ref`'d by it. |
 | [`export/examples/export/`](export/examples/export/)   | `docs/examples/export/`         | The full export of the Scanner's simulated example database. Used as the dev data set and as test fixtures.      |
 

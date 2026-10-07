@@ -3,11 +3,11 @@
 {"service_provider_id": "mail.acme.example", "name": "Acme Mail Inc.", "first_added_at": "2020-02-02 09:00:00", "last_updated_at": "2026-03-25 00:00:00"}
 ], "footer": null},
 "support": {"title": "Template support (current state)", "columns": [{"key": "templates", "header": "Templates"}, {"key": "supported_templates", "header": "Supported templates"}, {"key": "supporting_dns_providers", "header": "Supporting DNS providers"}, {"key": "reach_domains", "header": "Reach (domains)"}, {"key": "reach_pct", "header": "Reach %"}], "rows": [
-{"templates": 2, "supported_templates": 2, "supporting_dns_providers": 2, "reach_domains": 4900, "reach_pct": 40.833333333333336}
+{"templates": 2, "supported_templates": 2, "supporting_dns_providers": 3, "reach_domains": 6900, "reach_pct": 57.49999999999999}
 ], "footer": null},
 "templates": {"title": "Templates (current state)", "columns": [{"key": "name", "header": "TEMPLATE"}, {"key": "service_id", "header": "SERVICE ID"}, {"key": "version", "header": "VERSION"}, {"key": "versions", "header": "VERSIONS"}, {"key": "added_at", "header": "ADDED"}, {"key": "updated_at", "header": "UPDATED"}, {"key": "supporting_providers", "header": "SUPPORTING"}, {"key": "reach_domains", "header": "REACH"}, {"key": "reach_pct", "header": "REACH %"}], "rows": [
-{"name": "Acme Mail", "service_id": "mail", "version": 1, "versions": [1], "added_at": "2020-02-02 09:00:00", "updated_at": "2021-03-03 09:00:00", "supporting_providers": 2, "reach_domains": 4900, "reach_pct": 40.833333333333336},
-{"name": "Domain Verification", "service_id": "verify", "version": 1, "versions": [1], "added_at": "2026-03-25 00:00:00", "updated_at": "2026-03-25 00:00:00", "supporting_providers": 1, "reach_domains": 4000, "reach_pct": 33.33333333333333}
+{"name": "Domain Verification", "service_id": "verify", "version": 1, "versions": [1], "added_at": "2026-03-25 00:00:00", "updated_at": "2026-03-25 00:00:00", "supporting_providers": 2, "reach_domains": 6000, "reach_pct": 50.0},
+{"name": "Acme Mail", "service_id": "mail", "version": 1, "versions": [1], "added_at": "2020-02-02 09:00:00", "updated_at": "2021-03-03 09:00:00", "supporting_providers": 2, "reach_domains": 4900, "reach_pct": 40.833333333333336}
 ], "footer": null},
 "support_history": {"title": "Supporting DNS providers per template and support sweep", "columns": [{"key": "sweep_id", "header": "SWEEP"}, {"key": "started_at", "header": "STARTED"}, {"key": "service_id", "header": "SERVICE ID"}, {"key": "supporting_providers", "header": "SUPPORTING"}], "rows": [
 {"sweep_id": 1, "started_at": "2026-03-02 02:00:00", "service_id": "mail", "supporting_providers": 0},
@@ -18,6 +18,6 @@
 {"sweep_id": 5, "started_at": "2026-07-01 02:00:00", "service_id": "mail", "supporting_providers": 2},
 {"sweep_id": 5, "started_at": "2026-07-01 02:00:00", "service_id": "verify", "supporting_providers": 1},
 {"sweep_id": 6, "started_at": "2026-09-02 02:00:00", "service_id": "mail", "supporting_providers": 2},
-{"sweep_id": 6, "started_at": "2026-09-02 02:00:00", "service_id": "verify", "supporting_providers": 1}
+{"sweep_id": 6, "started_at": "2026-09-02 02:00:00", "service_id": "verify", "supporting_providers": 2}
 ], "footer": null}
 }}

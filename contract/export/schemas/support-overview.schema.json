@@ -18,6 +18,9 @@
                 { "properties": { "key": { "const": "source" } } },
                 { "properties": { "key": { "const": "started_at" } } },
                 { "properties": { "key": { "const": "completed_at" } } },
+                { "properties": { "key": { "const": "zones" } } },
+                { "properties": { "key": { "const": "zone_domains" } } },
+                { "properties": { "key": { "const": "sample_percent" } } },
                 { "properties": { "key": { "const": "scanned_domains" } } },
                 { "properties": { "key": { "const": "dc_domains" } } },
                 { "properties": { "key": { "const": "dc_pct" } } },
@@ -26,7 +29,7 @@
                 { "properties": { "key": { "const": "dns_providers" } } },
                 { "properties": { "key": { "const": "stacks" } } }
               ],
-              "minItems": 12,
+              "minItems": 15,
               "items": false
             },
             "rows": {
@@ -83,6 +86,12 @@
           "description": "imports.completed_at; null while the import is in progress, or when an import pruned before per-import snapshots existed didn't keep it.",
           "$ref": "common.schema.json#/$defs/nullableTimestamp"
         },
+        "zones": { "$ref": "common.schema.json#/$defs/nullableZones" },
+        "zone_domains": {
+          "description": "The distinct delegated domains of the import's zone files, summed over its zones, before sampling (GitHub issue #218); null when its zones are unknown.",
+          "$ref": "common.schema.json#/$defs/nullableCount"
+        },
+        "sample_percent": { "$ref": "common.schema.json#/$defs/nullableSamplePercent" },
         "scanned_domains": { "description": "imports.domains_processed.", "$ref": "common.schema.json#/$defs/count" },
         "dc_domains": {
           "description": "Scanned domains whose Domain Connect URL is attributed to a DNS provider (the sum of the import's domain share). null when the import has no share data.",
@@ -110,7 +119,8 @@
         }
       },
       "required": [
-        "import_id", "status", "source", "started_at", "completed_at", "scanned_domains", "dc_domains", "dc_pct",
+        "import_id", "status", "source", "started_at", "completed_at", "zones", "zone_domains", "sample_percent",
+        "scanned_domains", "dc_domains", "dc_pct",
         "dc_domains_total", "dc_total_pct", "dns_providers", "stacks"
       ],
       "additionalProperties": false

@@ -31,8 +31,8 @@ test.describe('Templates list (templates.html)', () => {
     await page.goto('templates.html');
     await expect(names(page)).toHaveText([
       'Example Website',
-      'Acme Mail',
       'Domain Verification',
+      'Acme Mail',
       'x',
       'Example Verification',
     ]);
@@ -59,7 +59,7 @@ test.describe('Templates list (templates.html)', () => {
     await page.goto('templates.html');
     const verify = page.locator('tbody tr', { hasText: 'Domain Verification' });
     await expect(verify).toContainText('2026');
-    await expect(verify).toContainText(/2\s*50.0%/);
+    await expect(verify).toContainText(/1\s*25.0%/);
   });
 
   test('links the template to its card', async ({ page }) => {
@@ -87,7 +87,7 @@ test.describe('Templates list (templates.html)', () => {
 
   test('filters to one service provider and links back to all templates', async ({ page }) => {
     await page.goto('templates.html?spid=mail.acme.example');
-    await expect(names(page)).toHaveText(['Acme Mail', 'Domain Verification']);
+    await expect(names(page)).toHaveText(['Domain Verification', 'Acme Mail']);
     await expect(page.getByRole('heading', { name: 'Templates of Acme Mail Inc.' })).toBeVisible();
     const filter = page.getByTestId('spid-filter');
     await expect(filter.getByRole('link', { name: 'Acme Mail Inc.' })).toHaveAttribute(

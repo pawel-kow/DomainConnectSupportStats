@@ -31,13 +31,8 @@ describe('isNeverProbed', () => {
 describe('templateList', () => {
   it('shows every probed template in export order', () => {
     const list = templateList(templates(), { spid: null, showAll: false });
-    expect(ids(list.table.rows)).toEqual([
-      'exampleservice.domainconnect.org/template1',
-      'mail.acme.example/mail',
-      'mail.acme.example/verify',
-      'unnamed.example/x',
-      'exampleservice.domainconnect.org/template2',
-    ]);
+    expect(ids(list.table.rows)).toEqual(ids(templates().rows));
+    expect(list.table.rows).toHaveLength(5);
     expect(list.hiddenCount).toBe(0);
   });
 
@@ -53,7 +48,7 @@ describe('templateList', () => {
   it("filters to one service provider's templates before hiding", () => {
     expect(
       ids(templateList(templates(), { spid: 'mail.acme.example', showAll: false }).table.rows),
-    ).toEqual(['mail.acme.example/mail', 'mail.acme.example/verify']);
+    ).toEqual(ids(templates().rows.filter((r) => r.provider_id === 'mail.acme.example')));
     const hidden = templateList(withNeverProbed(), {
       spid: 'exampleservice.domainconnect.org',
       showAll: false,

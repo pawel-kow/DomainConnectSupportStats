@@ -13,19 +13,19 @@ describe('templateSeries', () => {
       rows('mail.acme.example', 'templates'),
       rows('mail.acme.example', 'support_history'),
     );
-    expect(series.map((s) => [s.serviceId, s.name])).toEqual([
-      ['mail', 'Acme Mail'],
-      ['verify', 'Domain Verification'],
-    ]);
-    expect(series[0]!.points.map((p) => p.y)).toEqual([0, 1, 2, 2]);
-    expect(series[1]!.points.map((p) => p.y)).toEqual([0, 1, 1, 1, 1]);
+    expect(series.map((s) => [s.serviceId, s.name])).toEqual(
+      rows('mail.acme.example', 'templates').map((r) => [r.service_id, r.name]),
+    );
+    const points = (id: string) => series.find((s) => s.serviceId === id)!.points;
+    expect(points('mail').map((p) => p.y)).toEqual([0, 1, 2, 2]);
+    expect(points('verify').map((p) => p.y)).toEqual([0, 1, 1, 1, 2]);
   });
 
   it('leaves a sweep without a row as a gap, not a zero', () => {
-    const [mail] = templateSeries(
+    const mail = templateSeries(
       rows('mail.acme.example', 'templates'),
       rows('mail.acme.example', 'support_history'),
-    );
+    ).find((s) => s.serviceId === 'mail');
     expect(mail!.points.map((p) => p.row.sweep_id)).toEqual([1, 4, 5, 6]);
   });
 
