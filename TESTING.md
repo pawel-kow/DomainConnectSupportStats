@@ -111,8 +111,8 @@ Page changes are run against the current real release before review (DEVELOPING.
 ## 6. End-to-end tests (`tests/e2e/`)
 
 Playwright builds the site and serves it with `vite preview`, with the release under `/data/`
-(`DATA_DIR`, default: the example export), its derived data (`npm run derive`) under
-`/data/derived/` and the registry under `/registry/` (`REGISTRY_DIR`, default:
+(`DATA_DIR`, default: the example export), its derived data (`npm run derive` into `.derived-e2e/`, apart from the dev server's
+`.derived/`) under `/data/derived/` and the registry under `/registry/` (`REGISTRY_DIR`, default:
 `contract/registry/examples`). Projects: `desktop` (Desktop Chrome), `mobile`
 (Pixel 7). The `consoleErrors` fixture fails a test on any page or console error unless it sets
 `expectErrors`.
@@ -121,7 +121,7 @@ Playwright builds the site and serves it with `vite preview`, with the release u
 | --------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `navigation.spec.ts`        | Every page renders the header, the release facts and the navigation; navigation links are plain page links                                                                                                                                                                                                                                  |
 | `overview.spec.ts`          | Release in the header, headline numbers, chart drawn without data tables, no internal id, most improved top 5 and leaderboards link, new supporters (empty and listed), derived data error in its panel, no horizontal page scroll, error state when the data is unavailable                                                                |
-| `leaderboards.spec.ts`      | Boards by templates and domains per DNS provider (deployments apart, stack linked), most improved with stacks folded, `?window=` switch in place (no reload, scroll kept, URL follows), unmeasured window, reach boards, new supporters (empty and listed), derived data error in its panel, no horizontal page scroll                      |
+| `leaderboards.spec.ts`      | Boards by templates, domains and most improved per DNS provider (deployments apart, stack linked), `?window=` switch in place (no reload, scroll kept, URL follows), unmeasured window, reach boards, new supporters (empty and listed), derived data error in its panel, no horizontal page scroll                                         |
 | `dns-providers.spec.ts`     | Visible rows, combined cells, caveats; badges with raw hover text; show-all toggle in the URL; stack filter and its way back; empty stack; `?q=` pre-fill and URL sync; sort; phone columns; pages of a 1,000-row list (size, reset on search); card and stack links; no stack link without a stack; error state; no horizontal page scroll |
 | `service-providers.spec.ts` | Every service provider in export order; id below the name, once for an unnamed one; wide-only columns; card and templates-list links; search in the URL; empty state; reach sort; unknown reach as `–`; load error; phone columns, no horizontal scroll                                                                                     |
 | `template.spec.ts`          | Template, service provider link and reach; logo from `logo_url`, hidden when broken; supporter links and total; records verbatim without unknown fields, own columns on wide screens only; chart and caveat; sparse template; card order; not-found for missing params and unknown template; phone columns, no horizontal scroll            |

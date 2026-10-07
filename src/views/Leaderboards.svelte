@@ -11,7 +11,6 @@
   import { formatCount, formatDate, formatExact } from '../lib/format';
   import {
     BOARD_SIZE,
-    dnsProviderEntrants,
     entrantRows,
     entrants,
     improvedWindow,
@@ -94,7 +93,7 @@
         ? 'Not measured yet: the history does not reach back about 90 days'
         : 'Not measured yet: there is no previous sweep';
     }
-    return 'No DNS provider or stack gained templates in this window';
+    return 'No DNS provider gained templates in this window';
   }
 </script>
 
@@ -104,9 +103,8 @@
   {:then files}
     {@const dnsProviders = rowsOf(files.dnsProviders, 'dns_providers')}
     {@const stacks = rowsOf(files.stacks, 'stacks')}
-    {@const list = entrants(dnsProviders, stacks)}
-    {@const providers = dnsProviderEntrants(dnsProviders, stacks)}
-    {@const measured = isMeasured(list, window_)}
+    {@const providers = entrants(dnsProviders, stacks)}
+    {@const measured = isMeasured(providers, window_)}
 
     <section class="panel intro">
       <h2>Leaderboards</h2>
@@ -161,17 +159,15 @@
           {/each}
         </div>
         <p class="muted about">
-          Templates gained {window_ === 'sweep'
-            ? 'over the latest sweep (a stack: since its previous full sweep)'
-            : 'over about 90 days'}. The DNS providers of a stack rank together as one row.
+          Templates each DNS provider gained {window_ === 'sweep'
+            ? 'over its latest sweep'
+            : 'over about 90 days'}. Every deployment of a stack ranks on its own.
         </p>
         <Board
-          caption="DNS providers and stacks by templates gained, {WINDOW_LABELS[
-            window_
-          ].toLowerCase()}"
-          nameHeader="DNS provider or stack"
+          caption="DNS providers by templates gained, {WINDOW_LABELS[window_].toLowerCase()}"
+          nameHeader="DNS provider"
           valueHeader="Gained"
-          rows={entrantRows(mostImproved(list, window_), 'change')}
+          rows={entrantRows(mostImproved(providers, window_), 'change')}
           emptyText={improvedEmpty(measured, window_)}
         />
       </section>

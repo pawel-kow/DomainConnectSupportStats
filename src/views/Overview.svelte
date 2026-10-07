@@ -14,7 +14,7 @@
   import NewSupporters from '../lib/components/NewSupporters.svelte';
   import {
     entrantRows,
-    dnsProviderEntrants,
+    entrants,
     mostImproved,
     NEW_SUPPORT_DAYS,
     newSupporting,
@@ -191,7 +191,7 @@
             nameHeader="DNS provider"
             valueHeader="Gained"
             rows={entrantRows(
-              mostImproved(dnsProviderEntrants(dnsProviders, stacks), 'sweep', IMPROVED_SIZE),
+              mostImproved(entrants(dnsProviders, stacks), 'sweep', IMPROVED_SIZE),
               'change',
             )}
             emptyText="No DNS provider gained templates over the latest sweep"

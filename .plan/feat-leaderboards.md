@@ -21,7 +21,7 @@ providers (30 days)" plus a Most improved top 5, from the current export and a d
       `.derived/`, gitignored) as `/data/derived/`; Playwright runs `npm run derive` before
       preview. Real release: Webnames.ca (2774, sweep 3) only, first sweep 2.
 - [x] Step 3: `src/lib/leaderboards.ts` (tests `tests/unit/leaderboards.test.ts`): `entrants()`
-      (stacks folded, `reachedDomains` = domains of supporting deployments), `topByTemplates`,
+      (one row per DNS provider with its stack, `reachedDomains`), `topByTemplates`,
       `topByDomains`, `mostImproved(window)`, `topReach`, `newSupporting`, `improvedWindow`
       (`?window=90d`, else `sweep`). Types in `src/lib/data/derived.ts` (shared with
       `scripts/derive.ts`); `ExportClient.leaderboards()` rejects another `generated_at`.
@@ -46,9 +46,8 @@ providers (30 days)" plus a Most improved top 5, from the current export and a d
 - Most improved window: both, switched with `?window=`; default since the previous sweep
   (`supported_templates_change`), other ~90 days (`supported_templates_change_90d`). Empty
   window says so.
-- Stacks replace grouped providers on the boards: one row per stack (from `stacks.json`, linking
-  to `stack.html`) for DNS providers with a `provider_id` of a stack; one row per DNS provider
-  otherwise (linking to `dns-provider.html`). Mixed lists.
+- DNS provider boards: one row per DNS provider (linking to its card, its stack linked); each
+  deployment of a stack ranks on its own (corrected after the screenshots, see Corrections).
 - Board size: top 10; only positive ranked value (positive change for Most improved); `null`
   left out; ties by domains, then name.
 - "New supporting DNS provider": first `support_history` row with `supported_templates` > 0;
@@ -77,9 +76,9 @@ providers (30 days)" plus a Most improved top 5, from the current export and a d
 
 ## Corrections
 
-- Maintainer, after the screenshots: "Most templates supported", "Most domains reached" and the
-  overview's Most improved are per DNS provider (`dnsProviderEntrants`), not per stack. The
-  page's Most improved keeps stack folding (asked).
+- Maintainer, after the screenshots: every DNS provider board (templates, domains, most improved
+  on the page and the overview) ranks DNS providers, not stacks; stack folding removed.
+- Maintainer: the most improved window switches in place (`replaceState`), no reload.
 
 - The new example export changed values and order (verify template gained a supporter); unit and
   e2e tests that pinned them were updated in #38. `example.db*` files from the maintainer's copy

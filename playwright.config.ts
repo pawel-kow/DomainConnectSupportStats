@@ -28,6 +28,10 @@ export default defineConfig({
     // Never reuse a running preview: it would serve a stale build.
     reuseExistingServer: false,
     timeout: 120_000,
-    env: { REGISTRY_DIR: process.env.REGISTRY_DIR ?? 'contract/registry/examples' },
+    env: {
+      REGISTRY_DIR: process.env.REGISTRY_DIR ?? 'contract/registry/examples',
+      // Its own folder: `npm run dev` may serve `.derived/` of another release meanwhile.
+      DERIVED_DIR: '.derived-e2e',
+    },
   },
 });

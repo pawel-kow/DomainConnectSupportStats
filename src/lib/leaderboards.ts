@@ -5,7 +5,7 @@ import { links } from './links';
 
 /**
  * Leaderboards (REQUIREMENTS.md F-4): positive rankings of the list files and the derived
- * `leaderboards.json`. DNS providers of a stack are folded into one row per stack.
+ * `leaderboards.json`, one row per DNS provider.
  */
 
 export const BOARD_SIZE = 10;
@@ -34,18 +34,17 @@ export interface StackLink {
   href: string;
 }
 
-/** One row of a DNS provider board: a stack, or a DNS provider without one. */
+/** One row of a DNS provider board. */
 export interface Entrant {
-  kind: 'stack' | 'dns_provider';
   name: string;
-  /** Second line: a DNS provider's API host, a stack's deployments. */
+  /** Second line: its API host. */
   detail: string | null;
   href: string;
-  /** A DNS provider's stack, when `stacks.json` has it. */
+  /** Its stack, when `stacks.json` has it. */
   stack: StackLink | null;
-  /** Its row of `stacks.json` or `dns-providers.json`. */
+  /** Its row of `dns-providers.json`. */
   row: Row;
-  /** Domains of its deployments supporting at least one template; `null` when unmeasured. */
+  /** Its domains when it supports at least one template, else 0; `null` when unknown. */
   reachedDomains: number | null;
 }
 
@@ -65,14 +64,10 @@ function text(row: Row | undefined, key: string): string | null {
   return typeof v === 'string' ? v : null;
 }
 
-/** Domains of the supporting ones among DNS provider rows: 0 when none supports. */
-function reachedDomains(members: Row[]): number | null {
-  const supporting = members.filter((r) => (num(r, 'supported_templates') ?? 0) > 0);
-  if (!supporting.length) {
-    return members.every((r) => num(r, 'supported_templates') === 0) ? 0 : null;
-  }
-  const measured = supporting.map((r) => num(r, 'domains')).filter((d) => d !== null);
-  return measured.length ? measured.reduce((a, b) => a + b, 0) : null;
+function reachedDomains(row: Row): number | null {
+  const supported = num(row, 'supported_templates');
+  if (supported === null) return null;
+  return supported > 0 ? num(row, 'domains') : 0;
 }
 
 function stackLink(id: string | null, stacks: Map<string | null, Row>): StackLink | null {
@@ -84,55 +79,23 @@ function stackRows(stacks: Row[]): Map<string | null, Row> {
   return new Map(stacks.map((s) => [text(s, 'provider_id'), s]));
 }
 
-function dnsProviderEntrant(row: Row, stacks: Map<string | null, Row>): Entrant[] {
-  const id = num(row, 'dns_provider_id');
-  if (id === null) return [];
-  return [
-    {
-      kind: 'dns_provider',
-      name: text(row, 'name') ?? '?',
-      detail: text(row, 'api_host'),
-      href: links.dnsProvider(id),
-      stack: stackLink(text(row, 'provider_id'), stacks),
-      row,
-      reachedDomains: reachedDomains([row]),
-    },
-  ];
-}
-
-/** One row per DNS provider, with its stack. */
-export function dnsProviderEntrants(dnsProviders: Row[], stacks: Row[]): Entrant[] {
-  const byId = stackRows(stacks);
-  return dnsProviders.flatMap((r) => dnsProviderEntrant(r, byId));
-}
-
-/** Stacks (with their deployments) first, then DNS providers without a stack row. */
+/** One row per DNS provider, with its stack: each deployment of a stack ranks on its own. */
 export function entrants(dnsProviders: Row[], stacks: Row[]): Entrant[] {
   const byId = stackRows(stacks);
-  const folded = stacks.flatMap((s): Entrant[] => {
-    const id = text(s, 'provider_id');
+  return dnsProviders.flatMap((row): Entrant[] => {
+    const id = num(row, 'dns_provider_id');
     if (id === null) return [];
-    const deployments = num(s, 'deployments');
     return [
       {
-        kind: 'stack',
-        name: text(s, 'name') ?? id,
-        detail:
-          deployments === null ? null : `${deployments} deployment${deployments === 1 ? '' : 's'}`,
-        href: links.stack(id),
-        stack: null,
-        row: s,
-        reachedDomains: reachedDomains(dnsProviders.filter((r) => r.provider_id === id)),
+        name: text(row, 'name') ?? '?',
+        detail: text(row, 'api_host'),
+        href: links.dnsProvider(id),
+        stack: stackLink(text(row, 'provider_id'), byId),
+        row,
+        reachedDomains: reachedDomains(row),
       },
     ];
   });
-  const alone = dnsProviders
-    .filter((r) => {
-      const stack = text(r, 'provider_id');
-      return stack === null || !byId.has(stack);
-    })
-    .flatMap((r) => dnsProviderEntrant(r, byId));
-  return [...folded, ...alone];
 }
 
 const byName = new Intl.Collator('en', { sensitivity: 'base' });
@@ -261,7 +224,7 @@ export interface BoardRow {
   title?: string;
 }
 
-/** Display rows of a DNS provider board; a stack says so in its second line. */
+/** Display rows of a DNS provider board. */
 export function entrantRows(
   ranked: Ranked<Entrant>[],
   value: 'count' | 'change' = 'count',
@@ -270,8 +233,7 @@ export function entrantRows(
     rank,
     name: entry.name,
     href: entry.href,
-    detail:
-      entry.kind === 'stack' ? ['Stack', entry.detail].filter(Boolean).join(' · ') : entry.detail,
+    detail: entry.detail,
     stack: entry.stack,
     value: value === 'change' ? `+${formatExact(v)}` : formatCount(v),
     title: formatExact(v),

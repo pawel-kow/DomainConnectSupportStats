@@ -2,7 +2,6 @@ import { describe, expect, it } from 'vitest';
 import type { Leaderboards } from '../../src/lib/data/derived';
 import type { Row, Table } from '../../src/lib/data/types';
 import {
-  dnsProviderEntrants,
   entrantRows,
   entrants,
   isMeasured,
@@ -23,8 +22,7 @@ const templates = () => (exampleJson('templates.json').tables.service_templates 
 const serviceProviders = () =>
   (exampleJson('service-providers.json').tables.service_providers as Table).rows;
 
-const board = (ranked: Ranked<Entrant>[]) =>
-  ranked.map((r) => [r.rank, r.entry.kind, r.entry.name, r.value]);
+const board = (ranked: Ranked<Entrant>[]) => ranked.map((r) => [r.rank, r.entry.name, r.value]);
 
 function provider(id: number, values: Row): Row {
   return {
@@ -41,83 +39,51 @@ function provider(id: number, values: Row): Row {
 }
 
 describe('entrants', () => {
-  it('folds DNS providers of a stack into one row per stack', () => {
+  it('lists every DNS provider on its own, with its stack', () => {
     const list = entrants(dnsProviders(), stacks());
-    expect(list.map((e) => [e.kind, e.name])).toEqual([
-      ['stack', 'Cloudflare'],
-      ['stack', 'IONOS'],
-      ['stack', 'Plesk'],
-      ['stack', 'Quiet Host'],
-      ['dns_provider', 'Small Registrar'],
+    expect(list.map((e) => [e.name, e.href])).toEqual([
+      ['Cloudflare', './dns-provider.html?id=1'],
+      ['IONOS', './dns-provider.html?id=5'],
+      ['Plesk', './dns-provider.html?id=2'],
+      ['Plesk', './dns-provider.html?id=3'],
+      ['Small Registrar', './dns-provider.html?id=4'],
+      ['Quiet Host', './dns-provider.html?id=6'],
     ]);
-    expect(list.map((e) => e.href)).toEqual([
-      './stack.html?id=cloudflare.com',
-      './stack.html?id=ionos.com',
-      './stack.html?id=plesk.com',
-      './stack.html?id=quiet-host.example',
-      './dns-provider.html?id=4',
-    ]);
+    expect(list[2]?.stack).toEqual({ name: 'Plesk', href: './stack.html?id=plesk.com' });
+    expect(list[4]?.stack).toBeNull();
   });
 
-  it('keeps a DNS provider whose stack has no row', () => {
-    const list = entrants([provider(7, { provider_id: 'gone.example' })], stacks());
-    expect(list.find((e) => e.kind === 'dns_provider')?.name).toBe('DNS 7');
-  });
-
-  it('describes a DNS provider by its API host and a stack by its deployments', () => {
-    const list = entrants(dnsProviders(), stacks());
-    expect(list.find((e) => e.name === 'Plesk')?.detail).toBe('2 deployments');
-    expect(list.find((e) => e.name === 'IONOS')?.detail).toBe('1 deployment');
-    expect(list.find((e) => e.name === 'Small Registrar')?.detail).toBeNull();
+  it('describes a DNS provider by its API host', () => {
     expect(entrants([provider(7, {})], [])[0]?.detail).toBe('dc.dns7.example');
+    expect(entrants([provider(7, { api_host: null })], [])[0]?.detail).toBeNull();
   });
 
-  it('counts the domains reached by supporting deployments only', () => {
+  it('has no stack link for a stack without a row', () => {
+    const list = entrants([provider(7, { provider_id: 'gone.example' })], stacks());
+    expect(list[0]?.stack).toBeNull();
+  });
+
+  it('reaches its domains only when it supports a template', () => {
     const list = entrants(dnsProviders(), stacks());
-    // Plesk: deployment 2 (900 domains) supports, deployment 3 (250) does not.
-    expect(list.find((e) => e.name === 'Plesk')?.reachedDomains).toBe(900);
-    expect(list.find((e) => e.name === 'Small Registrar')?.reachedDomains).toBe(0);
-  });
-
-  it('has unknown reach when no supporting deployment is measured', () => {
-    const rows = [provider(1, { supported_templates: 3, domains: null })];
-    expect(entrants(rows, [])[0]?.reachedDomains).toBeNull();
+    expect(list[2]?.reachedDomains).toBe(900);
+    // Plesk deployment 3: 250 domains, no support.
+    expect(list[3]?.reachedDomains).toBe(0);
+    expect(
+      entrants([provider(1, { supported_templates: 3, domains: null })], [])[0]?.reachedDomains,
+    ).toBeNull();
     expect(
       entrants([provider(1, { supported_templates: null, domains: 5 })], [])[0]?.reachedDomains,
     ).toBeNull();
   });
 });
 
-describe('dnsProviderEntrants', () => {
-  it('lists every DNS provider on its own, with its stack', () => {
-    const list = dnsProviderEntrants(dnsProviders(), stacks());
-    expect(list.map((e) => [e.kind, e.name, e.href])).toEqual([
-      ['dns_provider', 'Cloudflare', './dns-provider.html?id=1'],
-      ['dns_provider', 'IONOS', './dns-provider.html?id=5'],
-      ['dns_provider', 'Plesk', './dns-provider.html?id=2'],
-      ['dns_provider', 'Plesk', './dns-provider.html?id=3'],
-      ['dns_provider', 'Small Registrar', './dns-provider.html?id=4'],
-      ['dns_provider', 'Quiet Host', './dns-provider.html?id=6'],
-    ]);
-    expect(list[2]?.stack).toEqual({ name: 'Plesk', href: './stack.html?id=plesk.com' });
-    expect(list[4]?.stack).toBeNull();
-    expect(list[2]?.reachedDomains).toBe(900);
-    expect(list[3]?.reachedDomains).toBe(0);
-  });
-
-  it('has no stack link for a stack without a row', () => {
-    const list = dnsProviderEntrants([provider(7, { provider_id: 'gone.example' })], stacks());
-    expect(list[0]?.stack).toBeNull();
-  });
-});
-
 describe('topByTemplates', () => {
   it('ranks DNS providers by supported templates, positive only, ties by domains', () => {
     // IONOS (2000 domains) before Plesk (900) at 2 templates each.
-    expect(board(topByTemplates(dnsProviderEntrants(dnsProviders(), stacks())))).toEqual([
-      [1, 'dns_provider', 'Cloudflare', 3],
-      [2, 'dns_provider', 'IONOS', 2],
-      [3, 'dns_provider', 'Plesk', 2],
+    expect(board(topByTemplates(entrants(dnsProviders(), stacks())))).toEqual([
+      [1, 'Cloudflare', 3],
+      [2, 'IONOS', 2],
+      [3, 'Plesk', 2],
     ]);
   });
 
@@ -126,7 +92,7 @@ describe('topByTemplates', () => {
       provider(1, { name: 'Plesk', provider_id: 'plesk.com', supported_templates: 5 }),
       provider(2, { name: 'Plesk', provider_id: 'plesk.com', supported_templates: 4 }),
     ];
-    const ranked = topByTemplates(dnsProviderEntrants(rows, stacks()));
+    const ranked = topByTemplates(entrants(rows, stacks()));
     expect(ranked.map((r) => [r.rank, r.entry.href, r.value])).toEqual([
       [1, './dns-provider.html?id=1', 5],
       [2, './dns-provider.html?id=2', 4],
@@ -141,10 +107,10 @@ describe('topByTemplates', () => {
       provider(4, { name: 'Zed', supported_templates: 1, domains: 20 }),
     ];
     expect(board(topByTemplates(entrants(rows, [])))).toEqual([
-      [1, 'dns_provider', 'Zed', 1],
-      [2, 'dns_provider', 'Alpha', 1],
-      [3, 'dns_provider', 'beta', 1],
-      [4, 'dns_provider', 'Aaa', 1],
+      [1, 'Zed', 1],
+      [2, 'Alpha', 1],
+      [3, 'beta', 1],
+      [4, 'Aaa', 1],
     ]);
   });
 
@@ -162,26 +128,18 @@ describe('topByTemplates', () => {
 
 describe('topByDomains', () => {
   it('ranks supporting DNS providers by domains', () => {
-    expect(board(topByDomains(dnsProviderEntrants(dnsProviders(), stacks())))).toEqual([
-      [1, 'dns_provider', 'Cloudflare', 4000],
-      [2, 'dns_provider', 'IONOS', 2000],
-      [3, 'dns_provider', 'Plesk', 900],
-    ]);
-  });
-
-  it('ranks folded stacks by the domains of their supporting deployments', () => {
     expect(board(topByDomains(entrants(dnsProviders(), stacks())))).toEqual([
-      [1, 'stack', 'Cloudflare', 4000],
-      [2, 'stack', 'IONOS', 2000],
-      [3, 'stack', 'Plesk', 900],
+      [1, 'Cloudflare', 4000],
+      [2, 'IONOS', 2000],
+      [3, 'Plesk', 900],
     ]);
   });
 });
 
 describe('mostImproved', () => {
-  it('ranks by the change since the previous sweep, positive only', () => {
+  it('ranks DNS providers by the change since the previous sweep, positive only', () => {
     expect(board(mostImproved(entrants(dnsProviders(), stacks()), 'sweep'))).toEqual([
-      [1, 'stack', 'IONOS', 1],
+      [1, 'IONOS', 1],
     ]);
   });
 
@@ -192,8 +150,8 @@ describe('mostImproved', () => {
       provider(3, { supported_templates_change: -1, supported_templates_change_90d: null }),
     ];
     expect(board(mostImproved(entrants(rows, []), '90d'))).toEqual([
-      [1, 'dns_provider', 'DNS 2', 4],
-      [2, 'dns_provider', 'DNS 1', 2],
+      [1, 'DNS 2', 4],
+      [2, 'DNS 1', 2],
     ]);
   });
 
@@ -320,14 +278,14 @@ describe('newSupporting', () => {
 });
 
 describe('entrantRows', () => {
-  it('formats counts and marks stacks', () => {
+  it('formats counts, with the API host and the linked stack', () => {
     const rows = entrantRows(topByDomains(entrants(dnsProviders(), stacks())));
     expect(rows[0]).toEqual({
       rank: 1,
       name: 'Cloudflare',
-      href: './stack.html?id=cloudflare.com',
-      detail: 'Stack · 1 deployment',
-      stack: null,
+      href: './dns-provider.html?id=1',
+      detail: 'api.cloudflare.com',
+      stack: { name: 'Cloudflare', href: './stack.html?id=cloudflare.com' },
       value: '4,000',
       title: '4,000',
     });
@@ -346,18 +304,6 @@ describe('entrantRows', () => {
       topByDomains(entrants([provider(1, { supported_templates: 1, domains: 123_456 })], [])),
     );
     expect(rows[0]).toMatchObject({ value: '123.5K', title: '123,456' });
-  });
-});
-
-describe('entrantRows of DNS providers', () => {
-  it('links the stack under the API host', () => {
-    const rows = entrantRows(topByTemplates(dnsProviderEntrants(dnsProviders(), stacks())));
-    expect(rows[2]).toMatchObject({
-      name: 'Plesk',
-      href: './dns-provider.html?id=2',
-      detail: 'domainconnect.plesk.com',
-      stack: { name: 'Plesk', href: './stack.html?id=plesk.com' },
-    });
   });
 });
 

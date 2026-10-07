@@ -1,7 +1,8 @@
 /**
  * Write the derived data of an export release into `<outDir>/leaderboards.json`.
- * Usage: node scripts/derive-data.ts [releaseDir] [outDir=.derived]
- * releaseDir defaults to DATA_DIR, else the contract's example export. The deploy writes into
+ * Usage: node scripts/derive-data.ts [releaseDir] [outDir]
+ * releaseDir defaults to DATA_DIR, else the contract's example export; outDir to DERIVED_DIR, else
+ * `.derived`. The deploy writes into
  * `dist/data/derived/` after bundling the release; `vite dev`/`preview` serve `.derived/` there.
  */
 import { mkdirSync, writeFileSync } from 'node:fs';
@@ -9,8 +10,10 @@ import { join, resolve } from 'node:path';
 import { LEADERBOARDS_FILE, deriveLeaderboards } from './derive.ts';
 import { EXAMPLE_EXPORT_DIR } from './export-release.ts';
 
-const [releaseArg = process.env.DATA_DIR ?? EXAMPLE_EXPORT_DIR, outArg = '.derived'] =
-  process.argv.slice(2);
+const [
+  releaseArg = process.env.DATA_DIR ?? EXAMPLE_EXPORT_DIR,
+  outArg = process.env.DERIVED_DIR ?? '.derived',
+] = process.argv.slice(2);
 const releaseDir = resolve(releaseArg);
 const outDir = resolve(outArg);
 

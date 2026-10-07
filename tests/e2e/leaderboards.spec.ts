@@ -65,11 +65,11 @@ test.describe('Leaderboards (leaderboards.html)', () => {
     await expect(page).toHaveURL(/dns-provider\.html\?id=2$/);
   });
 
-  test('links a stack row of most improved to the stack card', async ({ page }) => {
+  test('ranks most improved DNS providers, linking each to its card', async ({ page }) => {
     await page.goto('leaderboards.html');
+    await expect(page.getByTestId('board-improved')).toContainText(/IONOS.*Stack IONOS.*\+1/s);
     await names(page, 'board-improved').filter({ hasText: 'IONOS' }).click();
-    await expect(page).toHaveURL(/stack\.html\?id=ionos\.com$/);
-    await expect(page.getByTestId('card-title')).toContainText('IONOS');
+    await expect(page).toHaveURL(/dns-provider\.html\?id=5$/);
   });
 
   test('switches the most improved window in place, keeping ?window= in the URL', async ({

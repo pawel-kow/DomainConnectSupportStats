@@ -141,7 +141,7 @@ npm run verify                           # all of the above, the pre-PR gate
 
 npm run validate:export -- <releaseDir>  # validate a release against the vendored contract
 npm run bundle:data -- <releaseDir> dist # validate + copy a release into dist/data/
-npm run derive -- [releaseDir] [outDir]  # derived data (default: DATA_DIR or example → .derived/)
+npm run derive -- [releaseDir] [outDir]  # derived data (default: DATA_DIR or example → DERIVED_DIR or .derived/)
 npm run validate:registry -- <dir>       # validate a registry (default registry/, the dev registry)
 npm run bundle:registry -- <dir> dist <owner/name> <commit>  # validate + copy into dist/registry/
 npm run release:notes -- <version>       # print the CHANGELOG section of a version
@@ -194,7 +194,7 @@ Pushing `.github/workflows/` changes needs a token with the `workflow` scope.
 - `src/lib/templates-list.ts`: templates list (service provider filter, never-probed rows hidden by default)
 - `src/lib/paging.ts`: page count, rows and range of a paginated table
 - `src/lib/service-providers.ts`: service provider card (one series per template, default chart selection)
-- `src/lib/leaderboards.ts`: boards (stack folding, top 10, ties, `?window=`), new supporting DNS providers, display rows
+- `src/lib/leaderboards.ts`: boards (one row per DNS provider, top 10, ties, `?window=`), new supporting DNS providers, display rows
 - `src/lib/templates.ts`: template card (records as type, host and details, history caveat, table titles)
 - `src/lib/format.ts`, `cells.ts`, `series.ts`, `links.ts`, `params.ts`: pure display/series/URL/query helpers (`safeUrl`, `safeMailto` for URLs from the data; `isPublicKey` hides internal ids)
 - `src/lib/components/`: shared Svelte components
