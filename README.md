@@ -20,6 +20,7 @@ statistics dashboard at [stats.domainconnect.org](https://stats.domainconnect.or
 | DNS provider card (`dns-provider.html?id=`)         | Support, domain share over time, supported templates, registry entry        |
 | DNS providers, Stacks, Service providers, Templates | Full lists with sort, filter and search _(in progress)_                     |
 | Stack, Service provider, Template cards             | One entity's support, domain share, history and cross-links _(in progress)_ |
+| Methodology (`methodology.html`)                    | How the figures come about, this release's zones and sampling, limits       |
 
 Every view is a shareable link; query parameters carry only ids and filters.
 

@@ -90,6 +90,7 @@ every view is a shareable link:
 | `service-provider.html?id=`                      | `service-providers/{service_provider_id}.json`      | built |
 | `template.html?spid=&sid=`                       | `templates/{service_provider_id}/{service_id}.json` | built |
 | `leaderboards.html` (`?window=`)                 | the four lists, `derived/leaderboards.json`         | built |
+| `methodology.html`                               | `manifest.json`, `contract/export/METHODOLOGY.md`   | built |
 
 A card page with a missing parameter or a 404 shows `NotFound` linking to its list; any other load
 failure shows `LoadError`; a section that loads on its own (leaderboard panels) shows `Unavailable` instead. Never a blank page. Card layout: REQUIREMENTS.md F-1a. Leaderboards:
@@ -203,6 +204,7 @@ Pushing `.github/workflows/` changes needs a token with the `workflow` scope.
 - `src/views/`: page views; `src/pages/`: HTML entries; `src/entries/`: mount scripts
 - `src/env.d.ts`: build-time constants (`__APP_VERSION__`)
 - `public/config.js`: optional runtime config (`window.DC_STATS_CONFIG`)
+- `scripts/methodology.ts`: METHODOLOGY.md → HTML (GitHub heading ids); `vite.config.ts` bakes it into `methodology.html`
 - `scripts/export-release.ts`: `validateRelease()` (schemas, one `generated_at`, counts, card presence)
 - `scripts/validate-export.ts`, `scripts/bundle-data.ts`: CLIs over it, used by CI and deploy
 - `scripts/derive.ts`: `deriveLeaderboards()` (first support per DNS provider); CLI `derive-data.ts`, used by deploy and e2e

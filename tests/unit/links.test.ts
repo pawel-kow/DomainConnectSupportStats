@@ -10,6 +10,11 @@ describe('links', () => {
     expect(links.dnsProvider(42)).toBe('./dns-provider.html?id=42');
   });
 
+  it('links a methodology section by its anchor', () => {
+    expect(links.methodology()).toBe('./methodology.html');
+    expect(links.methodology('8-limitations')).toBe('./methodology.html#8-limitations');
+  });
+
   it('leaves out empty filters', () => {
     expect(links.dnsProviders({ stack: null, q: '' })).toBe('./dns-providers.html');
     expect(links.dnsProviders({ stack: 'plesk.com' })).toBe('./dns-providers.html?stack=plesk.com');

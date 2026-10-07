@@ -3,6 +3,7 @@ import { createReadStream, existsSync, readFileSync, readdirSync, statSync } fro
 import { extname, resolve, sep } from 'node:path';
 import type { Connect, Plugin } from 'vite';
 import { defineConfig } from 'vitest/config';
+import { renderMethodology } from './scripts/methodology.ts';
 import { decodeSegment } from './src/lib/data/encode.ts';
 
 const ROOT = import.meta.dirname;
@@ -88,13 +89,35 @@ function serveInputs(): Plugin {
   };
 }
 
+const METHODOLOGY = resolve(ROOT, 'contract/export/METHODOLOGY.md');
+
+/** Replaces `<!-- methodology -->` in a page with the vendored METHODOLOGY.md as static HTML. */
+function methodology(): Plugin {
+  return {
+    name: 'methodology',
+    transformIndexHtml: {
+      order: 'pre',
+      handler: (html) =>
+        html.includes('<!-- methodology -->')
+          ? html.replace('<!-- methodology -->', () =>
+              renderMethodology(readFileSync(METHODOLOGY, 'utf8')),
+            )
+          : html,
+    },
+  };
+}
+
 export default defineConfig({
   root: PAGES_DIR,
   publicDir: resolve(ROOT, 'public'),
   // Relative base: the same build works on github.io/<repo>/, a custom domain, or any sub-path.
   base: './',
   define: { __APP_VERSION__: JSON.stringify(version) },
-  plugins: [svelte({ configFile: resolve(ROOT, 'svelte.config.js') }), serveInputs()],
+  plugins: [
+    svelte({ configFile: resolve(ROOT, 'svelte.config.js') }),
+    serveInputs(),
+    methodology(),
+  ],
   // All addresses: `localhost` may resolve to `::1` only, which a devcontainer port forward
   // (IPv4) cannot reach.
   server: { host: true },

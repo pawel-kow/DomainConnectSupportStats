@@ -133,7 +133,8 @@
           <li>
             Support counts template versions by the latest probe; the share is of the provider's
             template versions on record. Undetermined: not yet determined (never probed, being
-            retried or failed).
+            retried or failed) (<a href={links.methodology('52-support-probe')}>methodology 5.2</a
+            >).
           </li>
           <li>
             A DNS provider without template versions on record shows a total of 1, with nothing
@@ -141,9 +142,15 @@
           </li>
           <li>
             Domains: scanned domains whose Domain Connect record is attributed to the DNS provider,
-            as a share of the scanned domains. Domains of unidentified providers are not counted.
+            as a share of the scanned domains. Domains of unidentified providers are not counted (<a
+              href={links.methodology('43-attribution-of-domains')}>methodology 4.3</a
+            >).
           </li>
-          <li>Settings and support describe the last attempt, which may be days old.</li>
+          <li>
+            Settings and support describe the last attempt, which may be days old (<a
+              href={links.methodology('61-status-values')}>methodology 6.1</a
+            >).
+          </li>
         </ul>
       </section>
     {:else}

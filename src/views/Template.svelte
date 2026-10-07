@@ -164,7 +164,9 @@
                   num(history.rows.at(-1), 'supporting_providers'),
                 )}
                 DNS providers, the latest probes {formatCount(supporters.rows.length)}: the history
-                keeps the support a DNS provider last had when its latest probe failed.
+                keeps the support a DNS provider last had when its latest probe failed (<a
+                  href={links.methodology('8-limitations')}>methodology 8</a
+                >).
               </p>
             {/if}
           {:else}

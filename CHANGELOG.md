@@ -4,6 +4,15 @@ Changes per site version. Versions follow [SemVer](https://semver.org/): major f
 parameter removed or changed incompatibly, minor for new pages, features or content, patch for
 fixes, styling and dependencies.
 
+## [0.13.0] - 2026-10-07
+
+### Added
+
+- Methodology page (`methodology.html`, linked from the footer): this release's zones, zone
+  domains, sampling and scanned domains, what is not covered, how to report a problem, privacy,
+  and the Scanner's methodology.
+- Caveats link to the matching methodology section.
+
 ## [0.12.0] - 2026-10-07
 
 ### Added

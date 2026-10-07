@@ -89,12 +89,12 @@
         <ul class="caveats" data-testid="caveats">
           <li>
             Templates count every version of a template once. Supported: templates at least one DNS
-            provider supports.
+            provider supports (<a href={links.methodology('52-support-probe')}>methodology 5.2</a>).
           </li>
           <li>DNS providers: those supporting at least one of its templates, each counted once.</li>
           <li>
             Reach: scanned domains behind those DNS providers, each counted once, as a share of the
-            scanned domains.
+            scanned domains (<a href={links.methodology('11-terms')}>methodology 1.1</a>).
           </li>
         </ul>
       </section>

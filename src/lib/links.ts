@@ -32,6 +32,8 @@ export const links = {
     page('service-provider', { id: serviceProviderId }),
   template: (serviceProviderId: string, serviceId: string) =>
     page('template', { spid: serviceProviderId, sid: serviceId }),
+  /** A section of the methodology by its heading anchor (GitHub style, `8-limitations`). */
+  methodology: (section?: string) => page('methodology') + (section ? `#${section}` : ''),
 };
 
 /** Top navigation: the landing page, the four lists and the leaderboards. */
