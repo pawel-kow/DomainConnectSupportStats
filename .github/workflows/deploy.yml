@@ -126,6 +126,8 @@ jobs:
         run: npm run build
       - name: Validate and bundle the release
         run: npm run bundle:data -- "export-data/${{ vars.DATA_PATH || '.' }}" dist
+      - name: Derive data from the release
+        run: npm run derive -- dist/data dist/data/derived
       - name: Validate and bundle the registry
         run: >-
           npm run bundle:registry -- registry dist "${{ vars.REGISTRY_REPO }}"

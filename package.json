@@ -46,6 +46,7 @@
     "validate:registry": "node scripts/validate-registry.ts",
     "bundle:data": "node scripts/bundle-data.ts",
     "bundle:registry": "node scripts/bundle-registry.ts",
+    "derive": "node scripts/derive-data.ts",
     "check:version": "node scripts/check-version.ts",
     "release:notes": "node scripts/release-notes.ts",
     "verify": "npm run lint && npm run check && npm run check:version && npm test && npm run build && npm run test:e2e"

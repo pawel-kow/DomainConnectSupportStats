@@ -11,13 +11,17 @@ providers (30 days)" plus a Most improved top 5, from the current export and a d
 - [x] Step 1: contract vendored in PR #38 (`chore/contract-supported-templates`, upstream
       `docs/` at Scanner f4c50aa, incl. METHODOLOGY.md, without the per-report examples). Merged; this branch
       is rebased on `main`.
-- [~] Step 2: `scripts/derive-data.ts <releaseDir> <outDir>` (TDD): reads every
-      `dns_provider` card via the manifest, writes `leaderboards.json` (`generated_at` of the
-      release; per DNS provider the first sweep with `supported_templates` > 0, unless that is
-      the export's first sweep). Deploy: after `bundle:data`, into `dist/data/derived/`. Dev:
-      `npm run derive` → `.derived/` (gitignored), served as `/data/derived/`; e2e generates it
-      from the example export.
-- [ ] Step 3: `src/lib/leaderboards.ts` (TDD): board ranking, stack folding, windows
+- [x] Step 2: `scripts/derive.ts` (`deriveLeaderboards()`, tests `tests/unit/derive.test.ts`),
+      CLI `scripts/derive-data.ts [releaseDir=$DATA_DIR|example] [outDir=.derived]`
+      (`npm run derive`). Output `leaderboards.json`: `{generated_at, first_sweep: {sweep_id,
+      started_at} | null, first_support: [{dns_provider_id, sweep_id, started_at,
+      supported_templates}]}`, newest first, export's first sweep left out; scannerStartDate
+      and the 30-day window are the site's job. Deploy: step after `bundle:data`
+      (`npm run derive -- dist/data dist/data/derived`). Vite serves `DERIVED_DIR` (default
+      `.derived/`, gitignored) as `/data/derived/`; Playwright runs `npm run derive` before
+      preview. Real release: Webnames.ca (2774, sweep 3) only, first sweep 2.
+- [~] Step 3: `src/lib/leaderboards.ts` (TDD): board ranking, stack folding, windows; types
+      of `leaderboards.json` in `src/lib/data/`, loader rejecting another `generated_at`
 - [ ] Step 4: `leaderboards.html` page, nav entry, e2e
 - [ ] Step 5: overview: new supporting DNS providers (30 days), Most improved top 5
 - [ ] Step 6: real-release check, docs (CLAUDE.md, REQUIREMENTS.md F-4, DEPLOYMENT.md,

@@ -5,7 +5,8 @@ const PORT = 4173;
 /**
  * E2E against the production build served by `vite preview`, which serves the data release under
  * `/data/` like the deployed site (DATA_DIR, default: the contract's example export) and the
- * registry under `/registry/` (REGISTRY_DIR, default: the contract's golden copy).
+ * registry under `/registry/` (REGISTRY_DIR, default: the contract's golden copy), and the derived
+ * data of DATA_DIR under `/data/derived/`.
  */
 export default defineConfig({
   testDir: 'tests/e2e',
@@ -22,7 +23,7 @@ export default defineConfig({
     { name: 'mobile', use: { ...devices['Pixel 7'] } },
   ],
   webServer: {
-    command: `npm run build && npx vite preview --port ${PORT} --strictPort`,
+    command: `npm run build && npm run derive && npx vite preview --port ${PORT} --strictPort`,
     url: `http://localhost:${PORT}/index.html`,
     // Never reuse a running preview: it would serve a stale build.
     reuseExistingServer: false,
