@@ -43,7 +43,8 @@ Details: [DEVELOPING.md](DEVELOPING.md) §1.
   - `null` is "unknown", **never zero**: show `–`, draw a gap, sort it last;
   - percentages arrive unrounded; round for display only;
   - text values come from third parties: never render them as HTML (`{@html}` is a lint error);
-  - show `notes` verbatim; show `generated_at` and the domain-share import on every page;
+  - show `notes` verbatim; show `generated_at`, the domain-share import and the support sweep on
+    every page (`Layout` annotation, `annotation.ts`);
   - import series and sweep series run on two clocks (`src/lib/series.ts`);
   - tables keep only the columns that fit at phone width (`phoneKeys`); ask the maintainer which
     when not obvious;
@@ -197,6 +198,7 @@ Pushing `.github/workflows/` changes needs a token with the `workflow` scope.
 - `src/lib/paging.ts`: page count, rows and range of a paginated table
 - `src/lib/service-providers.ts`: service provider card (one series per template, default chart selection)
 - `src/lib/leaderboards.ts`: boards (one row per DNS provider, top 10, ties, `?window=`), new supporting DNS providers, display rows
+- `src/lib/annotation.ts`: data annotation (sweep a page reflects, import completion time)
 - `src/lib/templates.ts`: template card (records as type, host and details, history caveat, table titles)
 - `src/lib/format.ts`, `cells.ts`, `series.ts`, `links.ts`, `params.ts`: pure display/series/URL/query helpers (`safeUrl`, `safeMailto` for URLs from the data; `isPublicKey` hides internal ids)
 - `src/lib/components/`: shared Svelte components

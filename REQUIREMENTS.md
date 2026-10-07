@@ -190,8 +190,16 @@ times are not shown.
 
 ### F-2 Common behaviour
 
-- F-2.1 Every page shows the release's `generated_at` and domain-share import (by its scan's
-  completion time) in its header, and the site version in its footer.
+- F-2.1 Every page ends its main content with an annotation (small muted text, left-aligned, no
+  box) of both clocks: `Data generated <generated_at> · Domain figures: scan completed
+<completed_at> (<scanned_domains> domains scanned) · Support figures: sweep started <started_at>
+· Methodology`. Domain figures: the domain-share import's `completed_at` (`overview.json`
+  `adoption`) and `scanned_domains`; without an import, `no domain-share import`. Support figures:
+  the newest sweep the page's data reflects: DNS provider card `support_history` last row, service
+  provider card `support_history` newest `started_at`, template card `history` last row, every other
+  page `overview.json` `ecosystem` last row; `–` without rows or when the card does not load. The
+  methodology page leaves out its own link. While loading: `Loading data release…`. The footer
+  shows the site version.
 - F-2.2 Lists: client-side sort, filter and search over all rows; default order is the export's.
 - F-2.3 Cross-links as plain `<a href>` page links: DNS provider ↔ stack, DNS provider ↔ template,
   template ↔ service provider, stack → its deployments (EXPORT_FORMAT.md "Cross-links").

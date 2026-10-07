@@ -5,13 +5,6 @@ test.describe('overview (index.html)', () => {
     await page.goto('index.html');
   });
 
-  test('shows the release in the header', async ({ page }) => {
-    await expect(page.getByTestId('generated-at')).toHaveText('01-10-2026 00:00 UTC');
-    await expect(page.getByTestId('share-import')).toHaveText(
-      'scan completed 01-06-2026 07:00 UTC',
-    );
-  });
-
   test('shows the latest values as headline numbers', async ({ page }) => {
     const headline = page.getByTestId('headline');
     await expect(headline).toContainText('60.1%');
