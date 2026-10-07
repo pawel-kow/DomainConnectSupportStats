@@ -34,6 +34,9 @@
     }),
   );
   const derived = client.leaderboards();
+  // Shown by their own {#await}, which may render only after they settle.
+  derived.catch(() => undefined);
+  lists.catch(() => undefined);
 
   const IMPROVED_SIZE = 5;
 

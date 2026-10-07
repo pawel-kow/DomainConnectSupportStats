@@ -122,8 +122,6 @@ test.describe('Leaderboards (leaderboards.html)', () => {
 });
 
 test.describe('derived data unavailable', () => {
-  test.use({ expectErrors: true });
-
   test('shows the boards and an error in place of the new supporters', async ({ page }) => {
     await page.route('**/data/derived/leaderboards.json', (route) =>
       route.fulfill({

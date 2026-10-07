@@ -54,25 +54,27 @@ Page changes are run against the current real release before review (DEVELOPING.
 
 ## 3. Unit tests (`tests/unit/`)
 
-| File                     | Pins                                                                                                                                                              |
-| ------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `encode.test.ts`         | Every id-encoding example of EXPORT_FORMAT.md, round-trip, no `/`/`%`/uppercase/leading `.`                                                                       |
-| `manifest.test.ts`       | Paths come from the manifest's templates, ids are encoded, missing ids and unknown kinds fail, `format_version` gate                                              |
-| `tables.test.ts`         | Tables by id, template-card suffix lookup, unknown tables ignored, one-record tables                                                                              |
-| `load.test.ts`           | Manifest fetched once, 404 → `NotFoundError`, unsupported format rejected, files of another release rejected                                                      |
-| `config.test.ts`         | Data and registry base URL precedence: runtime → build time → `./data/`, `./registry/`                                                                            |
-| `format.test.ts`         | Timestamps as UTC (all three contract forms), null → `–`, rounding for display, signed pp, flags yes/no/unknown                                                   |
-| `cells.test.ts`          | Formatting by column key, null last in both sort directions, free-text filter, nameserver lists, internal ids hidden                                              |
-| `series.test.ts`         | Import placement fallback (started → completed → epoch → none), gaps not zeros, latest measured value, when the overview is needed                                |
-| `dns-providers.test.ts`  | Undetermined count, hidden-by-default rule, stack filter before hiding, derived column, unknown columns kept, status badges with raw hover text                   |
-| `templates.test.ts`      | Record details verbatim in column order without unknown fields, records table with own columns, history caveat, table title prefix                                |
-| `paging.test.ts`         | Page count, clamping, rows of a page, first/last row, All                                                                                                         |
-| `links.test.ts`          | Page URLs carry raw ids; `safeUrl` accepts only http(s), `safeMailto` only plain addresses                                                                        |
-| `params.test.ts`         | Query parameters: raw text, blank as missing, non-negative integers only, `1` as the only on value of a toggle                                                    |
-| `registry-path.test.ts`  | Registry folder `<a>/<b>` from a `providerId`                                                                                                                     |
-| `registry-entry.test.ts` | Entry fields read, unknown keys ignored, absent or invalid values unknown, entries without `providerId`/`name` rejected; `registry.json`                          |
-| `registry-load.test.ts`  | Entry URL from the encoded `providerId`, logo URL next to it, 404 → `null`, other failures thrown, `registry.json` fetched once, entry link at the bundled commit |
-| `changelog.test.ts`      | CHANGELOG section lookup by version, version check (missing section, invalid SemVer)                                                                              |
+| File                     | Pins                                                                                                                                                                                  |
+| ------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `encode.test.ts`         | Every id-encoding example of EXPORT_FORMAT.md, round-trip, no `/`/`%`/uppercase/leading `.`                                                                                           |
+| `manifest.test.ts`       | Paths come from the manifest's templates, ids are encoded, missing ids and unknown kinds fail, `format_version` gate                                                                  |
+| `tables.test.ts`         | Tables by id, template-card suffix lookup, unknown tables ignored, one-record tables                                                                                                  |
+| `load.test.ts`           | Manifest fetched once, 404 → `NotFoundError`, unsupported format rejected, files (and derived leaderboards) of another release rejected                                               |
+| `derive.test.ts`         | `leaderboards.json` from the example export: `generated_at`, first sweep, first support per DNS provider newest first, first sweep left out, another release fails                    |
+| `leaderboards.test.ts`   | Stack folding, domains of supporting deployments, top 10 by a positive value, ties by domains then name, windows, reach boards, new supporters (30 days, scanner start), display rows |
+| `config.test.ts`         | Data and registry base URL precedence: runtime → build time → `./data/`, `./registry/`                                                                                                |
+| `format.test.ts`         | Timestamps as UTC (all three contract forms), null → `–`, rounding for display, signed pp, flags yes/no/unknown                                                                       |
+| `cells.test.ts`          | Formatting by column key, null last in both sort directions, free-text filter, nameserver lists, internal ids hidden                                                                  |
+| `series.test.ts`         | Import placement fallback (started → completed → epoch → none), gaps not zeros, latest measured value, when the overview is needed                                                    |
+| `dns-providers.test.ts`  | Undetermined count, hidden-by-default rule, stack filter before hiding, derived column, unknown columns kept, status badges with raw hover text                                       |
+| `templates.test.ts`      | Record details verbatim in column order without unknown fields, records table with own columns, history caveat, table title prefix                                                    |
+| `paging.test.ts`         | Page count, clamping, rows of a page, first/last row, All                                                                                                                             |
+| `links.test.ts`          | Page URLs carry raw ids; `safeUrl` accepts only http(s), `safeMailto` only plain addresses                                                                                            |
+| `params.test.ts`         | Query parameters: raw text, blank as missing, non-negative integers only, `1` as the only on value of a toggle                                                                        |
+| `registry-path.test.ts`  | Registry folder `<a>/<b>` from a `providerId`                                                                                                                                         |
+| `registry-entry.test.ts` | Entry fields read, unknown keys ignored, absent or invalid values unknown, entries without `providerId`/`name` rejected; `registry.json`                                              |
+| `registry-load.test.ts`  | Entry URL from the encoded `providerId`, logo URL next to it, 404 → `null`, other failures thrown, `registry.json` fetched once, entry link at the bundled commit                     |
+| `changelog.test.ts`      | CHANGELOG section lookup by version, version check (missing section, invalid SemVer)                                                                                                  |
 
 ## 4. Contract tests (`tests/contract/`)
 
@@ -109,15 +111,17 @@ Page changes are run against the current real release before review (DEVELOPING.
 ## 6. End-to-end tests (`tests/e2e/`)
 
 Playwright builds the site and serves it with `vite preview`, with the release under `/data/`
-(`DATA_DIR`, default: the example export) and the registry under `/registry/` (`REGISTRY_DIR`,
-default: `contract/registry/examples`). Projects: `desktop` (Desktop Chrome), `mobile`
+(`DATA_DIR`, default: the example export), its derived data (`npm run derive`) under
+`/data/derived/` and the registry under `/registry/` (`REGISTRY_DIR`, default:
+`contract/registry/examples`). Projects: `desktop` (Desktop Chrome), `mobile`
 (Pixel 7). The `consoleErrors` fixture fails a test on any page or console error unless it sets
 `expectErrors`.
 
 | File                        | Pins                                                                                                                                                                                                                                                                                                                                        |
 | --------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `navigation.spec.ts`        | Every page renders the header, the release facts and the navigation; navigation links are plain page links                                                                                                                                                                                                                                  |
-| `overview.spec.ts`          | Release in the header, headline numbers, chart drawn without data tables, no internal id, no horizontal page scroll, error state when the data is unavailable                                                                                                                                                                               |
+| `overview.spec.ts`          | Release in the header, headline numbers, chart drawn without data tables, no internal id, most improved top 5 and leaderboards link, new supporters (empty and listed), derived data error in its panel, no horizontal page scroll, error state when the data is unavailable                                                                |
+| `leaderboards.spec.ts`      | Boards by templates and domains with stacks folded, stack link, `?window=` switch, unmeasured window, reach boards, new supporters (empty and listed), derived data error in its panel, no horizontal page scroll                                                                                                                           |
 | `dns-providers.spec.ts`     | Visible rows, combined cells, caveats; badges with raw hover text; show-all toggle in the URL; stack filter and its way back; empty stack; `?q=` pre-fill and URL sync; sort; phone columns; pages of a 1,000-row list (size, reset on search); card and stack links; no stack link without a stack; error state; no horizontal page scroll |
 | `service-providers.spec.ts` | Every service provider in export order; id below the name, once for an unnamed one; wide-only columns; card and templates-list links; search in the URL; empty state; reach sort; unknown reach as `–`; load error; phone columns, no horizontal scroll                                                                                     |
 | `template.spec.ts`          | Template, service provider link and reach; logo from `logo_url`, hidden when broken; supporter links and total; records verbatim without unknown fields, own columns on wide screens only; chart and caveat; sparse template; card order; not-found for missing params and unknown template; phone columns, no horizontal scroll            |

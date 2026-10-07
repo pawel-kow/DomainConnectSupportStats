@@ -4,6 +4,19 @@ Changes per site version. Versions follow [SemVer](https://semver.org/): major f
 parameter removed or changed incompatibly, minor for new pages, features or content, patch for
 fixes, styling and dependencies.
 
+## [0.12.0] - 2026-10-07
+
+### Added
+
+- Leaderboards page (`leaderboards.html`): most templates supported, most domains reached, most
+  improved (since the previous sweep or over about 90 days, `?window=90d`), new supporting DNS
+  providers (last 30 days), templates and service providers with the biggest reach. DNS
+  providers of a stack rank as one stack row.
+- Overview: new supporting DNS providers of the last 30 days and the most improved top 5.
+- Navigation entry "Leaderboards".
+- Deploy derives `data/derived/leaderboards.json` (first support per DNS provider) from the
+  release.
+
 ## [0.11.0] - 2026-10-05
 
 ### Added

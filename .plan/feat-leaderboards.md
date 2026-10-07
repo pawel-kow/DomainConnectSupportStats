@@ -31,8 +31,9 @@ providers (30 days)" plus a Most improved top 5, from the current export and a d
       file; its load error stays inside its panel), template reach, service provider reach.
 - [x] Step 5: overview: new supporting DNS providers (30 days), Most improved top 5, side by side
       (stacked below 900px), each loading on its own (errors stay in the panel)
-- [~] Step 6: real-release check, docs (CLAUDE.md, REQUIREMENTS.md F-4, DEPLOYMENT.md,
-      DEVELOPING.md), minor version + CHANGELOG, screenshots to the maintainer
+- [~] Step 6: real-release check done (20261007T151005Z: validate, derive, e2e without page
+      errors beyond example-value assertions, preview screenshots); docs updated; 0.12.0 +
+      CHANGELOG; `npm run verify` green. Waiting: maintainer acceptance of the screenshots.
 - [ ] Promote findings, `git rm -r .plan`
 
 ## Decisions (maintainer, 2026-10-07)
@@ -68,6 +69,11 @@ providers (30 days)" plus a Most improved top 5, from the current export and a d
 - `first_seen_at` is only on the DNS provider card; all 2912 are 2026-09.
 - Newly supporting today (rule above): Webnames.ca only (0 → 164 on 2026-09-27).
 - `METHODOLOGY.md` is vendored (maintainer copied it).
+
+- Real release: most DNS providers with support declare a one-deployment stack, so the boards
+  show mostly stack rows ("Stack · 1 deployment"). Plesk (2886 deployments) leads templates.
+- Unhandled rejections: a promise rendered by a nested `{#await}` that shows only after the outer
+  load needs its own `.catch`, else a pageerror (overview, leaderboards).
 
 ## Corrections
 

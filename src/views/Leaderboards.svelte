@@ -42,6 +42,8 @@
     return { dnsProviders, stacks, templates, serviceProviders };
   });
   const derived = client.leaderboards();
+  // Shown by its own {#await}, which may render only after it settles.
+  derived.catch(() => undefined);
 
   const rowsOf = (file: ExportFile, id: string): Row[] => findTable(file, id)?.rows ?? [];
   const text = (row: Row, key: string): string | null =>

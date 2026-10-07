@@ -57,16 +57,18 @@ src/entries/<page>.ts      mounts the page's view into #app
 src/views/*.svelte         one view per page (Overview, DnsProvider, Placeholder, ...)
 src/lib/components/        shared UI: Layout (header/nav/footer), DataTable, TimeChart, StatCard,
                            NotFound, LoadError, Notes, CardTitle, RegistryContact, Registry,
-                           ContactList, ExternalLink, StatusBadge
+                           ContactList, ExternalLink, StatusBadge, Board, NewSupporters
 src/lib/data/              the contract in code: types, id encoding, manifest paths, loader
-                           (ExportClient), table lookup, data and registry base URL config
+                           (ExportClient), table lookup, data and registry base URL config,
+                           derived data types
 src/lib/registry/          the registry in code: entry path, entry parsing, loader (RegistryClient)
 src/lib/*.ts               pure helpers: format (numbers, dates), cells (column formatting,
                            sort, filter), series (two clocks), links (page URLs), params (query)
 src/lib/styles.css         global styles, brand tokens (from stats.domainconnect.org)
 public/                    copied as is: brand assets, config.js (runtime config)
 scripts/                   Node scripts (Node TS type stripping): release and registry
-                           validation and bundling, version/CHANGELOG check, release notes
+                           validation and bundling, derived data, version/CHANGELOG check,
+                           release notes
 contract/                  vendored contracts: export/ (Scanner export), registry/ (DNS provider registry)
 registry/                  git submodule: the test registry repository (dev registry)
 tests/                     unit/, contract/, component/ (Vitest), e2e/ (Playwright)
@@ -86,13 +88,21 @@ every view is a shareable link:
 | `stack.html?id=`                                 | `stacks/{provider_id}.json`, registry               | built |
 | `service-provider.html?id=`                      | `service-providers/{service_provider_id}.json`      | built |
 | `template.html?spid=&sid=`                       | `templates/{service_provider_id}/{service_id}.json` | built |
+| `leaderboards.html` (`?window=`)                 | the four lists, `derived/leaderboards.json`         | built |
 
 A card page with a missing parameter or a 404 shows `NotFound` linking to its list; any other load
-failure shows `LoadError`. Never a blank page. Card layout: REQUIREMENTS.md F-1a.
+failure shows `LoadError`. Never a blank page. Card layout: REQUIREMENTS.md F-1a. Leaderboards:
+F-4; the overview also shows new supporting DNS providers and the most improved top 5.
 
 **Data location.** Default `./data/`. Build time: `VITE_DATA_BASE_URL`. Runtime:
 `window.DC_STATS_CONFIG.dataBaseUrl` in `config.js` (`src/lib/data/config.ts`). `vite dev` and
 `vite preview` serve `/data/` from `DATA_DIR` (default: the contract's example export).
+
+**Derived data.** `scripts/derive.ts` collects what the export spreads over its cards
+(first support per DNS provider) into `<data>/derived/leaderboards.json`; the deploy runs it after
+bundling the release. The site rejects it when its `generated_at` differs from the manifest's.
+`vite dev`/`preview` serve `DERIVED_DIR` (default `.derived/`, written by `npm run derive`) as
+`/data/derived/`.
 
 **Registry location.** Default `./registry/`. Build time: `VITE_REGISTRY_BASE_URL`. Runtime:
 `window.DC_STATS_CONFIG.registryBaseUrl`. Entry `registry/<a>/<b>/<encoded providerId>.json`,
@@ -106,8 +116,8 @@ footer.
 **Deployment.** Merging a new version to `main` tags `v<version>`, waits for approval in
 environment `release`, then deploys. Data releases (`repository_dispatch` `export-published`,
 daily, manual) redeploy the latest GitHub Release with the current data and registry.
-`deploy.yml` validates the release against `contract/export/schemas/export/` and bundles it into
-`dist/data/`, and the registry (`REGISTRY_REPO`, checked out into `registry/`) against
+`deploy.yml` validates the release against `contract/export/schemas/export/`, bundles it into
+`dist/data/` and derives `dist/data/derived/`, and the registry (`REGISTRY_REPO`, checked out into `registry/`) against
 `contract/registry/schema/` into `dist/registry/`.
 [DEPLOYMENT.md](DEPLOYMENT.md).
 
@@ -131,6 +141,7 @@ npm run verify                           # all of the above, the pre-PR gate
 
 npm run validate:export -- <releaseDir>  # validate a release against the vendored contract
 npm run bundle:data -- <releaseDir> dist # validate + copy a release into dist/data/
+npm run derive -- [releaseDir] [outDir]  # derived data (default: DATA_DIR or example → .derived/)
 npm run validate:registry -- <dir>       # validate a registry (default registry/, the dev registry)
 npm run bundle:registry -- <dir> dist <owner/name> <commit>  # validate + copy into dist/registry/
 npm run release:notes -- <version>       # print the CHANGELOG section of a version
@@ -171,10 +182,11 @@ Pushing `.github/workflows/` changes needs a token with the `workflow` scope.
 
 - `src/lib/data/encode.ts`: id ↔ path-segment encoding
 - `src/lib/data/manifest.ts`: `SUPPORTED_FORMAT_VERSION`, `filePath()` from manifest path templates
-- `src/lib/data/load.ts`: `ExportClient` (manifest once, files by kind + raw ids, `NotFoundError`, `ReleaseMismatchError`)
+- `src/lib/data/load.ts`: `ExportClient` (manifest once, files by kind + raw ids, `leaderboards()` derived data, `NotFoundError`, `ReleaseMismatchError`)
 - `src/lib/data/config.ts`: data and registry base URL precedence (runtime → build time → `./data/`, `./registry/`)
 - `src/lib/data/tables.ts`: `findTable()` by id (template-card suffix), `oneRecord()`
 - `src/lib/data/types.ts`: types of the export (only what the site reads)
+- `src/lib/data/derived.ts`: types of the derived data (`leaderboards.json`), shared with `scripts/derive.ts`
 - `src/lib/registry/path.ts`: `registryPath()` (`<a>/<b>` folder), `entryPath()`
 - `src/lib/registry/entry.ts`: `parseEntry()` (registry entry, unknown values as `null`), `parseSource()`, `FEATURES`
 - `src/lib/registry/load.ts`: `RegistryClient` (entry, logo URL, `registry.json` once), `entryFileUrl()`
@@ -182,6 +194,7 @@ Pushing `.github/workflows/` changes needs a token with the `workflow` scope.
 - `src/lib/templates-list.ts`: templates list (service provider filter, never-probed rows hidden by default)
 - `src/lib/paging.ts`: page count, rows and range of a paginated table
 - `src/lib/service-providers.ts`: service provider card (one series per template, default chart selection)
+- `src/lib/leaderboards.ts`: boards (stack folding, top 10, ties, `?window=`), new supporting DNS providers, display rows
 - `src/lib/templates.ts`: template card (records as type, host and details, history caveat, table titles)
 - `src/lib/format.ts`, `cells.ts`, `series.ts`, `links.ts`, `params.ts`: pure display/series/URL/query helpers (`safeUrl`, `safeMailto` for URLs from the data; `isPublicKey` hides internal ids)
 - `src/lib/components/`: shared Svelte components
@@ -191,6 +204,7 @@ Pushing `.github/workflows/` changes needs a token with the `workflow` scope.
 - `public/config.js`: optional runtime config (`window.DC_STATS_CONFIG`)
 - `scripts/export-release.ts`: `validateRelease()` (schemas, one `generated_at`, counts, card presence)
 - `scripts/validate-export.ts`, `scripts/bundle-data.ts`: CLIs over it, used by CI and deploy
+- `scripts/derive.ts`: `deriveLeaderboards()` (first support per DNS provider); CLI `derive-data.ts`, used by deploy and e2e
 - `scripts/registry.ts`: `validateRegistry()` (schema, entry path, logo), `bundleRegistry()`; CLIs `validate-registry.ts`, `bundle-registry.ts`
 - `scripts/changelog.ts`: CHANGELOG parsing; `scripts/check-version.ts`, `scripts/release-notes.ts`: CLIs over it
 - `vite.config.ts`: multi-page inputs, relative base, `__APP_VERSION__`, `/data/` and `/registry/` dev/preview middleware, Vitest config

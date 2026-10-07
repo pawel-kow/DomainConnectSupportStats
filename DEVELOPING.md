@@ -198,7 +198,8 @@ Applies to changes to a page, a shared component, `src/lib/` or styles.
 2. With the data repo checked out next to this one:
    `npm run validate:export -- ../<data-repo>/<DATA_PATH>`,
    `DATA_DIR=../<data-repo>/<DATA_PATH> npm run test:e2e`, and look at every changed page in
-   `DATA_DIR=... npm run preview` (large tables, long names, nulls, phone width).
+   `DATA_DIR=... npm run preview` after `DATA_DIR=... npm run derive` (large tables, long names,
+   nulls, phone width).
 3. Screenshot every affected page, desktop and phone width, against the preview:
    `npx playwright screenshot --full-page <url> <file>.png` and again with `--device="Pixel 7"`.
    Show them to the maintainer in the chat and wait for acceptance. Change and repeat until
