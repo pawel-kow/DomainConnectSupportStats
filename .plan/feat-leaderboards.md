@@ -9,8 +9,8 @@ providers (30 days)" plus a Most improved top 5, from the current export and a d
 - [x] Investigate: issue, Scanner #229 (merged 2026-10-06), real release 20261007T151005Z
 - [x] Decisions with the maintainer (below)
 - [x] Step 1: contract vendored in PR #38 (`chore/contract-supported-templates`, upstream
-      `docs/` at Scanner f4c50aa, incl. METHODOLOGY.md and report examples). This branch is
-      rebased on it; rebase on `main` once #38 is merged.
+      `docs/` at Scanner f4c50aa, incl. METHODOLOGY.md and report examples). Merged; this branch
+      is rebased on `main`.
 - [~] Step 2: `scripts/derive-data.ts <releaseDir> <outDir>` (TDD): reads every
       `dns_provider` card via the manifest, writes `leaderboards.json` (`generated_at` of the
       release; per DNS provider the first sweep with `supported_templates` > 0, unless that is
