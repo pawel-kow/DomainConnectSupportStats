@@ -1,4 +1,5 @@
 import { dataBaseUrl } from './config';
+import { DERIVED_DIR, LEADERBOARDS_FILE, type Leaderboards } from './derived';
 import { assertSupportedFormat, filePath } from './manifest';
 import type { ExportFile, FileKindName, Manifest } from './types';
 
@@ -58,6 +59,17 @@ export class ExportClient {
     const manifest = await this.manifest();
     const url = new URL(filePath(manifest, kind, ids), this.baseUrl).href;
     const file = await fetchJson<ExportFile>(this.fetchFn, url);
+    if (file.generated_at !== manifest.generated_at) {
+      throw new ReleaseMismatchError(url, manifest.generated_at, file.generated_at);
+    }
+    return file;
+  }
+
+  /** The derived `leaderboards.json`; rejected like a file when it is of another release. */
+  async leaderboards(): Promise<Leaderboards> {
+    const manifest = await this.manifest();
+    const url = new URL(DERIVED_DIR + LEADERBOARDS_FILE, this.baseUrl).href;
+    const file = await fetchJson<Leaderboards>(this.fetchFn, url);
     if (file.generated_at !== manifest.generated_at) {
       throw new ReleaseMismatchError(url, manifest.generated_at, file.generated_at);
     }

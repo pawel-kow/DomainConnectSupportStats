@@ -16,7 +16,7 @@ const EXPORT_SCHEMA_BASE = 'https://github.com/pawel-kow/DomainConnectScanner/do
 const MANIFEST_SCHEMA_ID = EXPORT_SCHEMA_BASE + 'manifest.schema.json';
 const PLACEHOLDER = /\{([a-z_]+)\}/g;
 
-interface FileKind {
+export interface FileKind {
   path: string;
   report: string;
   rows?: Record<string, number>;
@@ -26,13 +26,13 @@ interface FileKind {
   files?: number;
 }
 
-interface Manifest {
+export interface Manifest {
   format_version: number;
   generated_at: string;
   files: Record<string, FileKind>;
 }
 
-interface DataFile {
+export interface DataFile {
   generated_at: string;
   tables: Record<string, { rows: Record<string, unknown>[] }>;
 }
@@ -63,7 +63,8 @@ export function exportSchemaId(report: string): string {
   return EXPORT_SCHEMA_BASE + report + '.schema.json';
 }
 
-function cardPath(kind: FileKind, row: Record<string, unknown>): string | string[] {
+/** A card's release-relative path from a list row, or the placeholders the row has no id for. */
+export function cardPath(kind: FileKind, row: Record<string, unknown>): string | string[] {
   const missing: string[] = [];
   const path = kind.path.replace(PLACEHOLDER, (_, name: string) => {
     const id = row[kind.keys?.[name] ?? name];

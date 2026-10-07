@@ -18,6 +18,7 @@ export.py → OUT_DIR/current/  ──push──▶  one release (manifest.json 
                                                                           ├ npm test, npm run build
                                                                           ├ validate release vs contract/export/
                                                                           ├ bundle into dist/data/
+                                                                          ├ derive into dist/data/derived/
                                                                           ├ validate registry vs contract/registry/
                                                                           ├ bundle into dist/registry/
                                                                           └ publish dist/ to Pages
@@ -27,6 +28,8 @@ export.py → OUT_DIR/current/  ──push──▶  one release (manifest.json 
 - Only tagged site versions are published. The deployed version is the **latest GitHub Release**.
 - A release that fails validation is not published; Pages keeps the last good deploy.
 - Only files reachable from the release's manifest are published (`scripts/bundle-data.ts`).
+- Derived data (`data/derived/leaderboards.json`, `scripts/derive-data.ts`) is computed from the
+  bundled release on every deploy.
 - Only valid registry entries and their logos are published, at `registry/<a>/<b>/<encoded file
 name>`, with `registry/registry.json` `{repository, commit}` (`scripts/bundle-registry.ts`). An
   invalid registry is not published.
