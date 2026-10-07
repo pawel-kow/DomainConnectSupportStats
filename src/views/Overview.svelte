@@ -10,6 +10,16 @@
   import type { ExportFile, Manifest, Row } from '../lib/data/types';
   import { formatAxisPct, formatCount, formatDate, formatPct, UNKNOWN } from '../lib/format';
   import { importSeries, latestWith, sweepSeries } from '../lib/series';
+  import Board from '../lib/components/Board.svelte';
+  import NewSupporters from '../lib/components/NewSupporters.svelte';
+  import {
+    entrantRows,
+    entrants,
+    mostImproved,
+    NEW_SUPPORT_DAYS,
+    newSupporting,
+  } from '../lib/leaderboards';
+  import { links } from '../lib/links';
 
   const client = defaultClient();
   let manifest = $state<Manifest | null>(null);
@@ -17,6 +27,15 @@
     manifest = m;
     return client.file('overview');
   });
+  const lists = Promise.all([client.file('dns_providers'), client.file('stacks')]).then(
+    ([dnsProviders, stacks]) => ({
+      dnsProviders: findTable(dnsProviders, 'dns_providers')?.rows ?? [],
+      stacks: findTable(stacks, 'stacks')?.rows ?? [],
+    }),
+  );
+  const derived = client.leaderboards();
+
+  const IMPROVED_SIZE = 5;
 
   function num(row: Row | undefined, key: string): number | null {
     const v = row?.[key];
@@ -143,6 +162,44 @@
       {/if}
     </section>
 
+    <div class="boards">
+      <section class="panel" data-testid="overview-new">
+        <h2>New supporting DNS providers</h2>
+        <p class="muted about">
+          First supported template found in the last {NEW_SUPPORT_DAYS} days, newest first.
+        </p>
+        {#await Promise.all([lists, derived])}
+          <p class="no-data">Loading…</p>
+        {:then [{ dnsProviders, stacks }, leaderboards]}
+          <NewSupporters rows={newSupporting(leaderboards, dnsProviders, stacks, scannerStart())} />
+        {:catch error}
+          <LoadError {error} />
+        {/await}
+      </section>
+
+      <section class="panel" data-testid="overview-improved">
+        <h2>Most improved</h2>
+        <p class="muted about">Templates gained over the latest sweep; top {IMPROVED_SIZE}.</p>
+        {#await lists}
+          <p class="no-data">Loading…</p>
+        {:then { dnsProviders, stacks }}
+          <Board
+            caption="DNS providers and stacks by templates gained since the previous sweep"
+            nameHeader="DNS provider or stack"
+            valueHeader="Gained"
+            rows={entrantRows(
+              mostImproved(entrants(dnsProviders, stacks), 'sweep', IMPROVED_SIZE),
+              'change',
+            )}
+            emptyText="No DNS provider or stack gained templates over the latest sweep"
+          />
+        {:catch error}
+          <LoadError {error} />
+        {/await}
+        <p class="more"><a href={links.leaderboards()}>All leaderboards</a></p>
+      </section>
+    </div>
+
     <section class="panel caveats">
       <h2>About these numbers</h2>
       <ul>
@@ -170,6 +227,28 @@
 </Layout>
 
 <style>
+  .boards {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0 var(--spacing-lg);
+  }
+
+  @media (max-width: 900px) {
+    .boards {
+      grid-template-columns: minmax(0, 1fr);
+    }
+  }
+
+  .about {
+    font-size: 0.85rem;
+    margin: var(--spacing-sm) 0;
+  }
+
+  .more {
+    margin-top: var(--spacing-sm);
+    text-align: right;
+  }
+
   .chart-note {
     font-size: 0.8rem;
     margin-top: var(--spacing-sm);

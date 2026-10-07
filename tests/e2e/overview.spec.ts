@@ -32,8 +32,23 @@ test.describe('overview (index.html)', () => {
   });
 
   test('shows the chart without data tables', async ({ page }) => {
-    await expect(page.getByRole('img', { name: /adoption per import/ })).toBeVisible();
-    await expect(page.locator('table')).toHaveCount(0);
+    const chart = page.getByRole('img', { name: /adoption per import/ });
+    await expect(chart).toBeVisible();
+    await expect(page.locator('section', { has: chart }).locator('table')).toHaveCount(0);
+  });
+
+  test('shows the most improved top 5 and links to the leaderboards', async ({ page }) => {
+    const board = page.getByTestId('overview-improved');
+    await expect(board.locator('tbody tr')).toHaveCount(1);
+    await expect(board).toContainText(/IONOS.*\+1/s);
+    await board.getByRole('link', { name: 'All leaderboards' }).click();
+    await expect(page).toHaveURL(/leaderboards\.html$/);
+  });
+
+  test('says that no DNS provider started supporting in the last 30 days', async ({ page }) => {
+    await expect(page.getByTestId('overview-new')).toContainText(
+      'No DNS provider started supporting Domain Connect in the last 30 days',
+    );
   });
 
   test('fits the screen without horizontal page scroll', async ({ page }) => {
@@ -43,6 +58,37 @@ test.describe('overview (index.html)', () => {
     );
     expect(overflow).toBeLessThanOrEqual(0);
   });
+});
+
+test('lists every new supporting DNS provider of the last 30 days', async ({ page }) => {
+  await page.route('**/data/derived/leaderboards.json', (route) =>
+    route.fulfill({
+      json: {
+        generated_at: '2026-10-01T00:00:00Z',
+        first_sweep: { sweep_id: 1, started_at: '2026-03-02 02:00:00' },
+        first_support: [
+          {
+            dns_provider_id: 5,
+            sweep_id: 9,
+            started_at: '2026-09-28 02:00:00',
+            supported_templates: 1,
+          },
+          {
+            dns_provider_id: 2,
+            sweep_id: 8,
+            started_at: '2026-09-23 02:00:00',
+            supported_templates: 1,
+          },
+        ],
+      },
+    }),
+  );
+  await page.goto('index.html');
+  const rows = page.getByTestId('new-supporters').locator('tbody tr');
+  await expect(rows).toHaveCount(2);
+  await expect(rows.first()).toContainText(/IONOS.*28-09-2026/s);
+  await rows.nth(1).getByRole('link', { name: 'Plesk' }).first().click();
+  await expect(page).toHaveURL(/dns-provider\.html\?id=2$/);
 });
 
 test.describe('data unavailable', () => {
