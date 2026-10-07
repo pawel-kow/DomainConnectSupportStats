@@ -88,6 +88,9 @@ allowed. Cast a cell where it is read (`num(row, key)`) and handle `null` there.
 Runes (`$props`, `$state`, `$derived`, `$effect`); no `export let` or stores. Components take data
 as props; views fetch. Pure logic lives in `src/lib/*.ts`, not in a component's `<script>`.
 
+A promise shown by an `{#await}` nested in another one may reject before it is rendered: give it
+its own `.catch(() => undefined)` where it is created, or the rejection is an uncaught page error.
+
 ### 2.8 Module layout
 
 ```
