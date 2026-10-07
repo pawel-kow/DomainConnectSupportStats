@@ -52,9 +52,10 @@ for (const url of [
   });
 }
 
-test('methodology.html annotates its data without linking to itself', async ({ page }) => {
+test('methodology.html has no data annotation', async ({ page }) => {
   await page.goto('methodology.html');
-  await expect(page.getByTestId('data-annotation')).toHaveText(RELEASE);
+  await expect(page.getByTestId('release-facts')).toBeVisible();
+  await expect(page.getByTestId('data-annotation')).toHaveCount(0);
 });
 
 test.describe('a card that is not found', () => {

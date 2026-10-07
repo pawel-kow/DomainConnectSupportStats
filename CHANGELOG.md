@@ -8,7 +8,7 @@ fixes, styling and dependencies.
 
 ### Changed
 
-- The data release is an annotation at the end of every page instead of a box below the
+- The data release is an annotation at the end of every page but the methodology instead of a box below the
   navigation. It names when the domain figures were scanned and which sweep the support figures
   come from, and links to the methodology.
 

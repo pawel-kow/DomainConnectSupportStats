@@ -107,14 +107,16 @@ describe('Layout', () => {
     expect(screen.getByTestId('share-import')).toHaveTextContent('no domain-share import');
   });
 
-  it('leaves the methodology link out of the annotation on the methodology page', () => {
+  it('leaves the annotation out when the page is not annotated', () => {
     render(Layout, {
       current: 'methodology',
       manifest: exampleManifest(),
+      annotated: false,
       client: client(),
       children,
     });
-    expect(screen.getByTestId('data-annotation')).not.toHaveTextContent('Methodology');
+    expect(screen.queryByTestId('data-annotation')).toBeNull();
+    expect(screen.getByText('page body')).toBeInTheDocument();
   });
 
   it('marks the current page in the navigation', () => {

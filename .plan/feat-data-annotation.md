@@ -26,4 +26,5 @@
 
 ## Open
 
+- Methodology page: no annotation (maintainer).
 - Screenshots awaiting the maintainer's acceptance.

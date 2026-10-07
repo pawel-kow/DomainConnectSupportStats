@@ -17,6 +17,8 @@
      * the overview's last `ecosystem` row.
      */
     sweep?: Promise<string | null>;
+    /** False leaves the data annotation out (the methodology page). */
+    annotated?: boolean;
     /** Reads the import's completion time and the default sweep from `overview.json`. */
     client?: ExportClient;
     /** Reads the repository and commit of the bundled DNS provider registry for the footer. */
@@ -28,6 +30,7 @@
     current,
     manifest = null,
     sweep,
+    annotated = true,
     client = defaultClient(),
     registry = defaultRegistryClient(),
     children,
@@ -36,7 +39,7 @@
   const share = $derived(manifest?.share_import ?? null);
 
   const overview = $derived(
-    manifest ? client.file('overview').catch(() => null) : Promise.resolve(null),
+    manifest && annotated ? client.file('overview').catch(() => null) : Promise.resolve(null),
   );
   /** The import's `completed_at`; null when unknown. */
   const completedAt = $derived(
@@ -74,27 +77,29 @@
 <main class="container">
   {@render children()}
 
-  <p class="annotation" aria-label="Data release" data-testid="data-annotation">
-    {#if manifest}
-      Data generated <time data-testid="generated-at">{formatDateTime(manifest.generated_at)}</time>
-      · Domain figures:
-      <span data-testid="share-import"
-        >{#if share}scan completed {#await completedAt}…{:then at}<time>{formatDateTime(at)}</time
-            >{/await}
-          ({formatCount(share.scanned_domains)} domains scanned){:else}no domain-share import{/if}</span
-      >
-      · Support figures:
-      <span data-testid="support-sweep"
-        >{#await sweptAt}…{:then at}{#if at}sweep started <time>{formatDateTime(at)}</time
-            >{:else}{UNKNOWN}{/if}{/await}</span
-      >
-      {#if current !== 'methodology'}
+  {#if annotated}
+    <p class="annotation" aria-label="Data release" data-testid="data-annotation">
+      {#if manifest}
+        Data generated <time data-testid="generated-at"
+          >{formatDateTime(manifest.generated_at)}</time
+        >
+        · Domain figures:
+        <span data-testid="share-import"
+          >{#if share}scan completed {#await completedAt}…{:then at}<time>{formatDateTime(at)}</time
+              >{/await}
+            ({formatCount(share.scanned_domains)} domains scanned){:else}no domain-share import{/if}</span
+        >
+        · Support figures:
+        <span data-testid="support-sweep"
+          >{#await sweptAt}…{:then at}{#if at}sweep started <time>{formatDateTime(at)}</time
+              >{:else}{UNKNOWN}{/if}{/await}</span
+        >
         · <a href={links.methodology()}>Methodology</a>
+      {:else}
+        Loading data release…
       {/if}
-    {:else}
-      Loading data release…
-    {/if}
-  </p>
+    </p>
+  {/if}
 </main>
 
 <footer class="site-footer">
