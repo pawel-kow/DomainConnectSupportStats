@@ -28,6 +28,7 @@
     type Ranked,
   } from '../lib/leaderboards';
   import { links } from '../lib/links';
+  import { withHash } from '../lib/share';
 
   const client = defaultClient();
   let window_ = $state(improvedWindow(window.location.search));
@@ -37,7 +38,7 @@
     window.history.replaceState(
       null,
       '',
-      links.leaderboards({ window: window_ === 'sweep' ? null : window_ }),
+      withHash(links.leaderboards({ window: window_ === 'sweep' ? null : window_ }), location.hash),
     );
   });
   let manifest = $state<Manifest | null>(null);

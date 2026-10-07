@@ -8,6 +8,7 @@
   import type { Column, Manifest, Row } from '../lib/data/types';
   import { formatCount, formatPct, UNKNOWN } from '../lib/format';
   import { links } from '../lib/links';
+  import { withHash } from '../lib/share';
   import { flagParam, textParam } from '../lib/params';
   import { isNeverProbed, templateList } from '../lib/templates-list';
 
@@ -18,7 +19,11 @@
 
   // Keep the view a shareable link while the search and toggle change.
   $effect(() => {
-    window.history.replaceState(null, '', links.templates({ spid, q: query, all: showAll }));
+    window.history.replaceState(
+      null,
+      '',
+      withHash(links.templates({ spid, q: query, all: showAll }), location.hash),
+    );
   });
 
   const client = defaultClient();

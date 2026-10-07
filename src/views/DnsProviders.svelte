@@ -10,6 +10,7 @@
   import { dnsProviderList, UNDETERMINED_KEY } from '../lib/dns-providers';
   import { formatCount, formatExact, formatPct, UNKNOWN } from '../lib/format';
   import { links } from '../lib/links';
+  import { withHash } from '../lib/share';
   import { flagParam, textParam } from '../lib/params';
 
   const search = window.location.search;
@@ -19,7 +20,11 @@
 
   // Keep the view a shareable link while the search and toggle change.
   $effect(() => {
-    window.history.replaceState(null, '', links.dnsProviders({ stack, q: query, all: showAll }));
+    window.history.replaceState(
+      null,
+      '',
+      withHash(links.dnsProviders({ stack, q: query, all: showAll }), location.hash),
+    );
   });
 
   const client = defaultClient();

@@ -11,12 +11,12 @@ Big story: one PR, steps with a pause for `/clear` after each (mutex and branch 
 - [x] Step 1: `src/lib/share.ts` (TDD): shared URL (location + query + anchor, no sort/page),
       post text, target URLs (Bluesky, Mastodon, LinkedIn), Mastodon instance validation and
       storage (try/catch `localStorage`), Apple-platform detection for the icon
-- [~] Step 2: components `Panel.svelte` (section with slug id, h2 with `#` link on hover/focus,
+- [x] Step 2: components `Panel.svelte` (section with slug id, h2 with `#` link on hover/focus,
       share icon in the title row, scroll + brief highlight when the hash matches after the data
       loaded, `prefers-reduced-motion`) and `ShareMenu.svelte` (keyboard menu, inline Mastodon
       form, "Link copied" `aria-live` for 2 s, Web Share "More…" when `navigator.share`);
       component tests; list pages keep the hash on `history.replaceState`
-- [ ] Step 3: use `Panel` on every chart and table panel (slugs below); static `og:title`,
+- [~] Step 3: use `Panel` on every chart and table panel (slugs below); static `og:title`,
       `og:description`, `og:image`, `twitter:card` per HTML page; og:image made absolute at
       runtime; e2e (anchor scroll, copy link, menu desktop + phone)
 - [ ] Step 4: docs (REQUIREMENTS F-2 entries, C-1 exception, CLAUDE.md file reference), minor
@@ -69,6 +69,12 @@ Big story: one PR, steps with a pause for `/clear` after each (mutex and branch 
 - Step 1 done: `src/lib/share.ts` (`sharedUrl`, `withHash`, `postText`, `blueskyUrl`,
   `mastodonUrl`, `linkedinUrl`, `parseInstance`, `loadInstance`/`saveInstance` with key
   `dc-stats.mastodon-instance`, `isApplePlatform`), 18 tests in `tests/unit/share.test.ts`.
+
+- Step 2 done: `Panel.svelte` (props `id`, `title`, `context`, `ready`, `testid`; scrolls once
+  `ready` and on `hashchange`), `ShareMenu.svelte` (Mastodon form replaces the menu; Escape in
+  the input closes), list pages keep `location.hash` via `withHash`. Tests:
+  `tests/component/{Panel,ShareMenu}.test.ts`. Testing Library: `context` and `anchor` are
+  Svelte options, pass props under `props:`.
 
 ## Corrections
 
