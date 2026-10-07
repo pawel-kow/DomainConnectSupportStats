@@ -56,9 +56,9 @@ src/pages/<page>.html      one HTML entry per page (Vite multi-page build)
 src/entries/<page>.ts      mounts the page's view into #app
 src/views/*.svelte         one view per page (Overview, DnsProvider, Placeholder, ...)
 src/lib/components/        shared UI: Layout (header/nav/footer), DataTable, TimeChart, StatCard,
-                           NotFound, LoadError, Notes, CardTitle, RegistryContact, Registry,
-                           ContactList, ExternalLink, StatusBadge, Board, NewSupporters,
-                           Unavailable
+                           NotFound, LoadError, Notes, CardTitle, Panel, ShareMenu,
+                           RegistryContact, Registry, ContactList, ExternalLink, StatusBadge,
+                           Board, NewSupporters, Unavailable
 src/lib/data/              the contract in code: types, id encoding, manifest paths, loader
                            (ExportClient), table lookup, data and registry base URL config,
                            derived data types
@@ -198,6 +198,8 @@ Pushing `.github/workflows/` changes needs a token with the `workflow` scope.
 - `src/lib/service-providers.ts`: service provider card (one series per template, default chart selection)
 - `src/lib/leaderboards.ts`: boards (one row per DNS provider, top 10, ties, `?window=`), new supporting DNS providers, display rows
 - `src/lib/templates.ts`: template card (records as type, host and details, history caveat, table titles)
+- `src/lib/share.ts`: shared link, post text, share target URLs, Mastodon instance (validation, `localStorage`), `absoluteOgImage()`
+- `src/lib/components/Panel.svelte`: chart and table panel (anchor, `#` link, share menu, scroll and highlight); `ShareMenu.svelte`: the share menu
 - `src/lib/format.ts`, `cells.ts`, `series.ts`, `links.ts`, `params.ts`: pure display/series/URL/query helpers (`safeUrl`, `safeMailto` for URLs from the data; `isPublicKey` hides internal ids)
 - `src/lib/components/`: shared Svelte components
 - `src/lib/styles.css`: global styles, brand tokens

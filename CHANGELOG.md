@@ -4,6 +4,16 @@ Changes per site version. Versions follow [SemVer](https://semver.org/): major f
 parameter removed or changed incompatibly, minor for new pages, features or content, patch for
 fixes, styling and dependencies.
 
+## [0.14.0] - 2026-10-07
+
+### Added
+
+- Share icon on every chart and table panel: Bluesky, Mastodon, LinkedIn, copy link and the
+  device's share sheet. The link opens the same page with its filters at that panel.
+- Panel anchors (e.g. `#support-history`): a `#` link next to each chart and table heading; a
+  link with the anchor scrolls to the panel and highlights it.
+- Link previews: Open Graph and Twitter card tags on every page.
+
 ## [0.13.0] - 2026-10-07
 
 ### Added

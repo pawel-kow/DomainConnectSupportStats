@@ -223,6 +223,21 @@ times are not shown.
   start date and label it "First scan" (tooltip: "Result of the first scan. State before is
   unknown."); points inside it are drawn. Domain share per import is not shaded: zone scans predate
   the start date.
+- F-2.14 Every chart and table panel has a stable English anchor (`Panel` `id`, e.g.
+  `#support-history`), unique per page and independent of its heading; a `#` link next to the
+  heading on hover or focus. A link with the anchor scrolls to the panel once its data is in place
+  and highlights it for 2 s (no animation under `prefers-reduced-motion`); an unknown anchor
+  opens the page normally. List pages keep the anchor when they rewrite the URL.
+- F-2.15 Every chart and table panel has a share icon in its title row (box with arrow on macOS
+  and iOS, three nodes elsewhere). Its menu: Bluesky, Mastodon, LinkedIn, Copy link, and "More…"
+  (Web Share) where the browser has it; keyboard-usable. The shared link is the current page URL
+  with its query and the panel anchor; sort, page and page size stay out (F-2.10). Post text:
+  `<panel title> – <entity name or page name> – Domain Connect support statistics`, no numbers;
+  the middle part is left out when it equals the title. Mastodon asks for the instance (host
+  name only) and remembers it in the browser. "Link copied" shows for 2 s (`aria-live`). Targets
+  open in a new tab with `rel="noopener noreferrer"`, only on the viewer's click.
+- F-2.16 Every page has static `og:title`, `og:description`, `og:image` (the brand square) and
+  `twitter:card` `summary`; no `og:url`. The image URL is made absolute in the browser.
 - F-2.9 Internal ids (`dns_provider_id`, `import_id`, `sweep_id`) are not shown: no columns, titles,
   tooltips or messages. They stay in URLs and lookups. Charts speak of time only: no "import" or
   "sweep" in headings, labels or tooltips. Public ids (`provider_id`,
@@ -270,7 +285,7 @@ Page `leaderboards.html` with every board; each says what it ranks, of what, and
 
 | Id   | Constraint                                                                                                                                                                         |
 | ---- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| C-1  | Static and stateless: no backend, no write path, no state between pages beyond the URL                                                                                             |
+| C-1  | Static and stateless: no backend, no write path, no state between pages beyond the URL; only exception: the Mastodon instance in `localStorage` (F-2.15)                           |
 | C-2  | One HTML file per page (multi-page build)                                                                                                                                          |
 | C-3  | Built only from `contract/` (export, registry), never from Scanner source                                                                                                          |
 | C-4  | Unknown files, tables, columns and keys ignored; tables found by id                                                                                                                |
