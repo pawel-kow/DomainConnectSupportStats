@@ -62,4 +62,34 @@ describe('ExportClient', () => {
     );
     await expect(client.file('overview')).rejects.toBeInstanceOf(ReleaseMismatchError);
   });
+
+  it('reads the derived leaderboards of the same release', async () => {
+    const leaderboards = {
+      generated_at: '2026-10-01T00:00:00Z',
+      first_sweep: null,
+      first_support: [],
+    };
+    const fetchFn = exampleFetch({ 'derived/leaderboards.json': leaderboards });
+    await expect(new ExportClient(BASE, fetchFn).leaderboards()).resolves.toEqual(leaderboards);
+    expect(fetchFn.calls).toContain(BASE + 'derived/leaderboards.json');
+  });
+
+  it('rejects derived leaderboards of another release', async () => {
+    const client = new ExportClient(
+      BASE,
+      exampleFetch({
+        'derived/leaderboards.json': {
+          generated_at: '2027-01-01T00:00:00Z',
+          first_sweep: null,
+          first_support: [],
+        },
+      }),
+    );
+    await expect(client.leaderboards()).rejects.toBeInstanceOf(ReleaseMismatchError);
+  });
+
+  it('reports missing derived leaderboards as NotFoundError', async () => {
+    const client = new ExportClient(BASE, exampleFetch());
+    await expect(client.leaderboards()).rejects.toBeInstanceOf(NotFoundError);
+  });
 });

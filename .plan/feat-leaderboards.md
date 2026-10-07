@@ -20,9 +20,12 @@ providers (30 days)" plus a Most improved top 5, from the current export and a d
       (`npm run derive -- dist/data dist/data/derived`). Vite serves `DERIVED_DIR` (default
       `.derived/`, gitignored) as `/data/derived/`; Playwright runs `npm run derive` before
       preview. Real release: Webnames.ca (2774, sweep 3) only, first sweep 2.
-- [~] Step 3: `src/lib/leaderboards.ts` (TDD): board ranking, stack folding, windows; types
-      of `leaderboards.json` in `src/lib/data/`, loader rejecting another `generated_at`
-- [ ] Step 4: `leaderboards.html` page, nav entry, e2e
+- [x] Step 3: `src/lib/leaderboards.ts` (tests `tests/unit/leaderboards.test.ts`): `entrants()`
+      (stacks folded, `reachedDomains` = domains of supporting deployments), `topByTemplates`,
+      `topByDomains`, `mostImproved(window)`, `topReach`, `newSupporting`, `improvedWindow`
+      (`?window=90d`, else `sweep`). Types in `src/lib/data/derived.ts` (shared with
+      `scripts/derive.ts`); `ExportClient.leaderboards()` rejects another `generated_at`.
+- [~] Step 4: `leaderboards.html` page, nav entry, e2e
 - [ ] Step 5: overview: new supporting DNS providers (30 days), Most improved top 5
 - [ ] Step 6: real-release check, docs (CLAUDE.md, REQUIREMENTS.md F-4, DEPLOYMENT.md,
       DEVELOPING.md), minor version + CHANGELOG, screenshots to the maintainer
