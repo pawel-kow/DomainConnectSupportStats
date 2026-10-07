@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://github.com/pawel-kow/DomainConnectScanner/docs/schemas/stacks.schema.json",
   "title": "report.py stacks --output-mode json",
-  "description": "One table of DNS provider stacks (dns_providers grouped by provider_id; a provider declaring none belongs to no stack and is left out), at most --limit rows. Support is a distribution over the stack's probed deployments, not an average (GitHub issue #160); domains describe the selected import, named in the note.",
+  "description": "One table of DNS provider stacks (dns_providers grouped by provider_id; a provider declaring none belongs to no stack and is left out), at most --limit rows. Support is a distribution over the stack's probed deployments, not an average (GitHub issue #160); supported_templates and their changes count templates any deployment supports, changes replayed over full sweeps only (GitHub issue #219); domains describe the selected import, named in the note.",
   "$ref": "common.schema.json#/$defs/report",
   "properties": {
     "notes": { "$ref": "common.schema.json#/$defs/shareNotes" },
@@ -19,10 +19,13 @@
                 { "properties": { "key": { "const": "min_supported_pct" } } },
                 { "properties": { "key": { "const": "median_supported_pct" } } },
                 { "properties": { "key": { "const": "max_supported_pct" } } },
+                { "properties": { "key": { "const": "supported_templates" } } },
+                { "properties": { "key": { "const": "supported_templates_change" } } },
+                { "properties": { "key": { "const": "supported_templates_change_90d" } } },
                 { "properties": { "key": { "const": "domains" } } },
                 { "properties": { "key": { "const": "domains_pct" } } }
               ],
-              "minItems": 8,
+              "minItems": 11,
               "items": false
             },
             "rows": {
@@ -40,6 +43,7 @@
   "$defs": {
     "row": {
       "type": "object",
+      "allOf": [{ "$ref": "common.schema.json#/$defs/templateTrendColumns" }],
       "properties": {
         "name": {
           "description": "providerName of the stack's first deployment, falling back to the stack's providerId, then '?'.",
@@ -70,7 +74,7 @@
         "domains",
         "domains_pct"
       ],
-      "additionalProperties": false
+      "unevaluatedProperties": false
     },
     "deploymentSupportPct": {
       "description": "Over the stack's deployments with probe combinations: supported / total combinations, as a percentage. null when no deployment has any.",

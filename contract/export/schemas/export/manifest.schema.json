@@ -34,9 +34,15 @@
               ]
             },
             "source": { "$ref": "../common.schema.json#/$defs/shareSource" },
-            "scanned_domains": { "$ref": "../common.schema.json#/$defs/count" }
+            "scanned_domains": { "$ref": "../common.schema.json#/$defs/count" },
+            "zones": { "$ref": "../common.schema.json#/$defs/nullableZones" },
+            "zone_domains": {
+              "description": "The distinct delegated domains of the import's zone files, summed over its zones, before sampling; null when its zones are unknown.",
+              "$ref": "../common.schema.json#/$defs/nullableCount"
+            },
+            "sample_percent": { "$ref": "../common.schema.json#/$defs/nullableSamplePercent" }
           },
-          "required": ["import_id", "status", "source", "scanned_domains"],
+          "required": ["import_id", "status", "source", "scanned_domains", "zones", "zone_domains", "sample_percent"],
           "additionalProperties": false
         }
       ]

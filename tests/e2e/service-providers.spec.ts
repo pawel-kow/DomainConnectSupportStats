@@ -12,10 +12,10 @@ test.describe('Service providers list (service-providers.html)', () => {
     page,
   }) => {
     await page.goto('service-providers.html');
-    await expect(names(page)).toHaveText(['Example Service', 'Acme Mail Inc.', 'unnamed.example']);
+    await expect(names(page)).toHaveText(['Acme Mail Inc.', 'Example Service', 'unnamed.example']);
     const acme = page.locator('tbody tr', { hasText: 'Acme Mail Inc.' });
     await expect(acme.locator('td').first()).toContainText('mail.acme.example');
-    await expect(acme).toContainText(/4,900\s*40.8%/);
+    await expect(acme).toContainText(/6,900\s*57.5%/);
     await expect(page.getByTestId('caveats')).toContainText('share of the scanned domains');
   });
 
@@ -68,7 +68,7 @@ test.describe('Service providers list (service-providers.html)', () => {
     await page.goto('service-providers.html');
     const reach = page.getByRole('button', { name: /REACH/ });
     await reach.click();
-    await expect(names(page).first()).toHaveText('Example Service');
+    await expect(names(page).first()).toHaveText('Acme Mail Inc.');
     await reach.click();
     await expect(names(page).first()).toHaveText('unnamed.example');
   });

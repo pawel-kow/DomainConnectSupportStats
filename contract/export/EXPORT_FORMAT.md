@@ -5,7 +5,10 @@ of a frontend (a static statistics site) and is meant to be enough on its own: w
 file and one export directory you can build every page. The JSON Schemas in
 [`docs/schemas/export/`](schemas/export/) are the machine-readable contract and say the
 same thing in a form a validator can check. A complete example export of a small simulated
-database is in [`docs/examples/export/`](examples/export/).
+database is in [`docs/examples/export/`](examples/export/). How the numbers are measured (the
+scanned zones and sampling, the identification of DNS providers, the support probes, statuses,
+request rates and limits) is described for the public in [`METHODOLOGY.md`](METHODOLOGY.md),
+which a statistics site can use as the basis of its methodology page.
 
 ## Purpose and audience
 
@@ -34,7 +37,7 @@ below.
 | Service provider | A publisher of templates in the [Domain Connect Templates repository](https://github.com/Domain-Connect/Templates). Keyed by `service_provider_id`, a string, usually a domain name. |
 | Template | One service of a service provider (one file in the Templates repository): a set of DNS records the DNS provider applies. Keyed by the pair (`service_provider_id`, `service_id`). |
 | Template version | A template's `version` number. The export folds versions together: a template is supported by a DNS provider when any stored version is. Columns named `versions` list the version numbers involved. |
-| Import, scan | One scan of one or more zone files. Keyed by `import_id`, a number (normally the scan's start time as Unix seconds, but not guaranteed). A scan may be *probe-sampled*: only a random percentage of the zone's domains is scanned, so "% of scanned domains" is a share of the sample, which estimates, but is not, a share of the whole zone. |
+| Import, scan | One scan of one or more zone files. Keyed by `import_id`, a number (normally the scan's start time as Unix seconds, but not guaranteed). A scan may be *probe-sampled*: only a random percentage of the zone's domains is scanned, so "% of scanned domains" is a share of the sample, which estimates, but is not, a share of the whole zone. Each import's zones and sampling percentage are published with it (`zones`, `sample_percent`). |
 | Scanned domains | The domains an import actually queried (`scanned_domains`), the denominator of every domain percentage. |
 | Support sweep | One run of the support probes: every DNS provider is asked about every template version. Keyed by `sweep_id`, a number increasing with time. Smaller runs exist too (one provider only, one template only, or only recently changed templates); the history tables say which runs they count. |
 | Supported | The DNS provider's latest probe for a template version answered that it supports it (HTTP 200). |
@@ -116,6 +119,9 @@ The release's index, written last. One JSON object on one line.
 | `share_import.status` | string | `completed`, `in_progress` (only when the export was asked to include an unfinished scan) or `pruned` (the scan's detailed data was deleted by housekeeping; its totals were kept). |
 | `share_import.source` | string | `live` (computed from the scan's data) or `snapshot` (from the totals kept after pruning). Same numbers either way. |
 | `share_import.scanned_domains` | integer | Domains the import scanned: the denominator of every domain percentage. |
+| `share_import.zones` | array of strings or null | The zones the import scanned, by name without the trailing dot (e.g. `["com", "net", "org"]`), sorted. `null` when not recorded (imports from before the zones were recorded). |
+| `share_import.zone_domains` | integer or null | The domains the zone files listed, summed over the zones, **before** sampling: the population the scanned domains were drawn from. `null` as for `zones`. |
+| `share_import.sample_percent` | number or null | The percentage of the zones' domains sampled for scanning: `100` is a census (every domain scanned), e.g. `10.1` a probe sample. `null` when not recorded, or when the import's zones were sampled at different rates. |
 | `id_encoding` | string | The [id encoding](#id-encoding) in one sentence, for reference. |
 | `files` | object | Every file kind, keyed by kind (table above), in the order written. |
 | `files.<kind>.path` | string | The kind's path relative to the release. A list's path is fixed; a card's has `{placeholder}`s. |
@@ -263,6 +269,9 @@ without data has no row.
 | `source` | string | `live` or `snapshot` (from the totals kept after pruning). |
 | `started_at` | timestamp | When the import started. For imports pruned before the totals kept their dates, inferred from the `import_id` read as Unix seconds; `null` when that is not a plausible date. |
 | `completed_at` | timestamp | When the import finished. `null` while running, and for some old pruned imports. |
+| `zones` | array of strings | The zones the import scanned, sorted (e.g. `["com", "org"]`). `null` when not recorded (imports from before the zones were recorded). |
+| `zone_domains` | count | The domains of those zones before sampling (the population). `null` as for `zones`. |
+| `sample_percent` | number | Percentage of the zones' domains sampled for scanning, `100` for a census. `null` when not recorded or when the zones were sampled at different rates. |
 | `scanned_domains` | count | Domains scanned. |
 | `dc_domains` | count | Scanned domains whose Domain Connect URL is attributed to a known DNS provider. `null` when the import has no share data. |
 | `dc_pct` | percentage | `dc_domains` / `scanned_domains`. `null` when either is unknown or nothing was scanned. |
@@ -314,6 +323,9 @@ provider was (or is to be) probed for.
 | `supported_pct` | percentage | `supported_count` / `total`. `null` when `total` is 0. |
 | `unsupported_count` | count | Combinations whose latest probe said not supported. |
 | `unsupported_pct` | percentage | `unsupported_count` / `total`. `null` when `total` is 0. |
+| `supported_templates` | count | Templates it supports now, **any version counted once** (unlike `supported_count`): the number of rows of its card's `supported_templates`. Rank "most templates supported" by this. |
+| `supported_templates_change` | integer | Change in supported templates over its latest sweep: its card's last `support_history` row's `supported_templates` minus the previous row's. `null` when there is no previous row, or the previous sweep started before the DNS provider was first seen (no measured starting point). |
+| `supported_templates_change_90d` | integer | Change in supported templates over about 90 days: its card's last `support_history` row minus the newest row whose sweep started at least 90 days before the last one's. `null` when there is no such row, or it started before the DNS provider was first seen. |
 | `domains` | count | Domains attributed to this DNS provider in the domain-share import. `null` without a domain-share import, or when the provider has no measurement in a pruned import (it was first seen later). |
 | `domains_pct` | percentage | `domains` / the import's scanned domains. |
 
@@ -442,6 +454,9 @@ because it often varies a lot between deployments of the same software. Ordered 
 | `min_supported_pct` | percentage | Lowest `supported_pct` among its DNS providers that have probe combinations. `null` when none has any. |
 | `median_supported_pct` | percentage | Median of the same. |
 | `max_supported_pct` | percentage | Highest of the same. |
+| `supported_templates` | count | Templates at least one of its DNS providers supports now, any version, each counted once: the number of rows of its card's `template_coverage`. |
+| `supported_templates_change` | integer | Change in the templates any of its DNS providers supported, from the previous full sweep to the latest one, replayed like a DNS provider card's `support_history` but over full sweeps only. `null` when there is no previous full sweep, or it started before the stack's first DNS provider was first seen. |
+| `supported_templates_change_90d` | integer | The same from the newest full sweep that started at least 90 days before the latest one. `null` likewise. |
 | `domains` | count | Sum of its DNS providers' domains in the domain-share import. `null` without one, or when no deployment has a measurement. |
 | `domains_pct` | percentage | `domains` / the import's scanned domains. |
 
@@ -461,6 +476,9 @@ One stack's card, one per row of `stacks.json`.
 | `min_supported_pct` | percentage | As in `stacks.json`. |
 | `median_supported_pct` | percentage | As in `stacks.json`. |
 | `max_supported_pct` | percentage | As in `stacks.json`. |
+| `supported_templates` | count | As in `stacks.json`. |
+| `supported_templates_change` | integer | As in `stacks.json`. |
+| `supported_templates_change_90d` | integer | As in `stacks.json`. |
 | `domains` | count | As in `stacks.json`. |
 | `domains_pct` | percentage | As in `stacks.json`. |
 
@@ -481,6 +499,9 @@ One stack's card, one per row of `stacks.json`.
 | `supported_pct` | percentage | As in `dns-providers.json`. |
 | `unsupported_count` | count | As in `dns-providers.json`. |
 | `unsupported_pct` | percentage | As in `dns-providers.json`. |
+| `supported_templates` | count | As in `dns-providers.json`. |
+| `supported_templates_change` | integer | As in `dns-providers.json`. |
+| `supported_templates_change_90d` | integer | As in `dns-providers.json`. |
 | `domains` | count | As in `dns-providers.json`. |
 | `domains_pct` | percentage | As in `dns-providers.json`. |
 
@@ -794,6 +815,11 @@ found" state that links back to its list page. Every page shows the manifest's
   interpolate zeros; draw a gap or connect the measured points.
 - Each history row is the state **once that sweep had run**, replayed from the recorded
   changes of support, so values only change at sweeps.
+- **Leaderboards without the cards.** `dns-providers.json` and `stacks.json` carry each
+  entity's change in supported templates over its latest sweep and over about 90 days
+  (`supported_templates_change`, `supported_templates_change_90d`), so a "most improved"
+  ranking needs no card. A DNS provider's values are differences of its card's
+  `support_history` rows.
 - Import series include pruned imports from their kept totals (`source: snapshot`), so they
   reach back further than the detailed data.
 
@@ -837,9 +863,12 @@ Limits of the data a page should footnote or surface:
   Domain Connect URL is attributed to a known DNS provider. Domains whose provider could
   never be identified are in `dc_domains_total` only.
 - **Sampled scans.** An import may scan only a random sample of a zone. Percentages are of
-  the scanned domains, an estimate for the zone, not a census.
-- **One zone set.** The numbers describe the zones that were scanned (e.g. `.com`,
-  `.net`, `.org`), not the whole Internet.
+  the scanned domains, an estimate for the zone, not a census. Each import's sampling rate
+  is in `sample_percent` (`overview.json` `adoption`, and `manifest.share_import` for the
+  domain-share import); [METHODOLOGY.md](METHODOLOGY.md#22-census-and-probability-sample)
+  gives the estimators and their standard errors.
+- **One zone set.** The numbers describe the zones that were scanned (`zones`, e.g.
+  `.com`, `.net`, `.org`), not the whole Internet.
 - **Older imports have less history.** Share histories start with the first import whose
   per-provider share was recorded; very old imports may lack `completed_at`,
   `dc_domains_total` or even `started_at`.
@@ -847,7 +876,8 @@ Limits of the data a page should footnote or surface:
   support. A DNS provider whose latest probe failed keeps the support it last had there,
   while current-state tables count only clear answers of the latest probe. The latest
   history point can therefore exceed the current count (e.g. a template's last `history`
-  row vs. its `supporters` rows).
+  row vs. its `supporters` rows). The same holds for `supported_templates` (current state)
+  vs. the `supported_templates_change*` columns (history).
 - **Current stacks.** Stack attribution (`stacks`, `supporting_stacks`, stack share
   histories) uses each DNS provider's **current** stack, also for past imports and sweeps.
 - **Old sweep classification.** Sweeps limited to recently changed templates recorded
@@ -870,12 +900,18 @@ shown indented; data files are shown as written.
 {
   "format_version": 1,
   "generated_at": "2026-10-01T00:00:00Z",
-  "schema_version": 12,
+  "schema_version": 14,
   "share_import": {
     "import_id": 1780272000,
     "status": "completed",
     "source": "live",
-    "scanned_domains": 12000
+    "scanned_domains": 12000,
+    "zones": [
+      "com",
+      "org"
+    ],
+    "zone_domains": 240000,
+    "sample_percent": 5.0
   },
   "id_encoding": "Each {placeholder} is the id encoded as one path segment: a-z, 0-9, '.', '_' and '-' are kept (a leading '.' is not); every other byte of the id's UTF-8 encoding, uppercase letters included, becomes '~' followed by two lowercase hex digits. Example: 'Example.com/A b' -> '~45xample.com~2f~41~20b'.",
   "files": {
@@ -966,11 +1002,11 @@ One list, `stacks.json`:
 <!-- example: stacks.json -->
 ```json
 {"generated_at": "2026-10-01T00:00:00Z", "notes": ["Domain share: import 1780272000 (completed, live), 12000 domains scanned. Support columns are current state."], "tables": {
-"stacks": {"title": "DNS provider stacks", "columns": [{"key": "name", "header": "STACK"}, {"key": "provider_id", "header": "PROVIDER ID"}, {"key": "deployments", "header": "DEPLOYMENTS"}, {"key": "min_supported_pct", "header": "MIN SUPPORT"}, {"key": "median_supported_pct", "header": "MEDIAN SUPPORT"}, {"key": "max_supported_pct", "header": "MAX SUPPORT"}, {"key": "domains", "header": "DOMAINS"}, {"key": "domains_pct", "header": "% SCANNED"}], "rows": [
-{"name": "Cloudflare", "provider_id": "cloudflare.com", "deployments": 1, "min_supported_pct": 66.66666666666666, "median_supported_pct": 66.66666666666666, "max_supported_pct": 66.66666666666666, "domains": 4000, "domains_pct": 33.33333333333333},
-{"name": "IONOS", "provider_id": "ionos.com", "deployments": 1, "min_supported_pct": 33.33333333333333, "median_supported_pct": 33.33333333333333, "max_supported_pct": 33.33333333333333, "domains": 2000, "domains_pct": 16.666666666666664},
-{"name": "Plesk", "provider_id": "plesk.com", "deployments": 2, "min_supported_pct": 0.0, "median_supported_pct": 16.666666666666664, "max_supported_pct": 33.33333333333333, "domains": 1150, "domains_pct": 9.583333333333334},
-{"name": "Quiet Host", "provider_id": "quiet-host.example", "deployments": 1, "min_supported_pct": 0.0, "median_supported_pct": 0.0, "max_supported_pct": 0.0, "domains": 0, "domains_pct": 0.0}
+"stacks": {"title": "DNS provider stacks", "columns": [{"key": "name", "header": "STACK"}, {"key": "provider_id", "header": "PROVIDER ID"}, {"key": "deployments", "header": "DEPLOYMENTS"}, {"key": "min_supported_pct", "header": "MIN SUPPORT"}, {"key": "median_supported_pct", "header": "MEDIAN SUPPORT"}, {"key": "max_supported_pct", "header": "MAX SUPPORT"}, {"key": "supported_templates", "header": "TEMPLATES"}, {"key": "supported_templates_change", "header": "CHANGE"}, {"key": "supported_templates_change_90d", "header": "CHANGE 90D"}, {"key": "domains", "header": "DOMAINS"}, {"key": "domains_pct", "header": "% SCANNED"}], "rows": [
+{"name": "Cloudflare", "provider_id": "cloudflare.com", "deployments": 1, "min_supported_pct": 66.66666666666666, "median_supported_pct": 66.66666666666666, "max_supported_pct": 66.66666666666666, "supported_templates": 3, "supported_templates_change": 0, "supported_templates_change_90d": 0, "domains": 4000, "domains_pct": 33.33333333333333},
+{"name": "IONOS", "provider_id": "ionos.com", "deployments": 1, "min_supported_pct": 50.0, "median_supported_pct": 50.0, "max_supported_pct": 50.0, "supported_templates": 2, "supported_templates_change": 1, "supported_templates_change_90d": 1, "domains": 2000, "domains_pct": 16.666666666666664},
+{"name": "Plesk", "provider_id": "plesk.com", "deployments": 2, "min_supported_pct": 0.0, "median_supported_pct": 16.666666666666664, "max_supported_pct": 33.33333333333333, "supported_templates": 2, "supported_templates_change": 0, "supported_templates_change_90d": 0, "domains": 1150, "domains_pct": 9.583333333333334},
+{"name": "Quiet Host", "provider_id": "quiet-host.example", "deployments": 1, "min_supported_pct": 0.0, "median_supported_pct": 0.0, "max_supported_pct": 0.0, "supported_templates": 0, "supported_templates_change": null, "supported_templates_change_90d": null, "domains": 0, "domains_pct": 0.0}
 ], "footer": null}
 }}
 ```
@@ -981,12 +1017,12 @@ One card, `stacks/plesk.com.json`:
 <!-- example: stacks/plesk.com.json -->
 ```json
 {"generated_at": "2026-10-01T00:00:00Z", "notes": ["Domain share: import 1780272000 (completed, live), 12000 domains scanned. Support columns are current state."], "tables": {
-"stack": {"title": "DNS provider stack", "columns": [{"key": "name", "header": "Stack"}, {"key": "provider_id", "header": "Provider ID"}, {"key": "deployments", "header": "Deployments"}, {"key": "min_supported_pct", "header": "Min support"}, {"key": "median_supported_pct", "header": "Median support"}, {"key": "max_supported_pct", "header": "Max support"}, {"key": "domains", "header": "Domains"}, {"key": "domains_pct", "header": "% scanned"}], "rows": [
-{"name": "Plesk", "provider_id": "plesk.com", "deployments": 2, "min_supported_pct": 0.0, "median_supported_pct": 16.666666666666664, "max_supported_pct": 33.33333333333333, "domains": 1150, "domains_pct": 9.583333333333334}
+"stack": {"title": "DNS provider stack", "columns": [{"key": "name", "header": "Stack"}, {"key": "provider_id", "header": "Provider ID"}, {"key": "deployments", "header": "Deployments"}, {"key": "min_supported_pct", "header": "Min support"}, {"key": "median_supported_pct", "header": "Median support"}, {"key": "max_supported_pct", "header": "Max support"}, {"key": "supported_templates", "header": "Supported templates"}, {"key": "supported_templates_change", "header": "Change since previous full sweep"}, {"key": "supported_templates_change_90d", "header": "Change over 90 days"}, {"key": "domains", "header": "Domains"}, {"key": "domains_pct", "header": "% scanned"}], "rows": [
+{"name": "Plesk", "provider_id": "plesk.com", "deployments": 2, "min_supported_pct": 0.0, "median_supported_pct": 16.666666666666664, "max_supported_pct": 33.33333333333333, "supported_templates": 2, "supported_templates_change": 0, "supported_templates_change_90d": 0, "domains": 1150, "domains_pct": 9.583333333333334}
 ], "footer": null},
-"deployments": {"title": "Deployments", "columns": [{"key": "name", "header": "NAME"}, {"key": "dns_provider_id", "header": "ID"}, {"key": "api_host", "header": "API HOST"}, {"key": "settings_status", "header": "SETTINGS"}, {"key": "support_status", "header": "SUPPORT"}, {"key": "total", "header": "TOTAL"}, {"key": "supported_count", "header": "SUPPORTED"}, {"key": "supported_pct", "header": "SUPPORTED %"}, {"key": "unsupported_count", "header": "NOT SUPP."}, {"key": "unsupported_pct", "header": "NOT SUPP. %"}, {"key": "domains", "header": "DOMAINS"}, {"key": "domains_pct", "header": "% SCANNED"}], "rows": [
-{"name": "Plesk", "dns_provider_id": 2, "api_host": "domainconnect.plesk.com", "settings_status": "ok", "support_status": "ok", "total": 6, "supported_count": 2, "supported_pct": 33.33333333333333, "unsupported_count": 3, "unsupported_pct": 50.0, "domains": 900, "domains_pct": 7.5},
-{"name": "Plesk", "dns_provider_id": 3, "api_host": "domainconnect.plesk.com", "settings_status": "http_error", "support_status": "dead", "total": 6, "supported_count": 0, "supported_pct": 0.0, "unsupported_count": 0, "unsupported_pct": 0.0, "domains": 250, "domains_pct": 2.083333333333333}
+"deployments": {"title": "Deployments", "columns": [{"key": "name", "header": "NAME"}, {"key": "dns_provider_id", "header": "ID"}, {"key": "api_host", "header": "API HOST"}, {"key": "settings_status", "header": "SETTINGS"}, {"key": "support_status", "header": "SUPPORT"}, {"key": "total", "header": "TOTAL"}, {"key": "supported_count", "header": "SUPPORTED"}, {"key": "supported_pct", "header": "SUPPORTED %"}, {"key": "unsupported_count", "header": "NOT SUPP."}, {"key": "unsupported_pct", "header": "NOT SUPP. %"}, {"key": "supported_templates", "header": "TEMPLATES"}, {"key": "supported_templates_change", "header": "CHANGE"}, {"key": "supported_templates_change_90d", "header": "CHANGE 90D"}, {"key": "domains", "header": "DOMAINS"}, {"key": "domains_pct", "header": "% SCANNED"}], "rows": [
+{"name": "Plesk", "dns_provider_id": 2, "api_host": "domainconnect.plesk.com", "settings_status": "ok", "support_status": "ok", "total": 6, "supported_count": 2, "supported_pct": 33.33333333333333, "unsupported_count": 3, "unsupported_pct": 50.0, "supported_templates": 2, "supported_templates_change": 0, "supported_templates_change_90d": 0, "domains": 900, "domains_pct": 7.5},
+{"name": "Plesk", "dns_provider_id": 3, "api_host": "domainconnect.plesk.com", "settings_status": "http_error", "support_status": "dead", "total": 6, "supported_count": 0, "supported_pct": 0.0, "unsupported_count": 0, "unsupported_pct": 0.0, "supported_templates": 0, "supported_templates_change": 0, "supported_templates_change_90d": 0, "domains": 250, "domains_pct": 2.083333333333333}
 ], "footer": null},
 "template_coverage": {"title": "Supporting deployments per template (current state)", "columns": [{"key": "service_provider_name", "header": "SERVICE PROVIDER"}, {"key": "service_provider_id", "header": "PROVIDER ID"}, {"key": "service_name", "header": "TEMPLATE"}, {"key": "service_id", "header": "SERVICE ID"}, {"key": "supporting_deployments", "header": "SUPPORTING"}, {"key": "supporting_pct", "header": "% OF DEPLOYMENTS"}, {"key": "reach_domains", "header": "REACH"}, {"key": "reach_pct", "header": "REACH %"}], "rows": [
 {"service_provider_name": "Acme Mail Inc.", "service_provider_id": "mail.acme.example", "service_name": "Acme Mail", "service_id": "mail", "supporting_deployments": 1, "supporting_pct": 50.0, "reach_domains": 900, "reach_pct": 7.5},

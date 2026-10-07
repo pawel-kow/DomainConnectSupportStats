@@ -46,6 +46,17 @@
     "nullableBoundedPercentage": {
       "oneOf": [{ "$ref": "#/$defs/boundedPercentage" }, { "type": "null" }]
     },
+    "nullableZones": {
+      "description": "The zones an import read (GitHub issue #218), by zone name without the trailing dot (e.g. 'com'), sorted; null when unknown (an import from before they were recorded).",
+      "oneOf": [
+        { "type": "array", "items": { "type": "string", "minLength": 1 }, "minItems": 1, "uniqueItems": true },
+        { "type": "null" }
+      ]
+    },
+    "nullableSamplePercent": {
+      "description": "The percentage of the zones' domains an import sampled for scanning (GitHub issue #218); 100 is a census. null when unknown (an import from before it was recorded) or when its zones were sampled at different rates.",
+      "$ref": "#/$defs/nullableBoundedPercentage"
+    },
     "importStatus": {
       "description": "imports.status.",
       "enum": ["in_progress", "completed"]
@@ -92,6 +103,25 @@
         "failed_pct": { "$ref": "#/$defs/nullableBoundedPercentage" }
       },
       "required": ["pending_count", "pending_pct", "failed_count", "failed_pct"]
+    },
+    "templateTrendColumns": {
+      "description": "Distinct supported templates and their change (GitHub issue #219), for leaderboards. A change is null, never 0, when nothing measured the reference point: no such sweep, or it started before the DNS provider (a stack: its first deployment) was first seen.",
+      "type": "object",
+      "properties": {
+        "supported_templates": {
+          "description": "Templates (service provider, service id) supported now in any version - supported_count with versions folded.",
+          "$ref": "#/$defs/count"
+        },
+        "supported_templates_change": {
+          "description": "Change in supported templates from the previous sweep to the latest one, by the support history's replay (each template's last probe answer, so a DNS provider whose probes now fail keeps what it last supported there).",
+          "type": ["integer", "null"]
+        },
+        "supported_templates_change_90d": {
+          "description": "Change in supported templates from the newest sweep that started at least 90 days before the latest one, to the latest one; replayed like supported_templates_change.",
+          "type": ["integer", "null"]
+        }
+      },
+      "required": ["supported_templates", "supported_templates_change", "supported_templates_change_90d"]
     },
     "sweepHistoryRow": {
       "description": "One support sweep (support_probe_job_generator_runs row), oldest first.",

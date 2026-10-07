@@ -1,0 +1,37 @@
+{"notes": ["Domain share: import 1788220800 (in_progress, live), 5000 domains scanned. Support columns are current state."], "tables": {
+"mail.acme.example/mail/metadata": {"title": "mail.acme.example/mail - Template metadata", "columns": [{"key": "service_provider_name", "header": "Service provider"}, {"key": "service_provider_id", "header": "Service provider ID"}, {"key": "service_id", "header": "Service ID"}, {"key": "name", "header": "Template name"}, {"key": "version", "header": "Version"}, {"key": "versions", "header": "Stored versions"}, {"key": "description", "header": "Description"}, {"key": "variable_description", "header": "Variable description"}, {"key": "logo_url", "header": "Logo URL"}, {"key": "template_sha", "header": "Template SHA"}, {"key": "created_at", "header": "Added"}, {"key": "updated_at", "header": "Updated"}], "rows": [
+{"service_provider_name": "Acme Mail Inc.", "service_provider_id": "mail.acme.example", "service_id": "mail", "name": "Acme Mail", "version": 1, "versions": [1], "description": "Configures MX and SPF for Acme Mail.", "variable_description": null, "logo_url": "https://mail.acme.example/logo.png", "template_sha": "000000000000000000000000000000000043d11c", "created_at": "2020-02-02 09:00:00", "updated_at": "2021-03-03 09:00:00"}
+], "footer": null},
+"mail.acme.example/mail/records": {"title": "mail.acme.example/mail - Records", "columns": [{"key": "type", "header": "type"}, {"key": "groupId", "header": "groupId"}, {"key": "host", "header": "host"}, {"key": "pointsTo", "header": "pointsTo"}, {"key": "data", "header": "data"}, {"key": "ttl", "header": "ttl"}, {"key": "priority", "header": "priority"}, {"key": "spfRules", "header": "spfRules"}, {"key": "txtConflictMatchingMode", "header": "txtConflictMatchingMode"}, {"key": "txtConflictMatchingPrefix", "header": "txtConflictMatchingPrefix"}], "rows": [
+{"type": "MX", "groupId": null, "host": "@", "pointsTo": "mx.acme.example", "data": null, "ttl": 3600, "priority": 10, "spfRules": null, "txtConflictMatchingMode": null, "txtConflictMatchingPrefix": null},
+{"type": "SPFM", "groupId": null, "host": "@", "pointsTo": null, "data": null, "ttl": null, "priority": null, "spfRules": "include:spf.acme.example", "txtConflictMatchingMode": null, "txtConflictMatchingPrefix": null},
+{"type": "TXT", "groupId": "verify", "host": "@", "pointsTo": null, "data": "acme-verification=%token%", "ttl": 300, "priority": null, "spfRules": null, "txtConflictMatchingMode": "Prefix", "txtConflictMatchingPrefix": "acme-verification="}
+], "footer": null},
+"mail.acme.example/mail/supporters": {"title": "mail.acme.example/mail - Supporting DNS providers (current state)", "columns": [{"key": "name", "header": "NAME"}, {"key": "dns_provider_id", "header": "ID"}, {"key": "provider_id", "header": "STACK"}, {"key": "api_host", "header": "API HOST"}, {"key": "versions", "header": "VERSIONS"}, {"key": "domains", "header": "DOMAINS"}, {"key": "reach_pct", "header": "REACH %"}], "rows": [
+{"name": "Cloudflare", "dns_provider_id": 1, "provider_id": "cloudflare.com", "api_host": "api.cloudflare.com", "versions": [1], "domains": 1500, "reach_pct": 30.0},
+{"name": "Plesk", "dns_provider_id": 2, "provider_id": "plesk.com", "api_host": "domainconnect.plesk.com", "versions": [1], "domains": 400, "reach_pct": 8.0}
+], "footer": {"name": "TOTAL", "dns_provider_id": null, "provider_id": null, "api_host": null, "versions": null, "domains": 1900, "reach_pct": 38.0}},
+"mail.acme.example/mail/history": {"title": "mail.acme.example/mail - Support history", "columns": [{"key": "sweep_id", "header": "SWEEP"}, {"key": "started_at", "header": "STARTED"}, {"key": "supporting_providers", "header": "SUPPORTING"}, {"key": "change", "header": "CHANGE"}], "rows": [
+{"sweep_id": 1, "started_at": "2026-03-02 02:00:00", "supporting_providers": 0, "change": 0},
+{"sweep_id": 4, "started_at": "2026-06-02 02:00:00", "supporting_providers": 1, "change": 1},
+{"sweep_id": 5, "started_at": "2026-07-01 02:00:00", "supporting_providers": 2, "change": 1},
+{"sweep_id": 6, "started_at": "2026-09-02 02:00:00", "supporting_providers": 2, "change": 0}
+], "footer": null},
+"mail.acme.example/verify/metadata": {"title": "mail.acme.example/verify - Template metadata", "columns": [{"key": "service_provider_name", "header": "Service provider"}, {"key": "service_provider_id", "header": "Service provider ID"}, {"key": "service_id", "header": "Service ID"}, {"key": "name", "header": "Template name"}, {"key": "version", "header": "Version"}, {"key": "versions", "header": "Stored versions"}, {"key": "description", "header": "Description"}, {"key": "variable_description", "header": "Variable description"}, {"key": "logo_url", "header": "Logo URL"}, {"key": "template_sha", "header": "Template SHA"}, {"key": "created_at", "header": "Added"}, {"key": "updated_at", "header": "Updated"}], "rows": [
+{"service_provider_name": "Acme Mail Inc.", "service_provider_id": "mail.acme.example", "service_id": "verify", "name": "Domain Verification", "version": 1, "versions": [1], "description": "Adds a TXT record\n  proving domain ownership.", "variable_description": null, "logo_url": "https://mail.acme.example/logo.png", "template_sha": "000000000000000000000000000000000054c563", "created_at": "2026-03-25 00:00:00", "updated_at": "2026-03-25 00:00:00"}
+], "footer": null},
+"mail.acme.example/verify/records": {"title": "mail.acme.example/verify - Records", "columns": [{"key": "type", "header": "type"}, {"key": "host", "header": "host"}, {"key": "data", "header": "data"}, {"key": "ttl", "header": "ttl"}], "rows": [
+{"type": "TXT", "host": "@", "data": "%token%", "ttl": 300}
+], "footer": null},
+"mail.acme.example/verify/supporters": {"title": "mail.acme.example/verify - Supporting DNS providers (current state)", "columns": [{"key": "name", "header": "NAME"}, {"key": "dns_provider_id", "header": "ID"}, {"key": "provider_id", "header": "STACK"}, {"key": "api_host", "header": "API HOST"}, {"key": "versions", "header": "VERSIONS"}, {"key": "domains", "header": "DOMAINS"}, {"key": "reach_pct", "header": "REACH %"}], "rows": [
+{"name": "Cloudflare", "dns_provider_id": 1, "provider_id": "cloudflare.com", "api_host": "api.cloudflare.com", "versions": [1], "domains": 1500, "reach_pct": 30.0},
+{"name": "IONOS", "dns_provider_id": 5, "provider_id": "ionos.com", "api_host": "domainconnect.ionos.example", "versions": [1], "domains": 900, "reach_pct": 18.0}
+], "footer": {"name": "TOTAL", "dns_provider_id": null, "provider_id": null, "api_host": null, "versions": null, "domains": 2400, "reach_pct": 48.0}},
+"mail.acme.example/verify/history": {"title": "mail.acme.example/verify - Support history", "columns": [{"key": "sweep_id", "header": "SWEEP"}, {"key": "started_at", "header": "STARTED"}, {"key": "supporting_providers", "header": "SUPPORTING"}, {"key": "change", "header": "CHANGE"}], "rows": [
+{"sweep_id": 1, "started_at": "2026-03-02 02:00:00", "supporting_providers": 0, "change": 0},
+{"sweep_id": 3, "started_at": "2026-04-01 02:00:00", "supporting_providers": 1, "change": 1},
+{"sweep_id": 4, "started_at": "2026-06-02 02:00:00", "supporting_providers": 1, "change": 0},
+{"sweep_id": 5, "started_at": "2026-07-01 02:00:00", "supporting_providers": 1, "change": 0},
+{"sweep_id": 6, "started_at": "2026-09-02 02:00:00", "supporting_providers": 2, "change": 1}
+], "footer": null}
+}}

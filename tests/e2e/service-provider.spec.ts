@@ -17,8 +17,8 @@ test.describe('Service provider card (service-provider.html)', () => {
     const headline = page.getByTestId('headline');
     await expect(headline).toContainText(/2\s*Templates/);
     await expect(headline).toContainText('2 supported by a DNS provider');
-    await expect(headline).toContainText(/2\s*Supporting DNS providers/);
-    await expect(headline).toContainText('40.8% of 12K scanned domains');
+    await expect(headline).toContainText(/3\s*Supporting DNS providers/);
+    await expect(headline).toContainText('57.5% of 12K scanned domains');
     const record = page.getByTestId('service-provider-record');
     await expect(record).toContainText('02-02-2020');
   });
@@ -27,7 +27,7 @@ test.describe('Service provider card (service-provider.html)', () => {
     await page.goto(CARD);
     const templates = section(page, 'Templates (current state)');
     await expect(templates.locator('tbody tr')).toHaveCount(2);
-    await expect(templates.locator('tbody tr').first()).toContainText('mail');
+    await expect(templates.locator('tbody tr').first()).toContainText('verify');
     await templates.getByRole('link', { name: 'Domain Verification' }).click();
     await expect(page).toHaveURL(/template\.html\?spid=mail\.acme\.example&sid=verify$/);
   });
