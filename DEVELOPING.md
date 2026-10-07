@@ -88,6 +88,9 @@ allowed. Cast a cell where it is read (`num(row, key)`) and handle `null` there.
 Runes (`$props`, `$state`, `$derived`, `$effect`); no `export let` or stores. Components take data
 as props; views fetch. Pure logic lives in `src/lib/*.ts`, not in a component's `<script>`.
 
+A promise shown by an `{#await}` nested in another one may reject before it is rendered: give it
+its own `.catch(() => undefined)` where it is created, or the rejection is an uncaught page error.
+
 ### 2.8 Module layout
 
 ```
@@ -198,7 +201,8 @@ Applies to changes to a page, a shared component, `src/lib/` or styles.
 2. With the data repo checked out next to this one:
    `npm run validate:export -- ../<data-repo>/<DATA_PATH>`,
    `DATA_DIR=../<data-repo>/<DATA_PATH> npm run test:e2e`, and look at every changed page in
-   `DATA_DIR=... npm run preview` (large tables, long names, nulls, phone width).
+   `DATA_DIR=... npm run preview` after `DATA_DIR=... npm run derive` (large tables, long names,
+   nulls, phone width).
 3. Screenshot every affected page, desktop and phone width, against the preview:
    `npx playwright screenshot --full-page <url> <file>.png` and again with `--device="Pixel 7"`.
    Show them to the maintainer in the chat and wait for acceptance. Change and repeat until

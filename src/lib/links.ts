@@ -25,6 +25,7 @@ export const links = {
   serviceProviders: (filters: { q?: string | null } = {}) => page('service-providers', filters),
   templates: (filters: { spid?: string | null; q?: string | null; all?: boolean } = {}) =>
     page('templates', filters),
+  leaderboards: (filters: { window?: string | null } = {}) => page('leaderboards', filters),
   dnsProvider: (dnsProviderId: number) => page('dns-provider', { id: dnsProviderId }),
   stack: (providerId: string) => page('stack', { id: providerId }),
   serviceProvider: (serviceProviderId: string) =>
@@ -35,13 +36,14 @@ export const links = {
   methodology: (section?: string) => page('methodology') + (section ? `#${section}` : ''),
 };
 
-/** Top navigation: the landing page and the four lists. */
+/** Top navigation: the landing page, the four lists and the leaderboards. */
 export const NAV = [
   { page: 'index', label: 'Overview', href: links.overview() },
   { page: 'dns-providers', label: 'DNS providers', href: links.dnsProviders() },
   { page: 'stacks', label: 'Stacks', href: links.stacks() },
   { page: 'service-providers', label: 'Service providers', href: links.serviceProviders() },
   { page: 'templates', label: 'Templates', href: links.templates() },
+  { page: 'leaderboards', label: 'Leaderboards', href: links.leaderboards() },
 ] as const;
 
 /**

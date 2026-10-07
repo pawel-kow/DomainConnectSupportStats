@@ -11,6 +11,10 @@ test-results/
 playwright-report/
 blob-report/
 .vite/
+
+# Derived data of the dev export (npm run derive)
+.derived/
+.derived-e2e/
 *.log
 .DS_Store
 .venv/

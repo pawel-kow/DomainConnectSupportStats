@@ -18,6 +18,8 @@ const DATA_DIR = resolve(ROOT, process.env.DATA_DIR ?? 'contract/export/examples
 // The test registry submodule is the dev registry; REGISTRY_DIR points at another registry checkout
 // (e2e: the contract's golden copy).
 const REGISTRY_DIR = resolve(ROOT, process.env.REGISTRY_DIR ?? 'registry');
+// Derived data (npm run derive), served under /data/derived/ as the deploy bundles it.
+const DERIVED_DIR = resolve(ROOT, process.env.DERIVED_DIR ?? '.derived');
 
 const CONTENT_TYPES: Record<string, string> = {
   '.json': 'application/json; charset=utf-8',
@@ -53,12 +55,17 @@ function registryFile(path: string): string {
 }
 
 /**
- * Serves DATA_DIR under `/data/` and REGISTRY_DIR under `/registry/` in `vite dev` and
- * `vite preview`, the URLs the deployed site uses (the deploy bundles both into `dist/`). Build
- * output never contains data.
+ * Serves DATA_DIR under `/data/`, DERIVED_DIR under `/data/derived/` and REGISTRY_DIR under
+ * `/registry/` in `vite dev` and `vite preview`, the URLs the deployed site uses (the deploy
+ * bundles them into `dist/`). Build output never contains data.
  */
 function serveInputs(): Plugin {
   const mounts = [
+    {
+      prefix: '/data/derived',
+      dir: DERIVED_DIR,
+      file: (p: string) => resolve(DERIVED_DIR, '.' + p),
+    },
     { prefix: '/data', dir: DATA_DIR, file: exportFile },
     { prefix: '/registry', dir: REGISTRY_DIR, file: registryFile },
   ];
