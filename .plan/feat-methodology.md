@@ -41,7 +41,6 @@ footer and from every caveat.
   240000, 5.0); `ShareImport` type lacks them.
 - No cookies or storage in `src/`; no external fonts.
 - PR #40 (leaderboards) is open: expect conflicts in `package.json`, CHANGELOG, `links.ts`.
-
 - The heading ids start with digits: CSS `#22-…` is not a valid selector; tests use `[id="…"]`,
   the page `getElementById`.
 - The document is inserted at mount, after the browser handled the hash: the view scrolls to it,
