@@ -2,12 +2,12 @@
 
 ## Tasks
 
-- [~] `src/lib/annotation.ts`: sweep source per page, import completion time (unit tests first)
-- [ ] Layout: annotation at the end of `<main>`, header box removed; `sweep` prop (component tests)
-- [ ] Card views pass their card's sweep (DNS provider, service provider, template)
-- [ ] e2e: annotation on every page incl. methodology, desktop + phone
-- [ ] REQUIREMENTS F-2.1, CLAUDE.md file reference, 0.14.0 + CHANGELOG
-- [ ] Screenshots, PR (draft, base feat/methodology)
+- [x] `src/lib/annotation.ts`: sweep source per page, import completion time (unit tests first)
+- [x] Layout: annotation at the end of `<main>`, header box removed; `sweep` prop (component tests)
+- [x] Card views pass their card's sweep (DNS provider, service provider, template)
+- [x] e2e: annotation on every page incl. methodology, desktop + phone
+- [x] REQUIREMENTS F-2.1, CLAUDE.md file reference, 0.14.0 + CHANGELOG
+- [~] Screenshots, PR (draft, base feat/methodology)
 
 ## Decisions
 
