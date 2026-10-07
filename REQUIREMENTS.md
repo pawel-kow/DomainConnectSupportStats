@@ -252,7 +252,8 @@ Page `leaderboards.html` with every board; each says what it ranks, of what, and
 - F-4.1 Most templates supported (`supported_templates`), and most domains reached: `domains` of
   DNS providers with `supported_templates` > 0 (a stack: summed over those deployments).
 - F-4.2 Most improved by `supported_templates_change` (since the previous sweep, default) or
-  `supported_templates_change_90d` (`?window=90d`). A window without any known change says
+  `supported_templates_change_90d` (`?window=90d`), switched in place (no reload, the URL
+  follows). A window without any known change says
   "not measured yet"; one without a gain says so.
 - F-4.3 Biggest reach: templates and service providers by `reach_domains`.
 - F-4.4 New supporting DNS providers: per DNS provider its first `support_history` row with

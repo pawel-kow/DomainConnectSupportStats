@@ -29,7 +29,16 @@
   import { links } from '../lib/links';
 
   const client = defaultClient();
-  const window_ = improvedWindow(window.location.search);
+  let window_ = $state(improvedWindow(window.location.search));
+
+  // Switch in place; the URL stays a shareable link.
+  $effect(() => {
+    window.history.replaceState(
+      null,
+      '',
+      links.leaderboards({ window: window_ === 'sweep' ? null : window_ }),
+    );
+  });
   let manifest = $state<Manifest | null>(null);
   const loading = client.manifest().then(async (m) => {
     manifest = m;
@@ -143,14 +152,13 @@
 
       <section class="panel" data-testid="board-improved">
         <h2>Most improved</h2>
-        <nav class="windows" aria-label="Most improved window">
+        <div class="windows" role="group" aria-label="Most improved window">
           {#each ['sweep', '90d'] as const as w (w)}
-            <a
-              href={links.leaderboards({ window: w === 'sweep' ? null : w })}
-              aria-current={w === window_ ? 'page' : undefined}>{WINDOW_LABELS[w]}</a
+            <button type="button" aria-pressed={w === window_} onclick={() => (window_ = w)}
+              >{WINDOW_LABELS[w]}</button
             >
           {/each}
-        </nav>
+        </div>
         <p class="muted about">
           Templates gained {window_ === 'sweep'
             ? 'over the latest sweep (a stack: since its previous full sweep)'
@@ -245,14 +253,18 @@
     margin-top: var(--spacing-sm);
   }
 
-  .windows a {
+  .windows button {
+    font: inherit;
+    color: var(--secondary-navy);
+    background-color: var(--bg-white);
+    cursor: pointer;
     padding: 0.25rem 0.75rem;
     border: 1px solid var(--light-blue-gray);
     border-radius: var(--radius-lg);
     font-size: 0.85rem;
   }
 
-  .windows a[aria-current='page'] {
+  .windows button[aria-pressed='true'] {
     background-color: var(--primary-navy);
     border-color: var(--primary-navy);
     color: var(--bg-white);

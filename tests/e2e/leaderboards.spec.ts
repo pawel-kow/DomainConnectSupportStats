@@ -43,22 +43,44 @@ test.describe('Leaderboards (leaderboards.html)', () => {
     await expect(page.getByTestId('card-title')).toContainText('Plesk');
   });
 
-  test('switches the most improved window with ?window=', async ({ page }) => {
+  test('switches the most improved window in place, keeping ?window= in the URL', async ({
+    page,
+  }) => {
+    await page.route('**/data/dns-providers.json', async (route) => {
+      const file = await (await route.fetch()).json();
+      const row = file.tables.dns_providers.rows.find(
+        (r: Record<string, unknown>) => r.name === 'Small Registrar',
+      );
+      row.supported_templates_change_90d = 3;
+      await route.fulfill({ json: file });
+    });
     await page.goto('leaderboards.html');
     const board = page.getByTestId('board-improved');
+    const sweep = board.getByRole('button', { name: 'Since the previous sweep' });
+    const days = board.getByRole('button', { name: 'Over about 90 days' });
     await expect(names(page, 'board-improved')).toHaveText(['IONOS']);
-    await expect(board).toContainText('+1');
-    await expect(board.getByRole('link', { name: 'Since the previous sweep' })).toHaveAttribute(
-      'aria-current',
-      'page',
-    );
-    await board.getByRole('link', { name: 'Over about 90 days' }).click();
+    await expect(sweep).toHaveAttribute('aria-pressed', 'true');
+
+    await days.scrollIntoViewIfNeeded();
+    await page.evaluate(() => Object.assign(window, { notReloaded: true }));
+    const scrollY = await page.evaluate(() => window.scrollY);
+    await days.click();
     await expect(page).toHaveURL(/leaderboards\.html\?window=90d$/);
-    await expect(board.getByRole('link', { name: 'Over about 90 days' })).toHaveAttribute(
-      'aria-current',
-      'page',
-    );
+    await expect(days).toHaveAttribute('aria-pressed', 'true');
+    await expect(names(page, 'board-improved')).toHaveText(['Small Registrar', 'IONOS']);
+    expect(await page.evaluate(() => 'notReloaded' in window)).toBe(true);
+    expect(await page.evaluate(() => window.scrollY)).toBe(scrollY);
+
+    await sweep.click();
+    await expect(page).toHaveURL(/leaderboards\.html$/);
     await expect(names(page, 'board-improved')).toHaveText(['IONOS']);
+  });
+
+  test('opens the window of ?window=90d', async ({ page }) => {
+    await page.goto('leaderboards.html?window=90d');
+    await expect(
+      page.getByTestId('board-improved').getByRole('button', { name: 'Over about 90 days' }),
+    ).toHaveAttribute('aria-pressed', 'true');
   });
 
   test('says when a window is not measured yet', async ({ page }) => {
