@@ -32,7 +32,7 @@
   }
 </script>
 
-<Layout current="methodology" {manifest}>
+<Layout current="methodology" {manifest} annotated={false}>
   <section class="panel" data-testid="site-part">
     <h2>Methodology</h2>
     <p>

@@ -8,6 +8,7 @@
   import StatCard from '../lib/components/StatCard.svelte';
   import { scannerStart } from '../lib/data/config';
   import TimeChart, { SERIES_COLORS } from '../lib/components/TimeChart.svelte';
+  import { cardSweep } from '../lib/annotation';
   import { defaultClient, NotFoundError } from '../lib/data/load';
   import { findTable, oneRecord } from '../lib/data/tables';
   import type { Column, ExportFile, Manifest, Row } from '../lib/data/types';
@@ -39,6 +40,8 @@
       },
     );
   });
+  /** The newest sweep the card reflects, for the data annotation. */
+  const sweep = loading.then((f) => (f ? cardSweep('service_provider', f) : null));
 
   function seriesOf(file: ExportFile): TemplateSeries[] {
     return templateSeries(
@@ -71,7 +74,7 @@
   {/if}
 {/snippet}
 
-<Layout current="service-provider" {manifest}>
+<Layout current="service-provider" {manifest} {sweep}>
   {#await loading}
     <p class="no-data">Loading…</p>
   {:then file}

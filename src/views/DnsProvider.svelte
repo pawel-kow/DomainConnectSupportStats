@@ -13,6 +13,7 @@
   import TimeChart from '../lib/components/TimeChart.svelte';
   import { isBeforeScans, parseNameservers } from '../lib/cells';
   import { scannerStart } from '../lib/data/config';
+  import { cardSweep } from '../lib/annotation';
   import { defaultClient, NotFoundError } from '../lib/data/load';
   import { undeterminedCount } from '../lib/dns-providers';
   import { findTable, oneRecord } from '../lib/data/tables';
@@ -43,6 +44,8 @@
       },
     );
   });
+  /** The newest sweep the card reflects, for the data annotation. */
+  const sweep = loading.then((f) => (f ? cardSweep('dns_provider', f) : null));
 
   /** The overview's `adoption` rows, fetched only when an import lacks `completed_at`. */
   function adoptionFor(shareHistory: Row[]): Promise<Row[]> {
@@ -118,7 +121,7 @@
   {/if}
 {/snippet}
 
-<Layout current="dns-provider" {manifest} {registry}>
+<Layout current="dns-provider" {manifest} {sweep} {registry}>
   {#await loading}
     <p class="no-data">Loading…</p>
   {:then file}
