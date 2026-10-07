@@ -19,3 +19,11 @@
 
 - Example export: every sweep source ends at `2026-09-02 02:00:00`; e2e can't tell sources
   apart, unit tests do.
+- Real release 2026-10-07T15:10:05Z: validated, every page annotated, e2e green. Timestamps
+  `nowrap` (phone wrapped inside dates).
+- Occasional e2e failures: `EACCES` writing traces under `test-results/` (environment), pass on
+  rerun.
+
+## Open
+
+- Screenshots awaiting the maintainer's acceptance.

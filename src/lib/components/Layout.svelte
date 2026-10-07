@@ -45,7 +45,6 @@
   const sweptAt = $derived(
     (sweep ?? overview.then((f) => (f ? ecosystemSweep(f) : null))).catch(() => null),
   );
-  const sweepText = (at: string | null) => (at ? `sweep started ${formatDateTime(at)}` : UNKNOWN);
   const version = `v${__APP_VERSION__}`;
 </script>
 
@@ -77,14 +76,18 @@
 
   <p class="annotation" aria-label="Data release" data-testid="data-annotation">
     {#if manifest}
-      Data generated <span data-testid="generated-at">{formatDateTime(manifest.generated_at)}</span>
+      Data generated <time data-testid="generated-at">{formatDateTime(manifest.generated_at)}</time>
       · Domain figures:
       <span data-testid="share-import"
-        >{#if share}scan completed {#await completedAt}…{:then at}{formatDateTime(at)}{/await}
+        >{#if share}scan completed {#await completedAt}…{:then at}<time>{formatDateTime(at)}</time
+            >{/await}
           ({formatCount(share.scanned_domains)} domains scanned){:else}no domain-share import{/if}</span
       >
       · Support figures:
-      <span data-testid="support-sweep">{#await sweptAt}…{:then at}{sweepText(at)}{/await}</span>
+      <span data-testid="support-sweep"
+        >{#await sweptAt}…{:then at}{#if at}sweep started <time>{formatDateTime(at)}</time
+            >{:else}{UNKNOWN}{/if}{/await}</span
+      >
       {#if current !== 'methodology'}
         · <a href={links.methodology()}>Methodology</a>
       {/if}
@@ -194,6 +197,10 @@
     margin-top: var(--spacing-lg);
     color: var(--text-secondary);
     font-size: 0.8125rem;
+  }
+
+  .annotation time {
+    white-space: nowrap;
   }
 
   .site-footer {
