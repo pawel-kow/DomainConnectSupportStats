@@ -60,9 +60,8 @@
 
 <section class="panel" class:highlighted {id} data-testid={testid} bind:this={section}>
   <div class="title-row">
-    <h2>
-      {title}<a class="anchor" href="#{id}" aria-label="Link to this panel: {title}">#</a>
-    </h2>
+    <h2>{title}</h2>
+    <a class="anchor" href="#{id}" aria-label="Link to this panel: {title}">#</a>
     <ShareMenu {title} {context} anchor={id} />
   </div>
   {@render children()}
@@ -78,7 +77,6 @@
   }
 
   .title-row h2 {
-    flex: 1;
     min-width: 0;
     margin: 0;
     border-bottom: none;
@@ -86,7 +84,9 @@
   }
 
   .anchor {
-    margin-left: 0.3em;
+    margin-right: auto;
+    font-size: 1.75rem;
+    line-height: 1.3;
     color: var(--text-secondary);
     font-weight: var(--font-weight-normal);
     text-decoration: none;
@@ -94,9 +94,15 @@
     transition: opacity var(--transition-fast);
   }
 
-  h2:hover .anchor,
+  .title-row:hover .anchor,
   .anchor:focus-visible {
     opacity: 1;
+  }
+
+  @media (max-width: 480px) {
+    .anchor {
+      font-size: 1.25rem;
+    }
   }
 
   .highlighted {

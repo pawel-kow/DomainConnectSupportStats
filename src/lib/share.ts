@@ -96,3 +96,11 @@ export function isApplePlatform(nav: NavigatorLike): boolean {
   if (platform) return /^(macOS|iOS)$/i.test(platform);
   return /Macintosh|iPhone|iPad|iPod/.test(nav.userAgent);
 }
+
+/** Makes the page's relative `og:image` absolute, from the page URL. */
+export function absoluteOgImage(doc: Document, pageUrl: string): void {
+  for (const meta of doc.querySelectorAll<HTMLMetaElement>('meta[property="og:image"]')) {
+    const content = meta.getAttribute('content');
+    if (content) meta.content = new URL(content, pageUrl).href;
+  }
+}

@@ -24,7 +24,9 @@ describe('Panel', () => {
     render(Panel, { id: 'coverage', title: 'Coverage', children });
     const section = document.getElementById('coverage')!;
     expect(section.tagName).toBe('SECTION');
-    expect(within(section).getByRole('heading', { level: 2 })).toHaveTextContent('Coverage');
+    expect(
+      within(section).getByRole('heading', { level: 2, name: 'Coverage' }),
+    ).toBeInTheDocument();
     expect(screen.getByRole('link', { name: 'Link to this panel: Coverage' })).toHaveAttribute(
       'href',
       '#coverage',

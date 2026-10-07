@@ -67,6 +67,17 @@ describe('Layout', () => {
     expect(screen.getByText(/Loading data release/)).toBeInTheDocument();
   });
 
+  it('makes the link-preview image absolute from the page URL', () => {
+    history.replaceState(null, '', '/site/stacks.html?q=x');
+    document.head.innerHTML =
+      '<meta property="og:image" content="./assets/DomainConnectSquareBlack.png" />';
+    render(Layout, { current: 'stacks', manifest: null, client: client(), children });
+    expect(document.querySelector('meta[property="og:image"]')).toHaveAttribute(
+      'content',
+      'http://localhost:3000/site/assets/DomainConnectSquareBlack.png',
+    );
+  });
+
   it('shows the site version in the footer, linked to its release', () => {
     render(Layout, { current: 'index', manifest: null, client: client(), children });
     const link = screen.getByRole('link', { name: `v${pkg.version}` });

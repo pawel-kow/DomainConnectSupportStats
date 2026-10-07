@@ -145,7 +145,7 @@
     aria-label="Share: {title}"
     aria-haspopup="menu"
     aria-expanded={open}
-    aria-controls={open ? `${id}-menu` : undefined}
+    aria-controls={open ? `${id}-popup` : undefined}
     onclick={() => (open ? close() : show())}
   >
     {#if apple}
@@ -163,7 +163,7 @@
   </button>
 
   {#if open}
-    <div class="popup" bind:this={popup}>
+    <div id="{id}-popup" class="popup" bind:this={popup}>
       {#if asking}
         <form aria-label="Share to Mastodon" novalidate onsubmit={shareToMastodon}>
           <label for="{id}-instance">Mastodon instance</label>
@@ -190,7 +190,7 @@
           </div>
         </form>
       {:else}
-        <ul id="{id}-menu" role="menu" aria-label="Share: {title}" onkeydown={onMenuKey}>
+        <ul role="menu" aria-label="Share: {title}" onkeydown={onMenuKey}>
           <li role="none">
             <a
               role="menuitem"

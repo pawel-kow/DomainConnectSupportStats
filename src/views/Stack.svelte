@@ -1,4 +1,5 @@
 <script lang="ts">
+  import Panel from '../lib/components/Panel.svelte';
   import CardTitle from '../lib/components/CardTitle.svelte';
   import DataTable from '../lib/components/DataTable.svelte';
   import Layout from '../lib/components/Layout.svelte';
@@ -180,8 +181,11 @@
       {/await}
 
       {#if shareHistory}
-        <section class="panel">
-          <h2>Domain share over time</h2>
+        <Panel
+          id="domain-share-history"
+          title="Domain share over time"
+          context={text(record, 'name') ?? stackId}
+        >
           {#if shareHistory.rows.length}
             <p class="muted note">
               Summed over the stack's current deployments, also for past imports (<a
@@ -207,12 +211,11 @@
           {:else}
             <p class="no-data">Not measured yet</p>
           {/if}
-        </section>
+        </Panel>
       {/if}
 
       {#if deployments}
-        <section class="panel">
-          <h2>{deployments.title}</h2>
+        <Panel id="deployments" title={deployments.title} context={text(record, 'name') ?? stackId}>
           <DataTable
             table={deployments}
             keys={['name', 'settings_status', 'support_status', 'supported_count', 'domains']}
@@ -223,12 +226,11 @@
             pageSize={20}
             emptyText="No deployment"
           />
-        </section>
+        </Panel>
       {/if}
 
       {#if coverage}
-        <section class="panel">
-          <h2>{coverage.title}</h2>
+        <Panel id="coverage" title={coverage.title} context={text(record, 'name') ?? stackId}>
           <DataTable
             table={coverage}
             keys={[
@@ -249,7 +251,7 @@
             pageSize={20}
             emptyText="No template supported by a deployment in the latest probes"
           />
-        </section>
+        </Panel>
       {/if}
 
       {#await reg then r}

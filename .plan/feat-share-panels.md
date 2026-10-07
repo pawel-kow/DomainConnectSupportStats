@@ -16,10 +16,10 @@ Big story: one PR, steps with a pause for `/clear` after each (mutex and branch 
       loaded, `prefers-reduced-motion`) and `ShareMenu.svelte` (keyboard menu, inline Mastodon
       form, "Link copied" `aria-live` for 2 s, Web Share "More…" when `navigator.share`);
       component tests; list pages keep the hash on `history.replaceState`
-- [~] Step 3: use `Panel` on every chart and table panel (slugs below); static `og:title`,
+- [x] Step 3: use `Panel` on every chart and table panel (slugs below); static `og:title`,
       `og:description`, `og:image`, `twitter:card` per HTML page; og:image made absolute at
       runtime; e2e (anchor scroll, copy link, menu desktop + phone)
-- [ ] Step 4: docs (REQUIREMENTS F-2 entries, C-1 exception, CLAUDE.md file reference), minor
+- [~] Step 4: docs (REQUIREMENTS F-2 entries, C-1 exception, CLAUDE.md file reference), minor
       bump + CHANGELOG, real-release check, screenshots, PR ready
 - [ ] Promote findings, delete this file
 
@@ -76,6 +76,15 @@ Big story: one PR, steps with a pause for `/clear` after each (mutex and branch 
   `tests/component/{Panel,ShareMenu}.test.ts`. Testing Library: `context` and `anchor` are
   Svelte options, pass props under `props:`.
 
+- Step 3 done: `Panel` on every chart and table panel (slugs as above); Overview and
+  Leaderboards pass `ready` once their boards' data settled; Open Graph tags in every
+  `src/pages/*.html`; `absoluteOgImage()` in `share.ts`, called by `Layout`. e2e:
+  `tests/e2e/share.spec.ts`.
+
 ## Corrections
+
+- The `#` link sits next to the h2, not inside it: inside, it became part of the heading's
+  accessible name (e2e `getByRole('heading', { name, exact })` failed).
+- Link-preview crawlers do not run scripts: they see the relative `og:image` only.
 
 ## Open questions

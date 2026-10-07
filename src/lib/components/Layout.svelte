@@ -6,6 +6,7 @@
   import { formatCount, formatDateTime } from '../format';
   import { links, NAV } from '../links';
   import { defaultRegistryClient, type RegistryClient } from '../registry/load';
+  import { absoluteOgImage } from '../share';
 
   interface Props {
     /** Page name (file name without `.html`), to mark the current navigation entry. */
@@ -27,6 +28,7 @@
     children,
   }: Props = $props();
   const registrySource = $derived(registry.source());
+  absoluteOgImage(document, location.href);
   const share = $derived(manifest?.share_import ?? null);
 
   /** The import's `completed_at` from the overview's `adoption` table; null when unknown. */

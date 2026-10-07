@@ -1,4 +1,5 @@
 <script lang="ts">
+  import Panel from '../lib/components/Panel.svelte';
   import DataTable from '../lib/components/DataTable.svelte';
   import Layout from '../lib/components/Layout.svelte';
   import LoadError from '../lib/components/LoadError.svelte';
@@ -105,8 +106,11 @@
     {@const source = findTable(file, 'dns_providers')}
     {#if source}
       {@const list = dnsProviderList(source, { stack, showAll })}
-      <section class="panel">
-        <h2>{stack ? `DNS providers of stack ${stack}` : 'DNS providers'}</h2>
+      <Panel
+        id="dns-providers"
+        title={stack ? `DNS providers of stack ${stack}` : 'DNS providers'}
+        context="DNS providers"
+      >
         {#if stack}
           <p class="filter" data-testid="stack-filter">
             Deployments of stack <a href={links.stack(stack)}>{stack}</a> ·
@@ -157,7 +161,7 @@
             >).
           </li>
         </ul>
-      </section>
+      </Panel>
     {:else}
       <LoadError error={new Error('The release has no DNS providers table')} />
     {/if}
