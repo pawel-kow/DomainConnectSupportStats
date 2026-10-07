@@ -77,6 +77,10 @@ providers (30 days)" plus a Most improved top 5, from the current export and a d
 
 ## Corrections
 
+- Maintainer, after the screenshots: "Most templates supported", "Most domains reached" and the
+  overview's Most improved are per DNS provider (`dnsProviderEntrants`), not per stack. The
+  page's Most improved keeps stack folding (asked).
+
 - The new example export changed values and order (verify template gained a supporter); unit and
   e2e tests that pinned them were updated in #38. `example.db*` files from the maintainer's copy
   are not upstream-tracked and were left out (moved to the session scratchpad).

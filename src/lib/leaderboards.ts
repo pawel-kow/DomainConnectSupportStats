@@ -29,6 +29,11 @@ export function improvedWindow(search: string): ImprovedWindow {
   return new URLSearchParams(search).get('window') === '90d' ? '90d' : 'sweep';
 }
 
+export interface StackLink {
+  name: string;
+  href: string;
+}
+
 /** One row of a DNS provider board: a stack, or a DNS provider without one. */
 export interface Entrant {
   kind: 'stack' | 'dns_provider';
@@ -36,6 +41,8 @@ export interface Entrant {
   /** Second line: a DNS provider's API host, a stack's deployments. */
   detail: string | null;
   href: string;
+  /** A DNS provider's stack, when `stacks.json` has it. */
+  stack: StackLink | null;
   /** Its row of `stacks.json` or `dns-providers.json`. */
   row: Row;
   /** Domains of its deployments supporting at least one template; `null` when unmeasured. */
@@ -68,9 +75,40 @@ function reachedDomains(members: Row[]): number | null {
   return measured.length ? measured.reduce((a, b) => a + b, 0) : null;
 }
 
+function stackLink(id: string | null, stacks: Map<string | null, Row>): StackLink | null {
+  const row = id === null ? undefined : stacks.get(id);
+  return id === null || !row ? null : { name: text(row, 'name') ?? id, href: links.stack(id) };
+}
+
+function stackRows(stacks: Row[]): Map<string | null, Row> {
+  return new Map(stacks.map((s) => [text(s, 'provider_id'), s]));
+}
+
+function dnsProviderEntrant(row: Row, stacks: Map<string | null, Row>): Entrant[] {
+  const id = num(row, 'dns_provider_id');
+  if (id === null) return [];
+  return [
+    {
+      kind: 'dns_provider',
+      name: text(row, 'name') ?? '?',
+      detail: text(row, 'api_host'),
+      href: links.dnsProvider(id),
+      stack: stackLink(text(row, 'provider_id'), stacks),
+      row,
+      reachedDomains: reachedDomains([row]),
+    },
+  ];
+}
+
+/** One row per DNS provider, with its stack. */
+export function dnsProviderEntrants(dnsProviders: Row[], stacks: Row[]): Entrant[] {
+  const byId = stackRows(stacks);
+  return dnsProviders.flatMap((r) => dnsProviderEntrant(r, byId));
+}
+
 /** Stacks (with their deployments) first, then DNS providers without a stack row. */
 export function entrants(dnsProviders: Row[], stacks: Row[]): Entrant[] {
-  const stackIds = new Set(stacks.map((s) => text(s, 'provider_id')).filter((id) => id !== null));
+  const byId = stackRows(stacks);
   const folded = stacks.flatMap((s): Entrant[] => {
     const id = text(s, 'provider_id');
     if (id === null) return [];
@@ -82,26 +120,18 @@ export function entrants(dnsProviders: Row[], stacks: Row[]): Entrant[] {
         detail:
           deployments === null ? null : `${deployments} deployment${deployments === 1 ? '' : 's'}`,
         href: links.stack(id),
+        stack: null,
         row: s,
         reachedDomains: reachedDomains(dnsProviders.filter((r) => r.provider_id === id)),
       },
     ];
   });
-  const alone = dnsProviders.flatMap((r): Entrant[] => {
-    const id = num(r, 'dns_provider_id');
-    const stack = text(r, 'provider_id');
-    if (id === null || (stack !== null && stackIds.has(stack))) return [];
-    return [
-      {
-        kind: 'dns_provider',
-        name: text(r, 'name') ?? '?',
-        detail: text(r, 'api_host'),
-        href: links.dnsProvider(id),
-        row: r,
-        reachedDomains: reachedDomains([r]),
-      },
-    ];
-  });
+  const alone = dnsProviders
+    .filter((r) => {
+      const stack = text(r, 'provider_id');
+      return stack === null || !byId.has(stack);
+    })
+    .flatMap((r) => dnsProviderEntrant(r, byId));
   return [...folded, ...alone];
 }
 
@@ -173,7 +203,7 @@ export interface NewSupporter {
   name: string;
   apiHost: string | null;
   href: string;
-  stack: { name: string; href: string } | null;
+  stack: StackLink | null;
   /** When the sweep that found its first support started. */
   since: string;
   /** Templates it supports now. */
@@ -197,24 +227,19 @@ export function newSupporting(
   if (!generated) return [];
   const from = generated.getTime() - days * DAY_MS;
   const rows = new Map(dnsProviders.map((r) => [num(r, 'dns_provider_id'), r]));
-  const stackRows = new Map(stacks.map((s) => [text(s, 'provider_id'), s]));
+  const byId = stackRows(stacks);
   return derived.first_support.flatMap((f): NewSupporter[] => {
     const at = parseTimestamp(f.started_at)?.getTime();
     const row = rows.get(f.dns_provider_id);
     if (at === undefined || at < from || at > generated.getTime() || !row) return [];
     if (scannerStart && at < scannerStart.getTime()) return [];
-    const stackId = text(row, 'provider_id');
-    const stackRow = stackId === null ? undefined : stackRows.get(stackId);
     return [
       {
         dnsProviderId: f.dns_provider_id,
         name: text(row, 'name') ?? '?',
         apiHost: text(row, 'api_host'),
         href: links.dnsProvider(f.dns_provider_id),
-        stack:
-          stackId === null || !stackRow
-            ? null
-            : { name: text(stackRow, 'name') ?? stackId, href: links.stack(stackId) },
+        stack: stackLink(text(row, 'provider_id'), byId),
         since: f.started_at,
         supportedTemplates: num(row, 'supported_templates'),
       },
@@ -229,6 +254,8 @@ export interface BoardRow {
   href: string;
   /** Second line under the name. */
   detail: string | null;
+  /** A DNS provider's stack, linked under the name. */
+  stack?: StackLink | null;
   value: string;
   /** Hover text of the value: the exact count when shortened. */
   title?: string;
@@ -245,6 +272,7 @@ export function entrantRows(
     href: entry.href,
     detail:
       entry.kind === 'stack' ? ['Stack', entry.detail].filter(Boolean).join(' · ') : entry.detail,
+    stack: entry.stack,
     value: value === 'change' ? `+${formatExact(v)}` : formatCount(v),
     title: formatExact(v),
   }));

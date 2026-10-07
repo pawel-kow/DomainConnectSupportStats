@@ -10,9 +10,10 @@ fixes, styling and dependencies.
 
 - Leaderboards page (`leaderboards.html`): most templates supported, most domains reached, most
   improved (since the previous sweep or over about 90 days, `?window=90d`), new supporting DNS
-  providers (last 30 days), templates and service providers with the biggest reach. DNS
-  providers of a stack rank as one stack row.
-- Overview: new supporting DNS providers of the last 30 days and the most improved top 5.
+  providers (last 30 days), templates and service providers with the biggest reach. Templates
+  and domains rank each DNS provider; most improved ranks a stack as one row.
+- Overview: new supporting DNS providers of the last 30 days and the most improved DNS providers
+  (top 5).
 - Navigation entry "Leaderboards".
 - Deploy derives `data/derived/leaderboards.json` (first support per DNS provider) from the
   release.

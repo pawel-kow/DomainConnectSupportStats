@@ -11,6 +11,7 @@
   import { formatCount, formatDate, formatExact } from '../lib/format';
   import {
     BOARD_SIZE,
+    dnsProviderEntrants,
     entrantRows,
     entrants,
     improvedWindow,
@@ -104,6 +105,7 @@
     {@const dnsProviders = rowsOf(files.dnsProviders, 'dns_providers')}
     {@const stacks = rowsOf(files.stacks, 'stacks')}
     {@const list = entrants(dnsProviders, stacks)}
+    {@const providers = dnsProviderEntrants(dnsProviders, stacks)}
     {@const measured = isMeasured(list, window_)}
 
     <section class="panel intro">
@@ -114,8 +116,7 @@
       <p>
         Who leads Domain Connect adoption in the release of
         <strong>{formatDate(manifest?.generated_at)}</strong>: the top {BOARD_SIZE} of each board, positive
-        values only. The DNS providers of a stack are ranked together as one row; DNS providers without
-        a stack on their own. Ties go to more domains, then by name.
+        values only. Ties go to more domains, then by name.
       </p>
     </section>
 
@@ -123,14 +124,14 @@
       <section class="panel" data-testid="board-templates">
         <h2>Most templates supported</h2>
         <p class="muted about">
-          Templates supported now, each counted once whatever its versions. A stack counts the
-          templates any of its deployments supports.
+          Templates supported now by each DNS provider, each counted once whatever its versions.
+          Every deployment of a stack ranks on its own.
         </p>
         <Board
-          caption="DNS providers and stacks by templates supported"
-          nameHeader="DNS provider or stack"
+          caption="DNS providers by templates supported"
+          nameHeader="DNS provider"
           valueHeader="Templates"
-          rows={entrantRows(topByTemplates(list))}
+          rows={entrantRows(topByTemplates(providers))}
           emptyText="No DNS provider supports a template"
         />
       </section>
@@ -138,14 +139,14 @@
       <section class="panel" data-testid="board-domains">
         <h2>Most domains reached</h2>
         <p class="muted about">
-          Scanned domains of the DNS providers supporting at least one template. A stack counts its
-          supporting deployments only.
+          Scanned domains of each DNS provider supporting at least one template. Every deployment of
+          a stack ranks on its own.
         </p>
         <Board
-          caption="DNS providers and stacks by domains reached"
-          nameHeader="DNS provider or stack"
+          caption="DNS providers by domains reached"
+          nameHeader="DNS provider"
           valueHeader="Domains"
-          rows={entrantRows(topByDomains(list))}
+          rows={entrantRows(topByDomains(providers))}
           emptyText="No domains measured for supporting DNS providers"
         />
       </section>
@@ -162,7 +163,7 @@
         <p class="muted about">
           Templates gained {window_ === 'sweep'
             ? 'over the latest sweep (a stack: since its previous full sweep)'
-            : 'over about 90 days'}.
+            : 'over about 90 days'}. The DNS providers of a stack rank together as one row.
         </p>
         <Board
           caption="DNS providers and stacks by templates gained, {WINDOW_LABELS[

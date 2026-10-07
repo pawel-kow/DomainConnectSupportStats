@@ -37,10 +37,16 @@ test.describe('overview (index.html)', () => {
     await expect(page.locator('section', { has: chart }).locator('table')).toHaveCount(0);
   });
 
-  test('shows the most improved top 5 and links to the leaderboards', async ({ page }) => {
+  test('shows the most improved DNS providers, top 5, and links to the leaderboards', async ({
+    page,
+  }) => {
     const board = page.getByTestId('overview-improved');
     await expect(board.locator('tbody tr')).toHaveCount(1);
-    await expect(board).toContainText(/IONOS.*\+1/s);
+    await expect(board).toContainText(/IONOS.*domainconnect\.ionos\.example.*Stack IONOS.*\+1/s);
+    await expect(board.locator('tbody tr td:nth-child(2) > a')).toHaveAttribute(
+      'href',
+      './dns-provider.html?id=5',
+    );
     await board.getByRole('link', { name: 'All leaderboards' }).click();
     await expect(page).toHaveURL(/leaderboards\.html$/);
   });

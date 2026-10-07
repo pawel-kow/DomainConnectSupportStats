@@ -24,23 +24,52 @@ async function routeDerived(page: Page, firstSupport: [number, string][]) {
 }
 
 test.describe('Leaderboards (leaderboards.html)', () => {
-  test('ranks stacks and DNS providers by templates and by domains reached', async ({ page }) => {
+  test('ranks DNS providers by templates and by domains reached', async ({ page }) => {
     await page.goto('leaderboards.html');
     await expect(names(page, 'board-templates')).toHaveText(['Cloudflare', 'IONOS', 'Plesk']);
     const plesk = page.getByTestId('board-templates').locator('tbody tr', { hasText: 'Plesk' });
-    await expect(plesk).toContainText('Stack · 2 deployments');
+    await expect(plesk).toContainText(/domainconnect\.plesk\.com\s*Stack Plesk/);
     await expect(plesk.locator('td').first()).toHaveText('3');
-    // Plesk reaches only its supporting deployment's 900 domains.
+    await expect(names(page, 'board-domains')).toHaveText(['Cloudflare', 'IONOS', 'Plesk']);
     await expect(page.getByTestId('board-domains').locator('tbody tr').nth(2)).toContainText(
       /Plesk.*900/s,
     );
   });
 
-  test('links a stack row to the stack card', async ({ page }) => {
+  test('ranks each deployment of a stack on its own', async ({ page }) => {
+    await page.route('**/data/dns-providers.json', async (route) => {
+      const file = await (await route.fetch()).json();
+      const row = file.tables.dns_providers.rows.find(
+        (r: Record<string, unknown>) => r.dns_provider_id === 3,
+      );
+      row.supported_templates = 1;
+      await route.fulfill({ json: file });
+    });
     await page.goto('leaderboards.html');
+    await expect(names(page, 'board-templates')).toHaveText([
+      'Cloudflare',
+      'IONOS',
+      'Plesk',
+      'Plesk',
+    ]);
+  });
+
+  test('links a DNS provider to its card and its stack', async ({ page }) => {
+    await page.goto('leaderboards.html');
+    const plesk = page.getByTestId('board-templates').locator('tbody tr', { hasText: 'Plesk' });
+    await expect(plesk.getByRole('link', { name: 'Plesk' }).last()).toHaveAttribute(
+      'href',
+      './stack.html?id=plesk.com',
+    );
     await names(page, 'board-templates').filter({ hasText: 'Plesk' }).click();
-    await expect(page).toHaveURL(/stack\.html\?id=plesk\.com$/);
-    await expect(page.getByTestId('card-title')).toContainText('Plesk');
+    await expect(page).toHaveURL(/dns-provider\.html\?id=2$/);
+  });
+
+  test('links a stack row of most improved to the stack card', async ({ page }) => {
+    await page.goto('leaderboards.html');
+    await names(page, 'board-improved').filter({ hasText: 'IONOS' }).click();
+    await expect(page).toHaveURL(/stack\.html\?id=ionos\.com$/);
+    await expect(page.getByTestId('card-title')).toContainText('IONOS');
   });
 
   test('switches the most improved window in place, keeping ?window= in the URL', async ({

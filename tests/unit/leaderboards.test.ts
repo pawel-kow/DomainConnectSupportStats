@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import type { Leaderboards } from '../../src/lib/data/derived';
 import type { Row, Table } from '../../src/lib/data/types';
 import {
+  dnsProviderEntrants,
   entrantRows,
   entrants,
   isMeasured,
@@ -87,13 +88,48 @@ describe('entrants', () => {
   });
 });
 
+describe('dnsProviderEntrants', () => {
+  it('lists every DNS provider on its own, with its stack', () => {
+    const list = dnsProviderEntrants(dnsProviders(), stacks());
+    expect(list.map((e) => [e.kind, e.name, e.href])).toEqual([
+      ['dns_provider', 'Cloudflare', './dns-provider.html?id=1'],
+      ['dns_provider', 'IONOS', './dns-provider.html?id=5'],
+      ['dns_provider', 'Plesk', './dns-provider.html?id=2'],
+      ['dns_provider', 'Plesk', './dns-provider.html?id=3'],
+      ['dns_provider', 'Small Registrar', './dns-provider.html?id=4'],
+      ['dns_provider', 'Quiet Host', './dns-provider.html?id=6'],
+    ]);
+    expect(list[2]?.stack).toEqual({ name: 'Plesk', href: './stack.html?id=plesk.com' });
+    expect(list[4]?.stack).toBeNull();
+    expect(list[2]?.reachedDomains).toBe(900);
+    expect(list[3]?.reachedDomains).toBe(0);
+  });
+
+  it('has no stack link for a stack without a row', () => {
+    const list = dnsProviderEntrants([provider(7, { provider_id: 'gone.example' })], stacks());
+    expect(list[0]?.stack).toBeNull();
+  });
+});
+
 describe('topByTemplates', () => {
-  it('ranks by supported templates, positive only, ties by domains', () => {
-    // IONOS (2000 domains) before Plesk (1150) at 2 templates each.
-    expect(board(topByTemplates(entrants(dnsProviders(), stacks())))).toEqual([
-      [1, 'stack', 'Cloudflare', 3],
-      [2, 'stack', 'IONOS', 2],
-      [3, 'stack', 'Plesk', 2],
+  it('ranks DNS providers by supported templates, positive only, ties by domains', () => {
+    // IONOS (2000 domains) before Plesk (900) at 2 templates each.
+    expect(board(topByTemplates(dnsProviderEntrants(dnsProviders(), stacks())))).toEqual([
+      [1, 'dns_provider', 'Cloudflare', 3],
+      [2, 'dns_provider', 'IONOS', 2],
+      [3, 'dns_provider', 'Plesk', 2],
+    ]);
+  });
+
+  it('ranks the deployments of a stack separately', () => {
+    const rows = [
+      provider(1, { name: 'Plesk', provider_id: 'plesk.com', supported_templates: 5 }),
+      provider(2, { name: 'Plesk', provider_id: 'plesk.com', supported_templates: 4 }),
+    ];
+    const ranked = topByTemplates(dnsProviderEntrants(rows, stacks()));
+    expect(ranked.map((r) => [r.rank, r.entry.href, r.value])).toEqual([
+      [1, './dns-provider.html?id=1', 5],
+      [2, './dns-provider.html?id=2', 4],
     ]);
   });
 
@@ -125,7 +161,15 @@ describe('topByTemplates', () => {
 });
 
 describe('topByDomains', () => {
-  it('ranks by the domains of supporting deployments', () => {
+  it('ranks supporting DNS providers by domains', () => {
+    expect(board(topByDomains(dnsProviderEntrants(dnsProviders(), stacks())))).toEqual([
+      [1, 'dns_provider', 'Cloudflare', 4000],
+      [2, 'dns_provider', 'IONOS', 2000],
+      [3, 'dns_provider', 'Plesk', 900],
+    ]);
+  });
+
+  it('ranks folded stacks by the domains of their supporting deployments', () => {
     expect(board(topByDomains(entrants(dnsProviders(), stacks())))).toEqual([
       [1, 'stack', 'Cloudflare', 4000],
       [2, 'stack', 'IONOS', 2000],
@@ -283,6 +327,7 @@ describe('entrantRows', () => {
       name: 'Cloudflare',
       href: './stack.html?id=cloudflare.com',
       detail: 'Stack · 1 deployment',
+      stack: null,
       value: '4,000',
       title: '4,000',
     });
@@ -301,6 +346,18 @@ describe('entrantRows', () => {
       topByDomains(entrants([provider(1, { supported_templates: 1, domains: 123_456 })], [])),
     );
     expect(rows[0]).toMatchObject({ value: '123.5K', title: '123,456' });
+  });
+});
+
+describe('entrantRows of DNS providers', () => {
+  it('links the stack under the API host', () => {
+    const rows = entrantRows(topByTemplates(dnsProviderEntrants(dnsProviders(), stacks())));
+    expect(rows[2]).toMatchObject({
+      name: 'Plesk',
+      href: './dns-provider.html?id=2',
+      detail: 'domainconnect.plesk.com',
+      stack: { name: 'Plesk', href: './stack.html?id=plesk.com' },
+    });
   });
 });
 
