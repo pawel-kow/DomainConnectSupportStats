@@ -3,8 +3,8 @@
 ## Tasks
 
 - [x] Merge `main` into `feat/data-annotation`; CHANGELOG conflict resolved, 0.15.0
-- [~] `npm run verify`, PR to `main`
-- [ ] Screenshots accepted (unchanged since #46), remove plan
+- [x] `npm run verify`, PR #50 to `main`
+- [~] Screenshots accepted (unchanged since #46), remove plan
 
 ## Findings
 
