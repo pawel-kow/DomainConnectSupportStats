@@ -6,9 +6,9 @@
 ## Tasks
 
 - [x] Re-test against the new contract
-- [~] Version 0.15.1, CHANGELOG
-- [ ] Update #45 with the new contract fields
-- [ ] Methodology screenshots, draft PR, acceptance
+- [x] Version 0.15.1, CHANGELOG
+- [x] Update #45 with the new contract fields
+- [~] Methodology screenshots, draft PR, acceptance
 - [ ] Promote findings, delete this file
 
 ## Findings
