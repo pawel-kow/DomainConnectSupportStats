@@ -118,10 +118,20 @@ The release's index, written last. One JSON object on one line.
 | `share_import.import_id` | integer | The import's id. |
 | `share_import.status` | string | `completed`, `in_progress` (only when the export was asked to include an unfinished scan) or `pruned` (the scan's detailed data was deleted by housekeeping; its totals were kept). |
 | `share_import.source` | string | `live` (computed from the scan's data) or `snapshot` (from the totals kept after pruning). Same numbers either way. |
+| `share_import.started_at` | timestamp or null | When the import started. `null` when unknown (an import pruned before its dates were kept). |
+| `share_import.completed_at` | timestamp or null | When the import completed. `null` while it runs (`in_progress`), and when unknown as for `started_at`. The notes name the import by this time (else by `started_at`). |
 | `share_import.scanned_domains` | integer | Domains the import scanned: the denominator of every domain percentage. |
 | `share_import.zones` | array of strings or null | The zones the import scanned, by name without the trailing dot (e.g. `["com", "net", "org"]`), sorted. `null` when not recorded (imports from before the zones were recorded). |
 | `share_import.zone_domains` | integer or null | The domains the zone files listed, summed over the zones, **before** sampling: the population the scanned domains were drawn from. `null` as for `zones`. |
 | `share_import.sample_percent` | number or null | The percentage of the zones' domains sampled for scanning: `100` is a census (every domain scanned), e.g. `10.1` a probe sample. `null` when not recorded, or when the import's zones were sampled at different rates. |
+| `latest_sweep` | object or null | The support sweep that completed last, of any kind (a full sweep, or a smaller run: one DNS provider, one template or service provider, or the daily run of recently changed templates): when support was last measured anywhere. `null` when no sweep has completed since completion times were recorded. A sweep still running is never this one. See [sweep completion](#sweep-completion). |
+| `latest_sweep.sweep_id` | integer | The sweep. |
+| `latest_sweep.started_at` | timestamp | When it started. |
+| `latest_sweep.completed_at` | timestamp | When it completed. |
+| `latest_full_sweep` | object or null | The full support sweep (all DNS providers × all templates; the sweeps of `overview.json` `ecosystem`) that completed last: when the whole ecosystem was last measured. Same keys as `latest_sweep`; `null` likewise. It is also `latest_sweep` unless a smaller run completed after it. |
+| `latest_full_sweep.sweep_id` | integer | The sweep. |
+| `latest_full_sweep.started_at` | timestamp | When it started. |
+| `latest_full_sweep.completed_at` | timestamp | When it completed. |
 | `id_encoding` | string | The [id encoding](#id-encoding) in one sentence, for reference. |
 | `files` | object | Every file kind, keyed by kind (table above), in the order written. |
 | `files.<kind>.path` | string | The kind's path relative to the release. A list's path is fixed; a card's has `{placeholder}`s. |
@@ -187,7 +197,7 @@ Every file except the manifest has the same shape:
 
 ```json
 {"generated_at": "2026-10-01T00:00:00Z",
- "notes": ["Domain share: import 1780272000 (completed, live), 12000 domains scanned. Support columns are current state."],
+ "notes": ["Domain share: import completed 2026-06-01 07:00 UTC (live), 12,000 domains scanned. Support columns are current state."],
  "tables": {
   "<table id>": {"title": "...", "columns": [{"key": "...", "header": "..."}], "rows": [{...}], "footer": null}
  }}
@@ -196,7 +206,7 @@ Every file except the manifest has the same shape:
 | Key | Meaning |
 |---|---|
 | `generated_at` | The release's `generated_at` (same as the manifest's). |
-| `notes` | Free-text lines to show with the data, in order. In every list and card except `overview.json` the first note names the domain-share import. Show them verbatim, don't parse them; the manifest's `share_import` has the same facts as fields. |
+| `notes` | Free-text lines to show with the data, in order. In every list and card except `overview.json` the first note names the domain-share import. Show them verbatim, don't parse them; the manifest's `share_import` has the same facts as fields. Notes carry no internal ids: the domain-share import is named by its completion time (UTC), or by its start time while it runs or when its completion is unknown. |
 | `tables` | The file's tables, keyed by **table id**, in display order. Find a table by its id, never by position or title. |
 | `tables.<id>.title` | Display title. |
 | `tables.<id>.columns` | The columns in display order: `key` (the row key) and `header` (a short display label, often upper case). |
@@ -287,16 +297,22 @@ all templates), oldest first, with the support state once that sweep had run. Su
 by smaller runs in between counts towards the preceding full sweep. Sweeps before the
 first support was ever recorded have no row.
 
+A row therefore covers a window: from its sweep's start up to the next full sweep's start
+(exclusive), or, for the last row, up to the export. The denominators `known_dns_providers`
+and `published_templates` count over the same window, so `supporting_dns_providers` ≤
+`known_dns_providers` and `supported_templates` ≤ `published_templates` in every row.
+
 | Key | Type | Meaning |
 |---|---|---|
 | `sweep_id` | integer | The sweep. |
 | `started_at` | timestamp | When the sweep started. |
+| `completed_at` | timestamp | When it completed. `null` while it runs, or if not recorded (see [sweep completion](#sweep-completion)). |
 | `supporting_dns_providers` | count | DNS providers supporting at least one template. |
 | `supporting_stacks` | count | Distinct stacks among them (by each provider's current stack). |
 | `supported_templates` | count | Templates supported by at least one DNS provider. |
 | `supported_combinations` | count | Distinct (DNS provider, template) pairs with support, versions folded together. |
-| `known_dns_providers` | count | DNS providers known at the sweep's start: a denominator for `supporting_dns_providers`. |
-| `published_templates` | count | Templates whose first version was published at or before the sweep's start: a denominator for `supported_templates`. |
+| `known_dns_providers` | count | DNS providers first seen before the row's window ends (the next full sweep's start; for the last row, any time up to the export): a denominator for `supporting_dns_providers`. |
+| `published_templates` | count | Templates whose first version was published before the row's window ends (as `known_dns_providers`): a denominator for `supported_templates`. |
 
 ### `dns-providers.json` (report `dns-providers`)
 
@@ -416,6 +432,7 @@ templates (a full sweep, or a sweep of this DNS provider only), oldest first.
 |---|---|---|
 | `sweep_id` | integer | The sweep. |
 | `started_at` | timestamp | When it started. |
+| `completed_at` | timestamp | When it completed. `null` while it runs, or if not recorded (see [sweep completion](#sweep-completion)). |
 | `supported_templates` | count | Templates it supported once the sweep had run. |
 | `change` | integer | Difference to the previous row (the first row's difference to 0). |
 
@@ -619,6 +636,7 @@ Ordered by sweep, then `service_id`. It is each template card's `history` withou
 |---|---|---|
 | `sweep_id` | integer | The sweep. |
 | `started_at` | timestamp | When it started. |
+| `completed_at` | timestamp | When it completed. `null` while it runs, or if not recorded (see [sweep completion](#sweep-completion)). |
 | `service_id` | string | The template. |
 | `supporting_providers` | count | DNS providers supporting any version of it once the sweep had run. |
 
@@ -730,6 +748,7 @@ templates it covered.
 |---|---|---|
 | `sweep_id` | integer | The sweep. |
 | `started_at` | timestamp | When it started. |
+| `completed_at` | timestamp | When it completed. `null` while it runs, or if not recorded (see [sweep completion](#sweep-completion)). |
 | `supporting_providers` | count | DNS providers supporting any version once the sweep had run. |
 | `change` | integer | Difference to the previous row (the first row's difference to 0). |
 
@@ -815,6 +834,15 @@ found" state that links back to its list page. Every page shows the manifest's
   interpolate zeros; draw a gap or connect the measured points.
 - Each history row is the state **once that sweep had run**, replayed from the recorded
   changes of support, so values only change at sweeps.
+- <a id="sweep-completion"></a>**Sweep completion.** Every sweep row has `started_at` and
+  `completed_at`: when the last of the sweep's probes was done (answered, or given up on
+  after its retries). A sweep's probes can also be handed to a later sweep that starts
+  before they are done (the daily run for recently changed templates takes over those
+  templates' probes); the sweep then completes when nothing of its own is left. `null`
+  means still running - the row is the state so far and may still change - or a sweep
+  from before completion times were recorded. `manifest.json` names the sweep that completed
+  last (`latest_sweep`, any kind) and the full sweep that completed last
+  (`latest_full_sweep`).
 - **Leaderboards without the cards.** `dns-providers.json` and `stacks.json` carry each
   entity's change in supported templates over its latest sweep and over about 90 days
   (`supported_templates_change`, `supported_templates_change_90d`), so a "most improved"
@@ -900,11 +928,13 @@ shown indented; data files are shown as written.
 {
   "format_version": 1,
   "generated_at": "2026-10-01T00:00:00Z",
-  "schema_version": 14,
+  "schema_version": 15,
   "share_import": {
     "import_id": 1780272000,
     "status": "completed",
     "source": "live",
+    "started_at": "2026-06-01 00:00:00",
+    "completed_at": "2026-06-01 07:00:00",
     "scanned_domains": 12000,
     "zones": [
       "com",
@@ -912,6 +942,16 @@ shown indented; data files are shown as written.
     ],
     "zone_domains": 240000,
     "sample_percent": 5.0
+  },
+  "latest_sweep": {
+    "sweep_id": 5,
+    "started_at": "2026-07-01 02:00:00",
+    "completed_at": "2026-07-01 04:20:16"
+  },
+  "latest_full_sweep": {
+    "sweep_id": 4,
+    "started_at": "2026-06-02 02:00:00",
+    "completed_at": "2026-06-05 09:48:27"
   },
   "id_encoding": "Each {placeholder} is the id encoded as one path segment: a-z, 0-9, '.', '_' and '-' are kept (a leading '.' is not); every other byte of the id's UTF-8 encoding, uppercase letters included, becomes '~' followed by two lowercase hex digits. Example: 'Example.com/A b' -> '~45xample.com~2f~41~20b'.",
   "files": {
@@ -1001,7 +1041,7 @@ One list, `stacks.json`:
 
 <!-- example: stacks.json -->
 ```json
-{"generated_at": "2026-10-01T00:00:00Z", "notes": ["Domain share: import 1780272000 (completed, live), 12000 domains scanned. Support columns are current state."], "tables": {
+{"generated_at": "2026-10-01T00:00:00Z", "notes": ["Domain share: import completed 2026-06-01 07:00 UTC (live), 12,000 domains scanned. Support columns are current state."], "tables": {
 "stacks": {"title": "DNS provider stacks", "columns": [{"key": "name", "header": "STACK"}, {"key": "provider_id", "header": "PROVIDER ID"}, {"key": "deployments", "header": "DEPLOYMENTS"}, {"key": "min_supported_pct", "header": "MIN SUPPORT"}, {"key": "median_supported_pct", "header": "MEDIAN SUPPORT"}, {"key": "max_supported_pct", "header": "MAX SUPPORT"}, {"key": "supported_templates", "header": "TEMPLATES"}, {"key": "supported_templates_change", "header": "CHANGE"}, {"key": "supported_templates_change_90d", "header": "CHANGE 90D"}, {"key": "domains", "header": "DOMAINS"}, {"key": "domains_pct", "header": "% SCANNED"}], "rows": [
 {"name": "Cloudflare", "provider_id": "cloudflare.com", "deployments": 1, "min_supported_pct": 66.66666666666666, "median_supported_pct": 66.66666666666666, "max_supported_pct": 66.66666666666666, "supported_templates": 3, "supported_templates_change": 0, "supported_templates_change_90d": 0, "domains": 4000, "domains_pct": 33.33333333333333},
 {"name": "IONOS", "provider_id": "ionos.com", "deployments": 1, "min_supported_pct": 50.0, "median_supported_pct": 50.0, "max_supported_pct": 50.0, "supported_templates": 2, "supported_templates_change": 1, "supported_templates_change_90d": 1, "domains": 2000, "domains_pct": 16.666666666666664},
@@ -1016,7 +1056,7 @@ One card, `stacks/plesk.com.json`:
 
 <!-- example: stacks/plesk.com.json -->
 ```json
-{"generated_at": "2026-10-01T00:00:00Z", "notes": ["Domain share: import 1780272000 (completed, live), 12000 domains scanned. Support columns are current state."], "tables": {
+{"generated_at": "2026-10-01T00:00:00Z", "notes": ["Domain share: import completed 2026-06-01 07:00 UTC (live), 12,000 domains scanned. Support columns are current state."], "tables": {
 "stack": {"title": "DNS provider stack", "columns": [{"key": "name", "header": "Stack"}, {"key": "provider_id", "header": "Provider ID"}, {"key": "deployments", "header": "Deployments"}, {"key": "min_supported_pct", "header": "Min support"}, {"key": "median_supported_pct", "header": "Median support"}, {"key": "max_supported_pct", "header": "Max support"}, {"key": "supported_templates", "header": "Supported templates"}, {"key": "supported_templates_change", "header": "Change since previous full sweep"}, {"key": "supported_templates_change_90d", "header": "Change over 90 days"}, {"key": "domains", "header": "Domains"}, {"key": "domains_pct", "header": "% scanned"}], "rows": [
 {"name": "Plesk", "provider_id": "plesk.com", "deployments": 2, "min_supported_pct": 0.0, "median_supported_pct": 16.666666666666664, "max_supported_pct": 33.33333333333333, "supported_templates": 2, "supported_templates_change": 0, "supported_templates_change_90d": 0, "domains": 1150, "domains_pct": 9.583333333333334}
 ], "footer": null},

@@ -1,4 +1,4 @@
-{"generated_at": "2026-10-01T00:00:00Z", "notes": ["Domain share: import 1780272000 (completed, live), 12000 domains scanned. Support columns are current state."], "tables": {
+{"generated_at": "2026-10-01T00:00:00Z", "notes": ["Domain share: import completed 2026-06-01 07:00 UTC (live), 12,000 domains scanned. Support columns are current state."], "tables": {
 "unnamed.example/x/metadata": {"title": "unnamed.example/x - Template metadata", "columns": [{"key": "service_provider_name", "header": "Service provider"}, {"key": "service_provider_id", "header": "Service provider ID"}, {"key": "service_id", "header": "Service ID"}, {"key": "name", "header": "Template name"}, {"key": "version", "header": "Version"}, {"key": "versions", "header": "Stored versions"}, {"key": "description", "header": "Description"}, {"key": "variable_description", "header": "Variable description"}, {"key": "logo_url", "header": "Logo URL"}, {"key": "template_sha", "header": "Template SHA"}, {"key": "created_at", "header": "Added"}, {"key": "updated_at", "header": "Updated"}], "rows": [
 {"service_provider_name": null, "service_provider_id": "unnamed.example", "service_id": "x", "name": null, "version": 1, "versions": [1], "description": null, "variable_description": null, "logo_url": null, "template_sha": "000000000000000000000000000000000065b9aa", "created_at": "2022-08-08 08:08:08", "updated_at": "2022-08-08 08:08:08"}
 ], "footer": null},
@@ -7,9 +7,9 @@
 ], "footer": null},
 "unnamed.example/x/supporters": {"title": "unnamed.example/x - Supporting DNS providers (current state)", "columns": [{"key": "name", "header": "NAME"}, {"key": "dns_provider_id", "header": "ID"}, {"key": "provider_id", "header": "STACK"}, {"key": "api_host", "header": "API HOST"}, {"key": "versions", "header": "VERSIONS"}, {"key": "domains", "header": "DOMAINS"}, {"key": "reach_pct", "header": "REACH %"}], "rows": [
 ], "footer": {"name": "TOTAL", "dns_provider_id": null, "provider_id": null, "api_host": null, "versions": null, "domains": 0, "reach_pct": 0.0}},
-"unnamed.example/x/history": {"title": "unnamed.example/x - Support history", "columns": [{"key": "sweep_id", "header": "SWEEP"}, {"key": "started_at", "header": "STARTED"}, {"key": "supporting_providers", "header": "SUPPORTING"}, {"key": "change", "header": "CHANGE"}], "rows": [
-{"sweep_id": 1, "started_at": "2026-03-02 02:00:00", "supporting_providers": 0, "change": 0},
-{"sweep_id": 4, "started_at": "2026-06-02 02:00:00", "supporting_providers": 0, "change": 0},
-{"sweep_id": 6, "started_at": "2026-09-02 02:00:00", "supporting_providers": 0, "change": 0}
+"unnamed.example/x/history": {"title": "unnamed.example/x - Support history", "columns": [{"key": "sweep_id", "header": "SWEEP"}, {"key": "started_at", "header": "STARTED"}, {"key": "completed_at", "header": "COMPLETED"}, {"key": "supporting_providers", "header": "SUPPORTING"}, {"key": "change", "header": "CHANGE"}], "rows": [
+{"sweep_id": 1, "started_at": "2026-03-02 02:00:00", "completed_at": "2026-03-04 17:12:09", "supporting_providers": 0, "change": 0},
+{"sweep_id": 4, "started_at": "2026-06-02 02:00:00", "completed_at": "2026-06-05 09:48:27", "supporting_providers": 0, "change": 0},
+{"sweep_id": 6, "started_at": "2026-09-02 02:00:00", "completed_at": null, "supporting_providers": 0, "change": 0}
 ], "footer": null}
 }}
