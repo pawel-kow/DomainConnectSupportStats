@@ -1,4 +1,5 @@
 <script lang="ts">
+  import Panel from '../lib/components/Panel.svelte';
   import DataTable from '../lib/components/DataTable.svelte';
   import Layout from '../lib/components/Layout.svelte';
   import LoadError from '../lib/components/LoadError.svelte';
@@ -65,8 +66,7 @@
   {:then file}
     {@const source = findTable(file, 'stacks')}
     {#if source}
-      <section class="panel">
-        <h2>Stacks</h2>
+      <Panel id="stacks" title="Stacks" context="Stacks">
         <Notes notes={file.notes} />
         <DataTable
           table={{
@@ -102,7 +102,7 @@
             domains (<a href={links.methodology('43-attribution-of-domains')}>methodology 4.3</a>).
           </li>
         </ul>
-      </section>
+      </Panel>
     {:else}
       <LoadError error={new Error('The release has no stacks table')} />
     {/if}

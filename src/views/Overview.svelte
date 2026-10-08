@@ -1,4 +1,5 @@
 <script lang="ts">
+  import Panel from '../lib/components/Panel.svelte';
   import Layout from '../lib/components/Layout.svelte';
   import LoadError from '../lib/components/LoadError.svelte';
   import Notes from '../lib/components/Notes.svelte';
@@ -35,6 +36,9 @@
   // Shown by their own {#await}, which may render only after they settle.
   derived.catch(() => undefined);
   lists.catch(() => undefined);
+  // An anchored link scrolls once the boards' height is final.
+  let boardsReady = $state(false);
+  void Promise.allSettled([lists, derived]).then(() => (boardsReady = true));
 
   const IMPROVED_SIZE = 5;
 
@@ -142,8 +146,7 @@
       />
     </section>
 
-    <section class="panel">
-      <h2>Domain Connect support over time</h2>
+    <Panel id="support-history" title="Domain Connect support over time" context="Overview">
       {#if adoptionRows.length || ecosystemRows.length}
         <TimeChart
           beforeScans={scannerStart()}
@@ -161,11 +164,16 @@
       {:else}
         <p class="no-data">No data available</p>
       {/if}
-    </section>
+    </Panel>
 
     <div class="boards">
-      <section class="panel" data-testid="overview-new">
-        <h2>New supporting DNS providers</h2>
+      <Panel
+        id="new-supporting"
+        title="New supporting DNS providers"
+        context="Overview"
+        ready={boardsReady}
+        testid="overview-new"
+      >
         <p class="muted about">
           First supported template found in the last {NEW_SUPPORT_DAYS} days, newest first.
         </p>
@@ -176,10 +184,15 @@
         {:catch}
           <Unavailable />
         {/await}
-      </section>
+      </Panel>
 
-      <section class="panel" data-testid="overview-improved">
-        <h2>Most improved</h2>
+      <Panel
+        id="most-improved"
+        title="Most improved"
+        context="Overview"
+        ready={boardsReady}
+        testid="overview-improved"
+      >
         <p class="muted about">Templates gained over the latest sweep; top {IMPROVED_SIZE}.</p>
         {#await lists}
           <p class="no-data">Loading…</p>
@@ -198,7 +211,7 @@
           <Unavailable />
         {/await}
         <p class="more"><a href={links.leaderboards()}>All leaderboards</a></p>
-      </section>
+      </Panel>
     </div>
 
     <section class="panel caveats">

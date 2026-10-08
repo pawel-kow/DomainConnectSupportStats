@@ -1,4 +1,5 @@
 <script lang="ts">
+  import Panel from '../lib/components/Panel.svelte';
   import DataTable from '../lib/components/DataTable.svelte';
   import Layout from '../lib/components/Layout.svelte';
   import LoadError from '../lib/components/LoadError.svelte';
@@ -8,13 +9,18 @@
   import type { Column, Manifest, Row } from '../lib/data/types';
   import { formatCount, formatPct, UNKNOWN } from '../lib/format';
   import { links } from '../lib/links';
+  import { withHash } from '../lib/share';
   import { textParam } from '../lib/params';
 
   let query = $state(textParam(window.location.search, 'q') ?? '');
 
   // Keep the view a shareable link while the search changes.
   $effect(() => {
-    window.history.replaceState(null, '', links.serviceProviders({ q: query }));
+    window.history.replaceState(
+      null,
+      '',
+      withHash(links.serviceProviders({ q: query }), location.hash),
+    );
   });
 
   const client = defaultClient();
@@ -71,8 +77,7 @@
   {:then file}
     {@const source = findTable(file, 'service_providers')}
     {#if source}
-      <section class="panel">
-        <h2>Service providers</h2>
+      <Panel id="service-providers" title="Service providers" context="Service providers">
         <Notes notes={file.notes} />
         <DataTable
           table={source}
@@ -97,7 +102,7 @@
             scanned domains (<a href={links.methodology('11-terms')}>methodology 1.1</a>).
           </li>
         </ul>
-      </section>
+      </Panel>
     {:else}
       <LoadError error={new Error('The release has no service providers table')} />
     {/if}

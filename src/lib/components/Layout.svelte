@@ -1,11 +1,13 @@
 <script lang="ts">
   import type { Snippet } from 'svelte';
+  import { shareBaseUrl } from '../data/config';
   import { defaultClient, type ExportClient } from '../data/load';
   import { findTable } from '../data/tables';
   import type { Manifest } from '../data/types';
   import { formatCount, formatDateTime } from '../format';
   import { links, NAV } from '../links';
   import { defaultRegistryClient, type RegistryClient } from '../registry/load';
+  import { absoluteOgImage } from '../share';
 
   interface Props {
     /** Page name (file name without `.html`), to mark the current navigation entry. */
@@ -27,6 +29,7 @@
     children,
   }: Props = $props();
   const registrySource = $derived(registry.source());
+  absoluteOgImage(document, location.href, shareBaseUrl());
   const share = $derived(manifest?.share_import ?? null);
 
   /** The import's `completed_at` from the overview's `adoption` table; null when unknown. */

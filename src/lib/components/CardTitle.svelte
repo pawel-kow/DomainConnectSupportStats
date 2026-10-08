@@ -1,15 +1,18 @@
 <script lang="ts">
   import type { Snippet } from 'svelte';
+  import ShareMenu from './ShareMenu.svelte';
 
   interface Props {
     name: string;
+    /** The page kind ("Stack", "Template"): the post text of the card's share button. */
+    kind: string;
     /** Registry logo, once loaded; `alt` names whose logo it is (a stack's on a deployment). */
     logo?: Promise<{ url: string; alt: string } | null>;
     /** The small line under the name: id, stack. */
     children: Snippet;
   }
 
-  let { name, logo = Promise.resolve(null), children }: Props = $props();
+  let { name, kind, logo = Promise.resolve(null), children }: Props = $props();
   let broken = $state(false);
 </script>
 
@@ -29,10 +32,14 @@
     <h2>{name}</h2>
     <p class="muted small">{@render children()}</p>
   </div>
+  <div class="share">
+    <ShareMenu title={name} context={kind} />
+  </div>
 </section>
 
 <style>
   .card-title {
+    position: relative;
     display: flex;
     align-items: center;
     gap: var(--spacing-md);
@@ -46,6 +53,13 @@
 
   .text {
     min-width: 0;
+    padding-right: 2.5rem;
+  }
+
+  .share {
+    position: absolute;
+    top: var(--spacing-sm);
+    right: var(--spacing-sm);
   }
 
   h2 {
