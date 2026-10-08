@@ -185,7 +185,7 @@ Pushing `.github/workflows/` changes needs a token with the `workflow` scope.
 - `src/lib/data/encode.ts`: id ↔ path-segment encoding
 - `src/lib/data/manifest.ts`: `SUPPORTED_FORMAT_VERSION`, `filePath()` from manifest path templates
 - `src/lib/data/load.ts`: `ExportClient` (manifest once, files by kind + raw ids, `leaderboards()` derived data, `NotFoundError`, `ReleaseMismatchError`)
-- `src/lib/data/config.ts`: data and registry base URL precedence (runtime → build time → `./data/`, `./registry/`)
+- `src/lib/data/config.ts`: data and registry base URL precedence (runtime → build time → `./data/`, `./registry/`); `shareBaseUrl` (shared links, else the browser's URL)
 - `src/lib/data/tables.ts`: `findTable()` by id (template-card suffix), `oneRecord()`
 - `src/lib/data/types.ts`: types of the export (only what the site reads)
 - `src/lib/data/derived.ts`: types of the derived data (`leaderboards.json`), shared with `scripts/derive.ts`

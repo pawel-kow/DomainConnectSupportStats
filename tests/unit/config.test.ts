@@ -4,6 +4,7 @@ import {
   resolveBaseUrl,
   resolveDataBaseUrl,
   resolveScannerStart,
+  resolveShareBaseUrl,
 } from '../../src/lib/data/config';
 
 const PAGE = 'https://example.github.io/DomainConnectSupportStats/stack.html?id=plesk.com';
@@ -57,4 +58,24 @@ describe('resolveScannerStart', () => {
       expect(resolveScannerStart(value)).toBeNull();
     },
   );
+});
+
+describe('resolveShareBaseUrl', () => {
+  it('is unset by default: shared links use the page URL', () => {
+    expect(resolveShareBaseUrl(undefined, undefined)).toBeNull();
+    expect(resolveShareBaseUrl('', '')).toBeNull();
+  });
+
+  it('prefers runtime over build-time configuration, with a trailing slash', () => {
+    expect(resolveShareBaseUrl('https://stats.example/site', 'https://build.example/')).toBe(
+      'https://stats.example/site/',
+    );
+    expect(resolveShareBaseUrl(undefined, 'https://build.example')).toBe('https://build.example/');
+  });
+
+  it('ignores anything but an absolute http(s) URL', () => {
+    for (const bad of ['./site/', '/site/', 'javascript:alert(1)', 'ftp://x.example/', 42]) {
+      expect(resolveShareBaseUrl(bad, undefined)).toBeNull();
+    }
+  });
 });

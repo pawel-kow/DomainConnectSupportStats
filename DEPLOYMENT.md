@@ -157,6 +157,12 @@ The day scanning began, before which "first seen" and "supported since" dates sh
 "First scan": `scannerStartDate: '2026-09-22'` (`YYYY-MM-DD`, UTC). The shipped `public/config.js`
 sets it; unset or invalid, no date is marked.
 
+Shared links (share menu) and the link-preview image are built on the URL the browser shows. A
+different site URL, e.g. the public site while testing on localhost (share targets reject localhost
+links): `shareBaseUrl: 'https://stats.example.org/'`, build time `VITE_SHARE_BASE_URL`. The page
+name, its query and the panel anchor are kept. Unset or not an absolute http(s) URL: the browser's
+URL.
+
 ---
 
 ## 4. Operations

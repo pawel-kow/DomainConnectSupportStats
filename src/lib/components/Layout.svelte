@@ -1,5 +1,6 @@
 <script lang="ts">
   import type { Snippet } from 'svelte';
+  import { shareBaseUrl } from '../data/config';
   import { defaultClient, type ExportClient } from '../data/load';
   import { findTable } from '../data/tables';
   import type { Manifest } from '../data/types';
@@ -28,7 +29,7 @@
     children,
   }: Props = $props();
   const registrySource = $derived(registry.source());
-  absoluteOgImage(document, location.href);
+  absoluteOgImage(document, location.href, shareBaseUrl());
   const share = $derived(manifest?.share_import ?? null);
 
   /** The import's `completed_at` from the overview's `adoption` table; null when unknown. */

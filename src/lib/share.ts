@@ -7,11 +7,22 @@ export const SITE_NAME = 'Domain Connect support statistics';
 
 const INSTANCE_KEY = 'dc-stats.mastodon-instance';
 
-/** The absolute URL of the current page (with its query) pointing at panel `anchor`. */
-export function sharedUrl(location: string, anchor: string): string {
-  const url = new URL(location);
+/**
+ * The absolute URL of the current page (with its query) pointing at panel `anchor`. With
+ * `shareBase` (configured `shareBaseUrl`), the page and its query go under that URL instead: the
+ * pages sit side by side at the site root.
+ */
+export function sharedUrl(location: string, anchor: string, shareBase?: string | null): string {
+  const page = new URL(location);
+  const url = shareBase
+    ? new URL(page.pathname.split('/').at(-1)! + page.search, withSlash(shareBase))
+    : page;
   url.hash = anchor;
   return url.href;
+}
+
+function withSlash(url: string): string {
+  return url.endsWith('/') ? url : url + '/';
 }
 
 /** A page link with the current anchor kept, for `history.replaceState`. */
@@ -97,10 +108,11 @@ export function isApplePlatform(nav: NavigatorLike): boolean {
   return /Macintosh|iPhone|iPad|iPod/.test(nav.userAgent);
 }
 
-/** Makes the page's relative `og:image` absolute, from the page URL. */
-export function absoluteOgImage(doc: Document, pageUrl: string): void {
+/** Makes the page's relative `og:image` absolute, from `shareBase` or else the page URL. */
+export function absoluteOgImage(doc: Document, pageUrl: string, shareBase?: string | null): void {
+  const base = shareBase ? withSlash(shareBase) : pageUrl;
   for (const meta of doc.querySelectorAll<HTMLMetaElement>('meta[property="og:image"]')) {
     const content = meta.getAttribute('content');
-    if (content) meta.content = new URL(content, pageUrl).href;
+    if (content) meta.content = new URL(content, base).href;
   }
 }

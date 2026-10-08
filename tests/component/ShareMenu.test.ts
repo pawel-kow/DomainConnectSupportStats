@@ -30,6 +30,7 @@ afterEach(() => {
   vi.useRealTimers();
   vi.unstubAllGlobals();
   localStorage.clear();
+  delete window.DC_STATS_CONFIG;
   Reflect.deleteProperty(navigator, 'share');
   Reflect.deleteProperty(navigator, 'clipboard');
 });
@@ -139,6 +140,16 @@ describe('ShareMenu', () => {
     );
     await fireEvent.click(item('Change Mastodon instance'));
     expect(screen.getByLabelText('Mastodon instance')).toHaveValue('mastodon.social');
+  });
+
+  it('builds the link on the configured share base URL', async () => {
+    window.DC_STATS_CONFIG = { shareBaseUrl: 'https://stats.example/site/' };
+    renderMenu();
+    await openMenu();
+    const linkedin = new URL(item('LinkedIn').getAttribute('href')!);
+    expect(linkedin.searchParams.get('url')).toBe(
+      'https://stats.example/site/dns-provider.html?id=example#support-history',
+    );
   });
 
   it('offers the OS share sheet where the browser has one', async () => {

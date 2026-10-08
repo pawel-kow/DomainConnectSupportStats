@@ -78,6 +78,18 @@ describe('Layout', () => {
     );
   });
 
+  it('makes the link-preview image absolute from the configured share base URL', () => {
+    window.DC_STATS_CONFIG = { shareBaseUrl: 'https://stats.example/site' };
+    document.head.innerHTML =
+      '<meta property="og:image" content="./assets/DomainConnectSquareBlack.png" />';
+    render(Layout, { current: 'stacks', manifest: null, client: client(), children });
+    delete window.DC_STATS_CONFIG;
+    expect(document.querySelector('meta[property="og:image"]')).toHaveAttribute(
+      'content',
+      'https://stats.example/site/assets/DomainConnectSquareBlack.png',
+    );
+  });
+
   it('shows the site version in the footer, linked to its release', () => {
     render(Layout, { current: 'index', manifest: null, client: client(), children });
     const link = screen.getByRole('link', { name: `v${pkg.version}` });

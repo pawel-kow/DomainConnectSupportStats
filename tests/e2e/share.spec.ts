@@ -100,6 +100,28 @@ test.describe('Share panels', () => {
     await expect(panel.getByRole('status')).toHaveText('');
   });
 
+  test('copy link uses the configured share base URL', async ({ page, context }) => {
+    await page.route('**/config.js', (route) =>
+      route.fulfill({
+        contentType: 'text/javascript',
+        body: "window.DC_STATS_CONFIG = { shareBaseUrl: 'https://stats.example.org/site' };",
+      }),
+    );
+    await context.grantPermissions(['clipboard-read', 'clipboard-write']);
+    await page.goto('stack.html?id=plesk.com');
+    await expect(page.locator('meta[property="og:image"]')).toHaveAttribute(
+      'content',
+      'https://stats.example.org/site/assets/DomainConnectSquareBlack.png',
+    );
+    const panel = page.locator('#coverage');
+    await panel.getByRole('button', { name: /^Share: / }).click();
+    await panel.getByRole('menuitem', { name: 'Copy link' }).click();
+    await expect(panel.getByRole('status')).toHaveText('Link copied');
+    expect(await page.evaluate(() => navigator.clipboard.readText())).toBe(
+      'https://stats.example.org/site/stack.html?id=plesk.com#coverage',
+    );
+  });
+
   test('the menu works with the keyboard and fits the screen', async ({ page }) => {
     await page.goto('template.html?spid=mail.acme.example&sid=mail');
     const panel = page.locator('#records');

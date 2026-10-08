@@ -35,6 +35,37 @@ describe('sharedUrl', () => {
   });
 });
 
+describe('sharedUrl with a share base URL', () => {
+  const BASE = 'https://stats.example/site/';
+
+  it('puts the page, its query and the anchor under the share base URL', () => {
+    expect(
+      sharedUrl('http://localhost:5173/stack.html?id=plesk.com#coverage', 'deployments', BASE),
+    ).toBe('https://stats.example/site/stack.html?id=plesk.com#deployments');
+  });
+
+  it('keeps the page when the site is served from a sub-path or from its root', () => {
+    expect(sharedUrl('http://localhost:4173/a/b/templates.html?q=x', 'templates', BASE)).toBe(
+      'https://stats.example/site/templates.html?q=x#templates',
+    );
+    expect(sharedUrl('http://localhost:4173/', 'support-history', BASE)).toBe(
+      'https://stats.example/site/#support-history',
+    );
+  });
+
+  it('adds the missing trailing slash', () => {
+    expect(sharedUrl('http://localhost/stacks.html', 'stacks', 'https://stats.example/site')).toBe(
+      'https://stats.example/site/stacks.html#stacks',
+    );
+  });
+
+  it('uses the page URL without one', () => {
+    expect(sharedUrl('http://localhost/stacks.html', 'stacks', null)).toBe(
+      'http://localhost/stacks.html#stacks',
+    );
+  });
+});
+
 describe('withHash', () => {
   it('appends the current anchor to a page link', () => {
     expect(withHash('./dns-providers.html?q=plesk', '#dns-providers')).toBe(

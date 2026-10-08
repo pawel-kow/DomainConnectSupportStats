@@ -1,5 +1,6 @@
 <script lang="ts">
   import { tick } from 'svelte';
+  import { shareBaseUrl } from '../data/config';
   import {
     blueskyUrl,
     isApplePlatform,
@@ -47,7 +48,7 @@
   }
 
   async function show() {
-    url = sharedUrl(location.href, anchor);
+    url = sharedUrl(location.href, anchor, shareBaseUrl());
     instance = loadInstance();
     asking = false;
     open = true;

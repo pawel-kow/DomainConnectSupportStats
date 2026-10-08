@@ -86,6 +86,9 @@ Big story: one PR, steps with a pause for `/clear` after each (mutex and branch 
 - The `#` link sits next to the h2, not inside it: inside, it became part of the heading's
   accessible name (e2e `getByRole('heading', { name, exact })` failed).
 - Link-preview crawlers do not run scripts: they see the relative `og:image` only.
+- Maintainer: shared links stay absolute from the browser's URL; an override for testing
+  (localhost links fail to publish): runtime `shareBaseUrl`, build time `VITE_SHARE_BASE_URL`
+  (`resolveShareBaseUrl`, `sharedUrl(location, anchor, shareBase)`), also the base of `og:image`.
 
 - Step 4: REQUIREMENTS F-2.14–F-2.16 and C-1, CLAUDE.md, 0.14.0 + CHANGELOG done; verify green.
 

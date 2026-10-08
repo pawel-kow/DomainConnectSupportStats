@@ -14,6 +14,7 @@ declare global {
       dataBaseUrl?: string;
       registryBaseUrl?: string;
       scannerStartDate?: string;
+      shareBaseUrl?: string;
     };
   }
 }
@@ -69,4 +70,26 @@ export function resolveScannerStart(runtime: unknown): Date | null {
 
 export function scannerStart(): Date | null {
   return resolveScannerStart(window.DC_STATS_CONFIG?.scannerStartDate);
+}
+
+/**
+ * The site URL shared links are built on instead of the page URL (e.g. the public site while
+ * testing on localhost). `null` when unset or not an absolute http(s) URL.
+ */
+export function resolveShareBaseUrl(runtime: unknown, buildTime: unknown): string | null {
+  const configured = runtime || buildTime;
+  if (typeof configured !== 'string') return null;
+  try {
+    const url = new URL(withTrailingSlash(configured));
+    return url.protocol === 'https:' || url.protocol === 'http:' ? url.href : null;
+  } catch {
+    return null;
+  }
+}
+
+export function shareBaseUrl(): string | null {
+  return resolveShareBaseUrl(
+    window.DC_STATS_CONFIG?.shareBaseUrl,
+    import.meta.env.VITE_SHARE_BASE_URL,
+  );
 }

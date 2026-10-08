@@ -13,6 +13,8 @@ fixes, styling and dependencies.
 - Panel anchors (e.g. `#support-history`): a `#` link next to each chart and table heading; a
   link with the anchor scrolls to the panel and highlights it.
 - Link previews: Open Graph and Twitter card tags on every page.
+- Runtime option `shareBaseUrl` (build time `VITE_SHARE_BASE_URL`): the site URL shared links
+  are built on, e.g. the public site while testing on localhost.
 
 ## [0.13.0] - 2026-10-07
 
