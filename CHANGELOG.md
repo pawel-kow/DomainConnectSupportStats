@@ -4,6 +4,13 @@ Changes per site version. Versions follow [SemVer](https://semver.org/): major f
 parameter removed or changed incompatibly, minor for new pages, features or content, patch for
 fixes, styling and dependencies.
 
+## [0.15.1] - 2026-10-08
+
+### Fixed
+
+- A page whose data does not load shows a plain message instead of file URLs, release times and
+  HTTP status codes. When the data was just updated, it asks for a reload.
+
 ## [0.15.0] - 2026-10-08
 
 ### Changed

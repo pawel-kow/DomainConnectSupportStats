@@ -1,4 +1,4 @@
-import { expect, test } from './fixtures';
+import { expect, expectLoadError, test } from './fixtures';
 
 test.describe('overview (index.html)', () => {
   test.beforeEach(async ({ page }) => {
@@ -113,5 +113,16 @@ test.describe('data unavailable', () => {
     );
     await page.goto('index.html');
     await expect(page.getByTestId('load-error')).toContainText('Could not load the data');
+    await expectLoadError(page);
+  });
+
+  test('asks for a reload when a file is from another release', async ({ page }) => {
+    await page.route('**/data/overview.json', async (route) => {
+      const json = await (await route.fetch()).json();
+      await route.fulfill({ json: { ...json, generated_at: '2000-01-01T00:00:00Z' } });
+    });
+    await page.goto('index.html');
+    await expectLoadError(page, 'The data was just updated');
+    await expect(page.getByTestId('load-error')).toContainText('Reload the page.');
   });
 });
