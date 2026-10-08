@@ -18,3 +18,9 @@ blob-report/
 *.log
 .DS_Store
 .venv/
+
+# Local export releases (never committed)
+export*.tgz
+
+# Local export releases (never committed)
+export*.tgz
