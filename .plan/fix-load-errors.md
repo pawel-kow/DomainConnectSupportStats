@@ -7,7 +7,7 @@ Load errors show a plain message; the technical message goes to `console.warn`.
 - [x] `LoadError`: plain message per case (TDD, component test); technical message to `console.warn`
 - [x] e2e: error-state tests assert the text and no `.json` URL; a release-mismatch test
 - [x] REQUIREMENTS.md F-2.4 wording; CHANGELOG, 0.15.1 (patch)
-- [~] verify, PR, screenshots of the error states (desktop, phone)
+- [~] verify, PR, screenshots of the error states (desktop, phone): sent, awaiting acceptance
 - [ ] Promote findings, delete this file
 
 ## Findings
@@ -23,3 +23,8 @@ Load errors show a plain message; the technical message goes to `console.warn`.
 - Everything else: heading "Could not load the data", text "The data is not available at the
   moment. Try again later."
 - Patch version: a fix of visible text.
+
+## Open questions
+
+- Manifest failure: the page-end annotation keeps "Loading data release…" below the error state.
+  Fix here or separate issue?
