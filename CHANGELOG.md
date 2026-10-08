@@ -4,6 +4,12 @@ Changes per site version. Versions follow [SemVer](https://semver.org/): major f
 parameter removed or changed incompatibly, minor for new pages, features or content, patch for
 fixes, styling and dependencies.
 
+## [0.15.1] - 2026-10-08
+
+### Changed
+
+- Methodology: when a sweep counts as completed.
+
 ## [0.15.0] - 2026-10-08
 
 ### Changed
