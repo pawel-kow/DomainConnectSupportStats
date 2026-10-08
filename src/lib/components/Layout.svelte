@@ -2,9 +2,9 @@
   import type { Snippet } from 'svelte';
   import { shareBaseUrl } from '../data/config';
   import { defaultClient, type ExportClient } from '../data/load';
-  import { findTable } from '../data/tables';
+  import { ecosystemSweep, importCompletedAt } from '../annotation';
   import type { Manifest } from '../data/types';
-  import { formatCount, formatDateTime } from '../format';
+  import { formatCount, formatDateTime, UNKNOWN } from '../format';
   import { links, NAV } from '../links';
   import { defaultRegistryClient, type RegistryClient } from '../registry/load';
   import { absoluteOgImage } from '../share';
@@ -12,9 +12,16 @@
   interface Props {
     /** Page name (file name without `.html`), to mark the current navigation entry. */
     current: string;
-    /** The release's manifest once loaded; the header shows its facts on every page. */
+    /** The release's manifest once loaded; the annotation shows its facts on every page. */
     manifest?: Manifest | null;
-    /** Reads the domain-share import's completion time from `overview.json`. */
+    /**
+     * `started_at` of the newest sweep the page's data reflects (`annotation.ts`). Without it:
+     * the overview's last `ecosystem` row.
+     */
+    sweep?: Promise<string | null>;
+    /** False leaves the data annotation out (the methodology page). */
+    annotated?: boolean;
+    /** Reads the import's completion time and the default sweep from `overview.json`. */
     client?: ExportClient;
     /** Reads the repository and commit of the bundled DNS provider registry for the footer. */
     registry?: RegistryClient;
@@ -24,6 +31,8 @@
   let {
     current,
     manifest = null,
+    sweep,
+    annotated = true,
     client = defaultClient(),
     registry = defaultRegistryClient(),
     children,
@@ -32,17 +41,15 @@
   absoluteOgImage(document, location.href, shareBaseUrl());
   const share = $derived(manifest?.share_import ?? null);
 
-  /** The import's `completed_at` from the overview's `adoption` table; null when unknown. */
+  const overview = $derived(
+    manifest && annotated ? client.file('overview').catch(() => null) : Promise.resolve(null),
+  );
+  /** The import's `completed_at`; null when unknown. */
   const completedAt = $derived(
-    share
-      ? client
-          .file('overview')
-          .then((f) => {
-            const row = findTable(f, 'adoption')?.rows.find((r) => r.import_id === share.import_id);
-            return typeof row?.completed_at === 'string' ? row.completed_at : null;
-          })
-          .catch(() => null)
-      : Promise.resolve(null),
+    overview.then((f) => (f && share ? importCompletedAt(f, share.import_id) : null)),
+  );
+  const sweptAt = $derived(
+    (sweep ?? overview.then((f) => (f ? ecosystemSweep(f) : null))).catch(() => null),
   );
   const version = `v${__APP_VERSION__}`;
 </script>
@@ -71,30 +78,31 @@
 </header>
 
 <main class="container">
-  <section class="last-updated" aria-label="Data release">
-    {#if manifest}
-      <p>
-        Data generated: <span data-testid="generated-at"
-          >{formatDateTime(manifest.generated_at)}</span
-        >
-        {#if share}
-          · Domain share: <span data-testid="share-import"
-            >{#await completedAt}latest scan{:then at}{at
-                ? `scan completed ${formatDateTime(at)}`
-                : 'latest scan'}{/await}</span
-          >
-          ({share.status}, {share.source}), {formatCount(share.scanned_domains)} domains scanned
-        {:else}
-          · <span data-testid="share-import">No domain-share import</span>: domain and reach figures
-          are unknown
-        {/if}
-      </p>
-    {:else}
-      <p>Loading data release…</p>
-    {/if}
-  </section>
-
   {@render children()}
+
+  {#if annotated}
+    <p class="annotation" aria-label="Data release" data-testid="data-annotation">
+      {#if manifest}
+        Data generated <time data-testid="generated-at"
+          >{formatDateTime(manifest.generated_at)}</time
+        >
+        · Domain figures:
+        <span data-testid="share-import"
+          >{#if share}scan completed {#await completedAt}…{:then at}<time>{formatDateTime(at)}</time
+              >{/await}
+            ({formatCount(share.scanned_domains)} domains scanned){:else}no domain-share import{/if}</span
+        >
+        · Support figures:
+        <span data-testid="support-sweep"
+          >{#await sweptAt}…{:then at}{#if at}sweep started <time>{formatDateTime(at)}</time
+              >{:else}{UNKNOWN}{/if}{/await}</span
+        >
+        · <a href={links.methodology()}>Methodology</a>
+      {:else}
+        Loading data release…
+      {/if}
+    </p>
+  {/if}
 </main>
 
 <footer class="site-footer">
@@ -193,20 +201,14 @@
     color: var(--primary-navy);
   }
 
-  .last-updated {
-    background-color: var(--bg-white);
-    padding: var(--spacing-sm) var(--spacing-md);
-    border-radius: var(--radius-md);
-    margin-bottom: var(--spacing-lg);
-    text-align: center;
+  .annotation {
+    margin-top: var(--spacing-lg);
     color: var(--text-secondary);
-    font-size: 0.875rem;
-    box-shadow: 0 2px 4px var(--shadow-light);
+    font-size: 0.8125rem;
   }
 
-  .last-updated span {
-    font-weight: var(--font-weight-semibold);
-    color: var(--text-primary);
+  .annotation time {
+    white-space: nowrap;
   }
 
   .site-footer {

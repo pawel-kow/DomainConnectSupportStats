@@ -9,6 +9,7 @@
   import StatCard from '../lib/components/StatCard.svelte';
   import { scannerStart } from '../lib/data/config';
   import TimeChart from '../lib/components/TimeChart.svelte';
+  import { cardSweep } from '../lib/annotation';
   import { defaultClient, NotFoundError } from '../lib/data/load';
   import { findTable, oneRecord } from '../lib/data/tables';
   import type { Column, ExportFile, Manifest, Row } from '../lib/data/types';
@@ -47,6 +48,8 @@
       },
     );
   });
+  /** The newest sweep the card reflects, for the data annotation. */
+  const sweep = loading.then((f) => (f ? cardSweep('template', f) : null));
 
   function num(row: Row | null | undefined, key: string): number | null {
     const v = row?.[key];
@@ -76,7 +79,7 @@
   {/if}
 {/snippet}
 
-<Layout current="template" {manifest}>
+<Layout current="template" {manifest} {sweep}>
   {#await loading}
     <p class="no-data">Loading…</p>
   {:then file}

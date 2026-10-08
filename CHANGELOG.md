@@ -4,6 +4,14 @@ Changes per site version. Versions follow [SemVer](https://semver.org/): major f
 parameter removed or changed incompatibly, minor for new pages, features or content, patch for
 fixes, styling and dependencies.
 
+## [0.15.0] - 2026-10-08
+
+### Changed
+
+- The data release is an annotation at the end of every page but the methodology instead of a box below the
+  navigation. It names when the domain figures were scanned and which sweep the support figures
+  come from, and links to the methodology.
+
 ## [0.14.0] - 2026-10-07
 
 ### Added
