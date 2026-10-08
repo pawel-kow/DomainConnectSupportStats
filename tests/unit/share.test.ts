@@ -110,11 +110,11 @@ describe('targets', () => {
     expect(u.searchParams.get('text')).toBe(`${text} ${url}`);
   });
 
-  it('LinkedIn shares the link only', () => {
-    const u = new URL(linkedinUrl(url));
-    expect(u.origin + u.pathname).toBe('https://www.linkedin.com/sharing/share-offsite/');
-    expect([...u.searchParams.keys()]).toEqual(['url']);
-    expect(u.searchParams.get('url')).toBe(url);
+  it('LinkedIn opens the feed composer with text and link', () => {
+    const u = new URL(linkedinUrl(text, url));
+    expect(u.origin + u.pathname).toBe('https://www.linkedin.com/feed/');
+    expect(u.searchParams.get('shareActive')).toBe('true');
+    expect(u.searchParams.get('text')).toBe(`${text} ${url}`);
   });
 });
 
@@ -164,17 +164,17 @@ describe('instance storage', () => {
     };
   }
 
-  it('round-trips a valid instance', () => {
+  it('defaults to mastodon.social and round-trips a valid instance', () => {
     const s = memory();
-    expect(loadInstance(s)).toBeNull();
-    saveInstance('mastodon.social', s);
     expect(loadInstance(s)).toBe('mastodon.social');
+    saveInstance('fosstodon.org', s);
+    expect(loadInstance(s)).toBe('fosstodon.org');
   });
 
   it('ignores a stored value that is not a host name', () => {
     const s = memory();
     s.setItem('dc-stats.mastodon-instance', 'javascript:alert(1)');
-    expect(loadInstance(s)).toBeNull();
+    expect(loadInstance(s)).toBe('mastodon.social');
   });
 
   it('survives storage that throws or is missing', () => {
@@ -186,9 +186,9 @@ describe('instance storage', () => {
         throw new Error('denied');
       },
     } as unknown as Storage;
-    expect(loadInstance(broken)).toBeNull();
-    expect(() => saveInstance('mastodon.social', broken)).not.toThrow();
-    expect(loadInstance(null)).toBeNull();
+    expect(loadInstance(broken)).toBe('mastodon.social');
+    expect(() => saveInstance('fosstodon.org', broken)).not.toThrow();
+    expect(loadInstance(null)).toBe('mastodon.social');
   });
 });
 

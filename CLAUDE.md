@@ -199,6 +199,7 @@ Pushing `.github/workflows/` changes needs a token with the `workflow` scope.
 - `src/lib/leaderboards.ts`: boards (one row per DNS provider, top 10, ties, `?window=`), new supporting DNS providers, display rows
 - `src/lib/templates.ts`: template card (records as type, host and details, history caveat, table titles)
 - `src/lib/share.ts`: shared link, post text, share target URLs, Mastodon instance (validation, `localStorage`), `absoluteOgImage()`
+- `src/lib/share-icons.ts`: share target logos (Simple Icons paths, brand colours)
 - `src/lib/components/Panel.svelte`: chart and table panel (anchor, `#` link, share menu, scroll and highlight); `ShareMenu.svelte`: the share menu
 - `src/lib/format.ts`, `cells.ts`, `series.ts`, `links.ts`, `params.ts`: pure display/series/URL/query helpers (`safeUrl`, `safeMailto` for URLs from the data; `isPublicKey` hides internal ids)
 - `src/lib/components/`: shared Svelte components

@@ -6,6 +6,7 @@
 export const SITE_NAME = 'Domain Connect support statistics';
 
 const INSTANCE_KEY = 'dc-stats.mastodon-instance';
+export const DEFAULT_INSTANCE = 'mastodon.social';
 
 /**
  * The absolute URL of the current page (with its query) pointing at panel `anchor`. With
@@ -47,8 +48,12 @@ export function mastodonUrl(instance: string, text: string, url: string): string
   return `https://${instance}/share?` + new URLSearchParams({ text: `${text} ${url}` });
 }
 
-export function linkedinUrl(url: string): string {
-  return 'https://www.linkedin.com/sharing/share-offsite/?' + new URLSearchParams({ url });
+/** The feed composer: the share-offsite endpoint opens an empty post. */
+export function linkedinUrl(text: string, url: string): string {
+  return (
+    'https://www.linkedin.com/feed/?' +
+    new URLSearchParams({ shareActive: 'true', text: `${text} ${url}` })
+  );
 }
 
 const LABEL = /^(?!-)[a-z0-9-]{1,63}(?<!-)$/;
@@ -77,13 +82,13 @@ function storage(): Storage | null {
   }
 }
 
-/** The Mastodon instance this browser shared to before, or null. */
-export function loadInstance(store: Storage | null = storage()): string | null {
+/** The Mastodon instance this browser shared to before, else `DEFAULT_INSTANCE`. */
+export function loadInstance(store: Storage | null = storage()): string {
   try {
     const value = store?.getItem(INSTANCE_KEY);
-    return value ? parseInstance(value) : null;
+    return (value && parseInstance(value)) || DEFAULT_INSTANCE;
   } catch {
-    return null;
+    return DEFAULT_INSTANCE;
   }
 }
 

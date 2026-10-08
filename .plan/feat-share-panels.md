@@ -92,6 +92,11 @@ Big story: one PR, steps with a pause for `/clear` after each (mutex and branch 
 
 - Step 4: REQUIREMENTS F-2.14–F-2.16 and C-1, CLAUDE.md, 0.14.0 + CHANGELOG done; verify green.
 
+- Maintainer feedback: logos in the menu (Simple Icons, CC0; LinkedIn from v10, later versions
+  dropped it) in `src/lib/share-icons.ts`; Mastodon defaults to `mastodon.social`, one row with
+  an edit button (secondary menuitem, ArrowRight/ArrowLeft); LinkedIn `share-offsite` opened an
+  empty post: now `/feed/?shareActive=true&text=`.
+
 ## Open questions
 
 - Real-release check: no data repo checked out next to this one and no access to `DATA_REPO`;

@@ -8,8 +8,8 @@ fixes, styling and dependencies.
 
 ### Added
 
-- Share icon on every chart and table panel: Bluesky, Mastodon, LinkedIn, copy link and the
-  device's share sheet. The link opens the same page with its filters at that panel.
+- Share icon on every chart and table panel: Bluesky, Mastodon (mastodon.social unless changed),
+  LinkedIn, copy link and the device's share sheet, with the services' logos. The link opens the same page with its filters at that panel.
 - Panel anchors (e.g. `#support-history`): a `#` link next to each chart and table heading; a
   link with the anchor scrolls to the panel and highlights it.
 - Link previews: Open Graph and Twitter card tags on every page.

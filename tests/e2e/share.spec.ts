@@ -136,9 +136,11 @@ test.describe('Share panels', () => {
     expect(box.x).toBeGreaterThanOrEqual(0);
     expect(box.x + box.width).toBeLessThanOrEqual(width);
     await page.keyboard.press('ArrowDown');
-    await expect(panel.getByRole('menuitem', { name: 'Mastodon…' })).toBeFocused();
+    await expect(panel.getByRole('menuitem', { name: 'Mastodon (mastodon.social)' })).toBeFocused();
+    await page.keyboard.press('ArrowRight');
     await page.keyboard.press('Enter');
-    await page.keyboard.type('mastodon.example');
+    await expect(panel.getByLabel('Mastodon instance')).toBeFocused();
+    await page.keyboard.type('.example');
     await page.keyboard.press('Escape');
     await expect(menu).toBeHidden();
     await expect(toggle).toBeFocused();

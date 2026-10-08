@@ -229,13 +229,15 @@ times are not shown.
   and highlights it for 2 s (no animation under `prefers-reduced-motion`); an unknown anchor
   opens the page normally. List pages keep the anchor when they rewrite the URL.
 - F-2.15 Every chart and table panel has a share icon in its title row (box with arrow on macOS
-  and iOS, three nodes elsewhere). Its menu: Bluesky, Mastodon, LinkedIn, Copy link, and "More…"
-  (Web Share) where the browser has it; keyboard-usable. The shared link is absolute: the URL the
+  and iOS, three nodes elsewhere). Its menu: Bluesky, Mastodon, LinkedIn (each with its logo), Copy
+  link, and "More…" (Web Share) where the browser has it; keyboard-usable. The shared link is absolute: the URL the
   browser shows, with its query and the panel anchor (on `shareBaseUrl` when configured, for
   testing on localhost); sort, page and page size stay out (F-2.10). Post text:
   `<panel title> – <entity name or page name> – Domain Connect support statistics`, no numbers;
-  the middle part is left out when it equals the title. Mastodon asks for the instance (host
-  name only) and remembers it in the browser. "Link copied" shows for 2 s (`aria-live`). Targets
+  the middle part is left out when it equals the title. Mastodon shares to `mastodon.social`
+  unless the viewer changed the instance with the small button on the Mastodon row (host name
+  only; remembered in the browser); one menu row. LinkedIn opens its feed composer with the post
+  text and link (`/feed/?shareActive=true&text=`). "Link copied" shows for 2 s (`aria-live`). Targets
   open in a new tab with `rel="noopener noreferrer"`, only on the viewer's click.
 - F-2.16 Every page has static `og:title`, `og:description`, `og:image` (the brand square) and
   `twitter:card` `summary`; no `og:url`. The image URL is made absolute in the browser

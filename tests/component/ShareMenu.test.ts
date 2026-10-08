@@ -36,18 +36,35 @@ afterEach(() => {
 });
 
 describe('ShareMenu', () => {
-  it('opens a menu with the targets and focuses its first item', async () => {
+  it('opens a menu with the targets, each with its logo, and focuses its first item', async () => {
     renderMenu();
     expect(toggle()).toHaveAttribute('aria-expanded', 'false');
     await openMenu();
     expect(toggle()).toHaveAttribute('aria-expanded', 'true');
-    expect(screen.getAllByRole('menuitem').map((e) => e.textContent!.trim())).toEqual([
+    expect(
+      screen
+        .getAllByRole('menuitem')
+        .map((e) => e.getAttribute('aria-label') ?? e.textContent!.trim()),
+    ).toEqual([
       'Bluesky',
-      'Mastodon…',
+      'Mastodon (mastodon.social)',
+      'Change Mastodon instance (mastodon.social)',
       'LinkedIn',
       'Copy link',
     ]);
+    for (const name of ['Bluesky', /^Mastodon/, 'LinkedIn', 'Copy link']) {
+      expect(item(name).querySelector('svg[aria-hidden="true"]')).not.toBeNull();
+    }
     expect(item('Bluesky')).toHaveFocus();
+  });
+
+  it('shares to mastodon.social by default', async () => {
+    renderMenu();
+    await openMenu();
+    const mastodon = new URL(item('Mastodon (mastodon.social)').getAttribute('href')!);
+    expect(mastodon.origin + mastodon.pathname).toBe('https://mastodon.social/share');
+    expect(mastodon.searchParams.get('text')).toBe(`${TEXT} ${LINK}`);
+    expect(item(/^Mastodon/)).toHaveAttribute('target', '_blank');
   });
 
   it('links the targets to the page URL with its query and the panel anchor', async () => {
@@ -56,7 +73,7 @@ describe('ShareMenu', () => {
     const bluesky = new URL(item('Bluesky').getAttribute('href')!);
     expect(bluesky.searchParams.get('text')).toBe(`${TEXT} ${LINK}`);
     const linkedin = new URL(item('LinkedIn').getAttribute('href')!);
-    expect(linkedin.searchParams.get('url')).toBe(LINK);
+    expect(linkedin.searchParams.get('text')).toBe(`${TEXT} ${LINK}`);
     for (const name of ['Bluesky', 'LinkedIn']) {
       expect(item(name)).toHaveAttribute('target', '_blank');
       expect(item(name)).toHaveAttribute('rel', 'noopener noreferrer');
@@ -67,7 +84,14 @@ describe('ShareMenu', () => {
     renderMenu();
     const menu = await openMenu();
     await fireEvent.keyDown(menu, { key: 'ArrowDown' });
-    expect(item('Mastodon…')).toHaveFocus();
+    expect(item('Mastodon (mastodon.social)')).toHaveFocus();
+    await fireEvent.keyDown(menu, { key: 'ArrowRight' });
+    expect(item(/^Change Mastodon instance/)).toHaveFocus();
+    await fireEvent.keyDown(menu, { key: 'ArrowLeft' });
+    expect(item('Mastodon (mastodon.social)')).toHaveFocus();
+    await fireEvent.keyDown(menu, { key: 'ArrowRight' });
+    await fireEvent.keyDown(menu, { key: 'ArrowDown' });
+    expect(item('LinkedIn')).toHaveFocus();
     await fireEvent.keyDown(menu, { key: 'End' });
     expect(item('Copy link')).toHaveFocus();
     await fireEvent.keyDown(menu, { key: 'ArrowDown' });
@@ -109,37 +133,36 @@ describe('ShareMenu', () => {
     await expect.poll(() => screen.getByRole('status').textContent).toBe('Link not copied');
   });
 
-  it('asks for the Mastodon instance, rejects a bad one, then stores it and opens the share page', async () => {
+  it('changes the Mastodon instance, rejects a bad one, then stores it and opens the share page', async () => {
     const open = vi.fn();
     vi.stubGlobal('open', open);
     renderMenu();
     await openMenu();
-    await fireEvent.click(item('Mastodon…'));
+    await fireEvent.click(item(/^Change Mastodon instance/));
     const input = screen.getByLabelText('Mastodon instance');
     expect(input).toHaveFocus();
+    expect(input).toHaveValue('mastodon.social');
     await fireEvent.input(input, { target: { value: 'not a host' } });
     await fireEvent.click(screen.getByRole('button', { name: 'Share' }));
     expect(input).toHaveAttribute('aria-invalid', 'true');
     expect(input).toHaveAccessibleDescription(/host name/);
     expect(open).not.toHaveBeenCalled();
 
-    await fireEvent.input(input, { target: { value: 'https://Mastodon.Social/@someone' } });
+    await fireEvent.input(input, { target: { value: 'https://Fosstodon.org/@someone' } });
     await fireEvent.click(screen.getByRole('button', { name: 'Share' }));
     expect(open).toHaveBeenCalledOnce();
     const [href, target, features] = open.mock.calls[0]!;
-    expect(new URL(href).origin).toBe('https://mastodon.social');
+    expect(new URL(href).origin).toBe('https://fosstodon.org');
     expect(new URL(href).searchParams.get('text')).toBe(`${TEXT} ${LINK}`);
     expect([target, features]).toEqual(['_blank', 'noopener,noreferrer']);
     expect(screen.queryByLabelText('Mastodon instance')).not.toBeInTheDocument();
     expect(toggle()).toHaveFocus();
 
     await openMenu();
-    expect(item(/Mastodon \(mastodon.social\)/)).toHaveAttribute(
+    expect(item('Mastodon (fosstodon.org)')).toHaveAttribute(
       'href',
-      expect.stringMatching(/^https:\/\/mastodon\.social\/share\?/),
+      expect.stringMatching(/^https:\/\/fosstodon\.org\/share\?/),
     );
-    await fireEvent.click(item('Change Mastodon instance'));
-    expect(screen.getByLabelText('Mastodon instance')).toHaveValue('mastodon.social');
   });
 
   it('builds the link on the configured share base URL', async () => {
@@ -147,8 +170,8 @@ describe('ShareMenu', () => {
     renderMenu();
     await openMenu();
     const linkedin = new URL(item('LinkedIn').getAttribute('href')!);
-    expect(linkedin.searchParams.get('url')).toBe(
-      'https://stats.example/site/dns-provider.html?id=example#support-history',
+    expect(linkedin.searchParams.get('text')).toBe(
+      `${TEXT} https://stats.example/site/dns-provider.html?id=example#support-history`,
     );
   });
 

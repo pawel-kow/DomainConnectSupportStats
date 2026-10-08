@@ -12,6 +12,7 @@
     saveInstance,
     sharedUrl,
   } from '../share';
+  import { BLUESKY, LINKEDIN, MASTODON, type BrandIcon } from '../share-icons';
 
   interface Props {
     /** The panel title. */
@@ -31,7 +32,7 @@
 
   let open = $state(false);
   let asking = $state(false);
-  let instance = $state<string | null>(null);
+  let instance = $state('');
   let input = $state('');
   let invalid = $state(false);
   let status = $state('');
@@ -43,8 +44,11 @@
   let field = $state<HTMLInputElement>();
   const text = $derived(postText(title, context));
 
+  /** The menu's rows; a row's secondary item (Mastodon instance) is reached with ArrowRight. */
   function items(): HTMLElement[] {
-    return [...(popup?.querySelectorAll<HTMLElement>('[role="menuitem"]') ?? [])];
+    return [
+      ...(popup?.querySelectorAll<HTMLElement>('[role="menuitem"]:not([data-secondary])') ?? []),
+    ];
   }
 
   async function show() {
@@ -65,12 +69,19 @@
 
   function onMenuKey(e: KeyboardEvent) {
     const all = items();
-    const at = all.indexOf(document.activeElement as HTMLElement);
+    const active = document.activeElement as HTMLElement | null;
+    const secondary = active?.hasAttribute('data-secondary') ?? false;
+    const row = secondary ? (active!.previousElementSibling as HTMLElement) : active;
+    const at = all.indexOf(row!);
     let next: number | null = null;
     if (e.key === 'ArrowDown') next = (at + 1) % all.length;
     else if (e.key === 'ArrowUp') next = (at - 1 + all.length) % all.length;
     else if (e.key === 'Home') next = 0;
     else if (e.key === 'End') next = all.length - 1;
+    else if (e.key === 'ArrowRight' && !secondary) {
+      const side = active?.nextElementSibling;
+      if (side instanceof HTMLElement && side.hasAttribute('data-secondary')) side.focus();
+    } else if (e.key === 'ArrowLeft' && secondary) row?.focus();
     else if (e.key === 'Escape') close();
     else return;
     e.preventDefault();
@@ -84,7 +95,7 @@
   }
 
   async function askInstance() {
-    input = instance ?? '';
+    input = instance;
     invalid = false;
     asking = true;
     await tick();
@@ -135,6 +146,27 @@
   }
 </script>
 
+{#snippet brand(icon: BrandIcon)}
+  <svg viewBox="0 0 24 24" aria-hidden="true" class="icon" style:fill={icon.color}>
+    <path d={icon.path} />
+  </svg>
+{/snippet}
+
+{#snippet shareIcon(cls: string)}
+  {#if apple}
+    <svg viewBox="0 0 24 24" aria-hidden="true" class={cls} data-icon="apple">
+      <path d="M12 3v12M8 7l4-4 4 4M7 11H5v10h14V11h-2" />
+    </svg>
+  {:else}
+    <svg viewBox="0 0 24 24" aria-hidden="true" class={cls} data-icon="nodes">
+      <circle cx="18" cy="5" r="2.5" />
+      <circle cx="6" cy="12" r="2.5" />
+      <circle cx="18" cy="19" r="2.5" />
+      <path d="M8.2 10.8l7.6-4.6M8.2 13.2l7.6 4.6" />
+    </svg>
+  {/if}
+{/snippet}
+
 <svelte:window onpointerdown={onOutside} />
 
 <div class="share" bind:this={root} onfocusout={onFocusOut}>
@@ -149,18 +181,7 @@
     aria-controls={open ? `${id}-popup` : undefined}
     onclick={() => (open ? close() : show())}
   >
-    {#if apple}
-      <svg viewBox="0 0 24 24" aria-hidden="true" data-icon="apple">
-        <path d="M12 3v12M8 7l4-4 4 4M7 11H5v10h14V11h-2" />
-      </svg>
-    {:else}
-      <svg viewBox="0 0 24 24" aria-hidden="true" data-icon="nodes">
-        <circle cx="18" cy="5" r="2.5" />
-        <circle cx="6" cy="12" r="2.5" />
-        <circle cx="18" cy="19" r="2.5" />
-        <path d="M8.2 10.8l7.6-4.6M8.2 13.2l7.6 4.6" />
-      </svg>
-    {/if}
+    {@render shareIcon('line')}
   </button>
 
   {#if open}
@@ -192,55 +213,72 @@
         </form>
       {:else}
         <ul role="menu" aria-label="Share: {title}" onkeydown={onMenuKey}>
-          <li role="none">
+          <li role="none" class="row">
             <a
               role="menuitem"
               tabindex="-1"
               href={blueskyUrl(text, url)}
               target="_blank"
               rel="noopener noreferrer"
-              onclick={() => close()}>Bluesky</a
+              onclick={() => close()}
             >
+              {@render brand(BLUESKY)}Bluesky
+            </a>
           </li>
-          {#if instance}
-            <li role="none">
-              <a
-                role="menuitem"
-                tabindex="-1"
-                href={mastodonUrl(instance, text, url)}
-                target="_blank"
-                rel="noopener noreferrer"
-                onclick={() => close()}>Mastodon <span class="muted">({instance})</span></a
-              >
-            </li>
-            <li role="none">
-              <button role="menuitem" tabindex="-1" type="button" onclick={askInstance}
-                >Change Mastodon instance</button
-              >
-            </li>
-          {:else}
-            <li role="none">
-              <button role="menuitem" tabindex="-1" type="button" onclick={askInstance}
-                >Mastodon…</button
-              >
-            </li>
-          {/if}
-          <li role="none">
+          <li role="none" class="row">
             <a
               role="menuitem"
               tabindex="-1"
-              href={linkedinUrl(url)}
+              href={mastodonUrl(instance, text, url)}
               target="_blank"
               rel="noopener noreferrer"
-              onclick={() => close()}>LinkedIn</a
+              onclick={() => close()}
             >
+              {@render brand(MASTODON)}<span
+                >Mastodon <span class="instance muted">({instance})</span></span
+              >
+            </a>
+            <button
+              role="menuitem"
+              tabindex="-1"
+              type="button"
+              class="edit"
+              data-secondary
+              aria-label="Change Mastodon instance ({instance})"
+              title="Change Mastodon instance"
+              onclick={askInstance}
+            >
+              <svg viewBox="0 0 24 24" aria-hidden="true" class="line">
+                <path d="M4 20h4L19 9l-4-4L4 16v4zM13.5 6.5l4 4" />
+              </svg>
+            </button>
           </li>
-          <li role="none">
-            <button role="menuitem" tabindex="-1" type="button" onclick={copy}>Copy link</button>
+          <li role="none" class="row">
+            <a
+              role="menuitem"
+              tabindex="-1"
+              href={linkedinUrl(text, url)}
+              target="_blank"
+              rel="noopener noreferrer"
+              onclick={() => close()}
+            >
+              {@render brand(LINKEDIN)}LinkedIn
+            </a>
+          </li>
+          <li role="none" class="row">
+            <button role="menuitem" tabindex="-1" type="button" onclick={copy}>
+              <svg viewBox="0 0 24 24" aria-hidden="true" class="line icon">
+                <path
+                  d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1"
+                />
+              </svg>Copy link
+            </button>
           </li>
           {#if canShare}
-            <li role="none">
-              <button role="menuitem" tabindex="-1" type="button" onclick={more}>More…</button>
+            <li role="none" class="row">
+              <button role="menuitem" tabindex="-1" type="button" onclick={more}>
+                {@render shareIcon('line icon')}More…
+              </button>
             </li>
           {/if}
         </ul>
@@ -288,6 +326,10 @@
   svg {
     width: 1.25rem;
     height: 1.25rem;
+    flex-shrink: 0;
+  }
+
+  .line {
     fill: none;
     stroke: currentColor;
     stroke-width: 2;
@@ -295,12 +337,21 @@
     stroke-linejoin: round;
   }
 
+  .icon {
+    width: 1.1rem;
+    height: 1.1rem;
+  }
+
+  .line.icon {
+    color: var(--medium-teal);
+  }
+
   .popup {
     position: absolute;
     top: calc(100% + 4px);
     right: 0;
     z-index: 10;
-    min-width: 13rem;
+    min-width: 14rem;
     max-width: calc(100vw - 2 * var(--spacing-sm));
     background: var(--bg-white);
     border: 1px solid var(--border-color);
@@ -315,9 +366,16 @@
     padding: var(--spacing-xs) 0;
   }
 
+  .row {
+    display: flex;
+  }
+
   [role='menuitem'] {
-    display: block;
-    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    flex: 1;
+    min-width: 0;
     padding: var(--spacing-xs) var(--spacing-sm);
     border: none;
     background: none;
@@ -338,6 +396,23 @@
   [role='menuitem']:focus-visible {
     outline: 2px solid var(--accent-cyan);
     outline-offset: -2px;
+  }
+
+  .instance {
+    display: block;
+    font-size: 0.8rem;
+    white-space: nowrap;
+  }
+
+  [role='menuitem'].edit {
+    flex: 0 0 auto;
+    padding: var(--spacing-xs) 0.75rem;
+    color: var(--text-secondary);
+  }
+
+  .edit svg {
+    width: 1rem;
+    height: 1rem;
   }
 
   form {
