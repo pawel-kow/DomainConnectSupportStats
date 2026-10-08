@@ -1,4 +1,5 @@
 <script lang="ts">
+  import Panel from '../lib/components/Panel.svelte';
   import Board from '../lib/components/Board.svelte';
   import Layout from '../lib/components/Layout.svelte';
   import LoadError from '../lib/components/LoadError.svelte';
@@ -28,6 +29,7 @@
     type Ranked,
   } from '../lib/leaderboards';
   import { links } from '../lib/links';
+  import { withHash } from '../lib/share';
 
   const client = defaultClient();
   let window_ = $state(improvedWindow(window.location.search));
@@ -37,7 +39,7 @@
     window.history.replaceState(
       null,
       '',
-      links.leaderboards({ window: window_ === 'sweep' ? null : window_ }),
+      withHash(links.leaderboards({ window: window_ === 'sweep' ? null : window_ }), location.hash),
     );
   });
   let manifest = $state<Manifest | null>(null);
@@ -53,6 +55,9 @@
   const derived = client.leaderboards();
   // Shown by its own {#await}, which may render only after it settles.
   derived.catch(() => undefined);
+  // An anchored link scrolls once every board's height is final.
+  let boardsReady = $state(false);
+  void Promise.allSettled([loading, derived]).then(() => (boardsReady = true));
 
   const rowsOf = (file: ExportFile, id: string): Row[] => findTable(file, id)?.rows ?? [];
   const text = (row: Row, key: string): string | null =>
@@ -116,8 +121,13 @@
     </section>
 
     <div class="boards">
-      <section class="panel" data-testid="board-templates">
-        <h2>Most templates supported</h2>
+      <Panel
+        id="most-templates"
+        title="Most templates supported"
+        context="Leaderboards"
+        ready={boardsReady}
+        testid="board-templates"
+      >
         <p class="muted about">
           Templates supported now by each DNS provider, each counted once whatever its versions.
           Every deployment of a stack ranks on its own.
@@ -129,10 +139,15 @@
           rows={entrantRows(topByTemplates(providers))}
           emptyText="No DNS provider supports a template"
         />
-      </section>
+      </Panel>
 
-      <section class="panel" data-testid="board-domains">
-        <h2>Most domains reached</h2>
+      <Panel
+        id="most-domains"
+        title="Most domains reached"
+        context="Leaderboards"
+        ready={boardsReady}
+        testid="board-domains"
+      >
         <p class="muted about">
           Scanned domains of each DNS provider supporting at least one template. Every deployment of
           a stack ranks on its own.
@@ -144,10 +159,15 @@
           rows={entrantRows(topByDomains(providers))}
           emptyText="No domains measured for supporting DNS providers"
         />
-      </section>
+      </Panel>
 
-      <section class="panel" data-testid="board-improved">
-        <h2>Most improved</h2>
+      <Panel
+        id="most-improved"
+        title="Most improved"
+        context="Leaderboards"
+        ready={boardsReady}
+        testid="board-improved"
+      >
         <div class="windows" role="group" aria-label="Most improved window">
           {#each ['sweep', '90d'] as const as w (w)}
             <button type="button" aria-pressed={w === window_} onclick={() => (window_ = w)}
@@ -167,10 +187,15 @@
           rows={entrantRows(mostImproved(providers, window_), 'change')}
           emptyText={improvedEmpty(measured, window_)}
         />
-      </section>
+      </Panel>
 
-      <section class="panel" data-testid="board-new">
-        <h2>New supporting DNS providers</h2>
+      <Panel
+        id="new-supporting"
+        title="New supporting DNS providers"
+        context="Leaderboards"
+        ready={boardsReady}
+        testid="board-new"
+      >
         <p class="muted about">
           DNS providers whose first supported template was found in the last {NEW_SUPPORT_DAYS} days,
           newest first; the date is the start of that sweep. Each deployment of a stack is listed.
@@ -182,10 +207,15 @@
         {:catch}
           <Unavailable />
         {/await}
-      </section>
+      </Panel>
 
-      <section class="panel" data-testid="board-template-reach">
-        <h2>Templates with the biggest reach</h2>
+      <Panel
+        id="template-reach"
+        title="Templates with the biggest reach"
+        context="Leaderboards"
+        ready={boardsReady}
+        testid="board-template-reach"
+      >
         <p class="muted about">Scanned domains behind the DNS providers supporting the template.</p>
         <Board
           caption="Templates by domains reached"
@@ -197,10 +227,15 @@
           )}
           emptyText="No reach measured"
         />
-      </section>
+      </Panel>
 
-      <section class="panel" data-testid="board-service-provider-reach">
-        <h2>Service providers with the biggest reach</h2>
+      <Panel
+        id="service-provider-reach"
+        title="Service providers with the biggest reach"
+        context="Leaderboards"
+        ready={boardsReady}
+        testid="board-service-provider-reach"
+      >
         <p class="muted about">
           Scanned domains behind the DNS providers supporting at least one of its templates, each
           counted once.
@@ -215,7 +250,7 @@
           )}
           emptyText="No reach measured"
         />
-      </section>
+      </Panel>
     </div>
   {:catch error}
     <LoadError {error} />

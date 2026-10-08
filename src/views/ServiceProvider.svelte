@@ -1,4 +1,5 @@
 <script lang="ts">
+  import Panel from '../lib/components/Panel.svelte';
   import CardTitle from '../lib/components/CardTitle.svelte';
   import DataTable from '../lib/components/DataTable.svelte';
   import Layout from '../lib/components/Layout.svelte';
@@ -93,7 +94,7 @@
       {@const series = seriesOf(file)}
       {@const drawable = series.filter((s) => s.points.length)}
 
-      <CardTitle name={text(record, 'name') ?? serviceProviderId}>
+      <CardTitle kind="Service provider" name={text(record, 'name') ?? serviceProviderId}>
         <span class="mono">{serviceProviderId}</span>
         ·
         <a href={links.templates({ spid: serviceProviderId })} data-testid="templates-link"
@@ -125,8 +126,11 @@
       </section>
 
       {#if history}
-        <section class="panel">
-          <h2>Supporting DNS providers per template over time</h2>
+        <Panel
+          id="support-history"
+          title="Supporting DNS providers per template over time"
+          context={text(record, 'name') ?? serviceProviderId}
+        >
           {#if drawable.length}
             {@const lines = series.flatMap((s, i) =>
               shown.includes(s.serviceId) && s.points.length
@@ -173,12 +177,15 @@
           {:else}
             <p class="no-data">Not measured yet</p>
           {/if}
-        </section>
+        </Panel>
       {/if}
 
       {#if templates}
-        <section class="panel">
-          <h2>{templates.title}</h2>
+        <Panel
+          id="templates"
+          title={templates.title}
+          context={text(record, 'name') ?? serviceProviderId}
+        >
           <DataTable
             table={templates}
             keys={[
@@ -197,7 +204,7 @@
             cell={templateCell}
             emptyText="No templates"
           />
-        </section>
+        </Panel>
       {/if}
 
       <section class="panel">

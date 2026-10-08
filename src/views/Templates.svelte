@@ -1,4 +1,5 @@
 <script lang="ts">
+  import Panel from '../lib/components/Panel.svelte';
   import DataTable from '../lib/components/DataTable.svelte';
   import Layout from '../lib/components/Layout.svelte';
   import LoadError from '../lib/components/LoadError.svelte';
@@ -8,6 +9,7 @@
   import type { Column, Manifest, Row } from '../lib/data/types';
   import { formatCount, formatPct, UNKNOWN } from '../lib/format';
   import { links } from '../lib/links';
+  import { withHash } from '../lib/share';
   import { flagParam, textParam } from '../lib/params';
   import { isNeverProbed, templateList } from '../lib/templates-list';
 
@@ -18,7 +20,11 @@
 
   // Keep the view a shareable link while the search and toggle change.
   $effect(() => {
-    window.history.replaceState(null, '', links.templates({ spid, q: query, all: showAll }));
+    window.history.replaceState(
+      null,
+      '',
+      withHash(links.templates({ spid, q: query, all: showAll }), location.hash),
+    );
   });
 
   const client = defaultClient();
@@ -103,8 +109,11 @@
     {#if source}
       {@const list = templateList(source, { spid, showAll })}
       {@const spName = spid ? providerName(source.rows, spid) : null}
-      <section class="panel">
-        <h2>{spid ? `Templates of ${spName}` : 'Templates'}</h2>
+      <Panel
+        id="templates"
+        title={spid ? `Templates of ${spName}` : 'Templates'}
+        context="Templates"
+      >
         {#if spid}
           <p class="filter" data-testid="spid-filter">
             Templates of service provider <a href={links.serviceProvider(spid)}>{spName}</a> ·
@@ -145,7 +154,7 @@
             >).
           </li>
         </ul>
-      </section>
+      </Panel>
     {:else}
       <LoadError error={new Error('The release has no templates table')} />
     {/if}

@@ -1,4 +1,5 @@
 <script lang="ts">
+  import Panel from '../lib/components/Panel.svelte';
   import BeforeScansBadge from '../lib/components/BeforeScansBadge.svelte';
   import CardTitle from '../lib/components/CardTitle.svelte';
   import DataTable from '../lib/components/DataTable.svelte';
@@ -145,6 +146,7 @@
       {@const reg = stack ? registryOf(stack) : Promise.resolve(null)}
 
       <CardTitle
+        kind="DNS provider"
         name={providerName}
         logo={reg.then(
           (r) => (r?.logoUrl ? { url: r.logoUrl, alt: r.entry.name } : null),
@@ -205,8 +207,7 @@
       {/await}
 
       {#if shareHistory}
-        <section class="panel">
-          <h2>Domain share over time</h2>
+        <Panel id="domain-share-history" title="Domain share over time" context={providerName}>
           {#if shareHistory.rows.length}
             {#await adoptionFor(shareHistory.rows) then adoption}
               <TimeChart
@@ -227,12 +228,11 @@
           {:else}
             <p class="no-data">Not measured yet</p>
           {/if}
-        </section>
+        </Panel>
       {/if}
 
       {#if supportHistory}
-        <section class="panel">
-          <h2>Supported templates over time</h2>
+        <Panel id="support-history" title="Supported templates over time" context={providerName}>
           {#if supportHistory.rows.length}
             <TimeChart
               label="Supported templates over time"
@@ -251,12 +251,11 @@
           {:else}
             <p class="no-data">Not measured yet</p>
           {/if}
-        </section>
+        </Panel>
       {/if}
 
       {#if templates}
-        <section class="panel">
-          <h2>{templates.title}</h2>
+        <Panel id="templates" title={templates.title} context={providerName}>
           <DataTable
             table={templates}
             keys={['service_provider_name', 'service_name', 'versions', 'since']}
@@ -267,7 +266,7 @@
             cell={templateCell}
             emptyText="No template supported in the latest probes"
           />
-        </section>
+        </Panel>
       {/if}
 
       {#await reg then r}
@@ -315,10 +314,9 @@
       {/if}
 
       {#if urls}
-        <section class="panel">
-          <h2>{urls.title}</h2>
+        <Panel id="urls" title={urls.title} context={providerName}>
           <DataTable table={urls} emptyText="No Domain Connect URL is attributed to it" />
-        </section>
+        </Panel>
       {/if}
     {/if}
   {:catch error}

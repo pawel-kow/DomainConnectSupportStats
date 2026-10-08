@@ -1,4 +1,5 @@
 <script lang="ts">
+  import Panel from '../lib/components/Panel.svelte';
   import CardTitle from '../lib/components/CardTitle.svelte';
   import DataTable from '../lib/components/DataTable.svelte';
   import Layout from '../lib/components/Layout.svelte';
@@ -96,6 +97,7 @@
       {@const total = supporters?.footer}
 
       <CardTitle
+        kind="Template"
         name={templateName}
         logo={Promise.resolve(logoUrl ? { url: logoUrl, alt: templateName } : null)}
       >
@@ -144,8 +146,11 @@
       </section>
 
       {#if history}
-        <section class="panel">
-          <h2>Supporting DNS providers over time</h2>
+        <Panel
+          id="support-history"
+          title="Supporting DNS providers over time"
+          context={templateName}
+        >
           {#if history.rows.length}
             <TimeChart
               beforeScans={scannerStart()}
@@ -175,12 +180,15 @@
           {:else}
             <p class="no-data">Not measured yet</p>
           {/if}
-        </section>
+        </Panel>
       {/if}
 
       {#if supporters}
-        <section class="panel">
-          <h2>{tableTitle(supporters.title, serviceProviderId, serviceId)}</h2>
+        <Panel
+          id="supporters"
+          title={tableTitle(supporters.title, serviceProviderId, serviceId)}
+          context={templateName}
+        >
           <DataTable
             table={supporters}
             keys={['name', 'provider_id', 'versions', 'domains', 'reach_pct']}
@@ -191,13 +199,12 @@
             cell={supporterCell}
             emptyText="No DNS provider supports it in the latest probes"
           />
-        </section>
+        </Panel>
       {/if}
 
       {#if records}
         {@const shown = recordsTable(records)}
-        <section class="panel">
-          <h2>Records</h2>
+        <Panel id="records" title="Records" context={templateName}>
           <DataTable
             table={shown}
             customKeys={[RECORD_DETAILS_KEY, ...OWN_COLUMN_KEYS]}
@@ -219,7 +226,7 @@
               {/if}
             {/snippet}
           </DataTable>
-        </section>
+        </Panel>
       {/if}
 
       {#if file.notes.length}
