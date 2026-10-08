@@ -135,6 +135,7 @@
       {@const deploymentCount = num(record, 'deployments')}
 
       <CardTitle
+        kind="Stack"
         name={text(record, 'name') ?? stackId}
         logo={reg.then(
           (r) => (r?.logoUrl ? { url: r.logoUrl, alt: r.entry.name } : null),

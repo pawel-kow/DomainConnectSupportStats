@@ -94,6 +94,7 @@
       {@const total = supporters?.footer}
 
       <CardTitle
+        kind="Template"
         name={templateName}
         logo={Promise.resolve(logoUrl ? { url: logoUrl, alt: templateName } : null)}
       >

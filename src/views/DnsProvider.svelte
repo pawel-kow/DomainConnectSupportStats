@@ -143,6 +143,7 @@
       {@const reg = stack ? registryOf(stack) : Promise.resolve(null)}
 
       <CardTitle
+        kind="DNS provider"
         name={providerName}
         logo={reg.then(
           (r) => (r?.logoUrl ? { url: r.logoUrl, alt: r.entry.name } : null),

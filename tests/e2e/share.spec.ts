@@ -49,6 +49,22 @@ test.describe('Share panels', () => {
     });
   }
 
+  for (const url of PANELS.map(([u]) => u).filter((u) => u.includes('?'))) {
+    test(`${url} has a share button for the whole card in its title`, async ({
+      page,
+      context,
+      baseURL,
+    }) => {
+      await context.grantPermissions(['clipboard-read', 'clipboard-write']);
+      await page.goto(`${url}#no-such-panel`);
+      const title = page.getByTestId('card-title');
+      await title.getByRole('button', { name: /^Share: / }).click();
+      await title.getByRole('menuitem', { name: 'Copy link' }).click();
+      await expect(title.getByRole('status')).toHaveText('Link copied');
+      expect(await page.evaluate(() => navigator.clipboard.readText())).toBe(`${baseURL}${url}`);
+    });
+  }
+
   test('every page has link-preview tags with an absolute image', async ({ page }) => {
     for (const url of [...PANELS.map(([u]) => u), 'methodology.html']) {
       await page.goto(url);

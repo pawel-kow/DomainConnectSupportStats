@@ -239,6 +239,9 @@ times are not shown.
   only; remembered in the browser); one menu row. LinkedIn opens its feed composer with the post
   text and link (`/feed/?shareActive=true&text=`). "Link copied" shows for 2 s (`aria-live`). Targets
   open in a new tab with `rel="noopener noreferrer"`, only on the viewer's click.
+- F-2.17 Every card has the same share button in its title block (top right), for the whole
+  card: the page URL with its query, no anchor; post text `<name> – <page kind> – Domain Connect
+support statistics`.
 - F-2.16 Every page has static `og:title`, `og:description`, `og:image` (the brand square) and
   `twitter:card` `summary`; no `og:url`. The image URL is made absolute in the browser
   (from `shareBaseUrl` when configured).

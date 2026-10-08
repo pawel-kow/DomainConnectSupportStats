@@ -91,7 +91,7 @@
       {@const series = seriesOf(file)}
       {@const drawable = series.filter((s) => s.points.length)}
 
-      <CardTitle name={text(record, 'name') ?? serviceProviderId}>
+      <CardTitle kind="Service provider" name={text(record, 'name') ?? serviceProviderId}>
         <span class="mono">{serviceProviderId}</span>
         ·
         <a href={links.templates({ spid: serviceProviderId })} data-testid="templates-link"

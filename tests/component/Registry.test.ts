@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { render, screen, within } from '@testing-library/svelte';
+import { fireEvent, render, screen, within } from '@testing-library/svelte';
 import { createRawSnippet } from 'svelte';
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
@@ -24,6 +24,7 @@ describe('CardTitle', () => {
   it('shows the name, the small line and the logo once loaded', async () => {
     render(CardTitle, {
       name: 'Cloudflare',
+      kind: 'DNS provider',
       logo: Promise.resolve({ url: './registry/c/l/cloudflare.com.svg', alt: 'Cloudflare' }),
       children,
     });
@@ -36,8 +37,21 @@ describe('CardTitle', () => {
   });
 
   it('shows no image without a logo', () => {
-    render(CardTitle, { name: 'Quiet Host', children });
+    render(CardTitle, { name: 'Quiet Host', kind: 'DNS provider', children });
     expect(screen.queryByRole('img')).toBeNull();
+  });
+
+  it('has a share button for the whole card: the page link without an anchor', async () => {
+    history.replaceState(null, '', '/stack.html?id=godaddy.com#coverage');
+    render(CardTitle, { name: 'GoDaddy', kind: 'Stack', children });
+    await fireEvent.click(screen.getByRole('button', { name: 'Share: GoDaddy' }));
+    const bluesky = new URL(
+      screen.getByRole('menuitem', { name: 'Bluesky' }).getAttribute('href')!,
+    );
+    expect(bluesky.searchParams.get('text')).toBe(
+      'GoDaddy – Stack – Domain Connect support statistics ' +
+        'http://localhost:3000/stack.html?id=godaddy.com',
+    );
   });
 });
 

@@ -19,11 +19,11 @@
     title: string;
     /** The entity name on cards, the page name on lists. */
     context?: string | null;
-    /** The panel's anchor id. */
-    anchor: string;
+    /** The panel's anchor id; none for the whole page (a card). */
+    anchor?: string | null;
   }
 
-  let { title, context = null, anchor }: Props = $props();
+  let { title, context = null, anchor = null }: Props = $props();
 
   const STATUS_MS = 2000;
   const id = $props.id();

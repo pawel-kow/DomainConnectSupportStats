@@ -35,6 +35,21 @@ describe('sharedUrl', () => {
   });
 });
 
+describe('sharedUrl without an anchor (the whole card)', () => {
+  it('keeps the page and its query and drops the current anchor', () => {
+    expect(sharedUrl('https://stats.example/stack.html?id=godaddy.com#coverage', null)).toBe(
+      'https://stats.example/stack.html?id=godaddy.com',
+    );
+    expect(
+      sharedUrl(
+        'http://localhost/stack.html?id=godaddy.com#coverage',
+        null,
+        'https://stats.example/',
+      ),
+    ).toBe('https://stats.example/stack.html?id=godaddy.com');
+  });
+});
+
 describe('sharedUrl with a share base URL', () => {
   const BASE = 'https://stats.example/site/';
 

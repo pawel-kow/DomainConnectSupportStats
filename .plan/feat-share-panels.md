@@ -97,6 +97,9 @@ Big story: one PR, steps with a pause for `/clear` after each (mutex and branch 
   an edit button (secondary menuitem, ArrowRight/ArrowLeft); LinkedIn `share-offsite` opened an
   empty post: now `/feed/?shareActive=true&text=`.
 
+- Maintainer request: a share button in every card's title (`CardTitle` `kind`, `ShareMenu`
+  without `anchor`, `sharedUrl(location, null)`), F-2.17.
+
 ## Open questions
 
 - Real-release check: no data repo checked out next to this one and no access to `DATA_REPO`;

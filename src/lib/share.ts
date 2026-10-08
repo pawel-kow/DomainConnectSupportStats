@@ -9,16 +9,21 @@ const INSTANCE_KEY = 'dc-stats.mastodon-instance';
 export const DEFAULT_INSTANCE = 'mastodon.social';
 
 /**
- * The absolute URL of the current page (with its query) pointing at panel `anchor`. With
+ * The absolute URL of the current page (with its query) pointing at panel `anchor`; without
+ * one, at the page itself (a card). With
  * `shareBase` (configured `shareBaseUrl`), the page and its query go under that URL instead: the
  * pages sit side by side at the site root.
  */
-export function sharedUrl(location: string, anchor: string, shareBase?: string | null): string {
+export function sharedUrl(
+  location: string,
+  anchor: string | null,
+  shareBase?: string | null,
+): string {
   const page = new URL(location);
   const url = shareBase
     ? new URL(page.pathname.split('/').at(-1)! + page.search, withSlash(shareBase))
     : page;
-  url.hash = anchor;
+  url.hash = anchor ?? '';
   return url.href;
 }
 
