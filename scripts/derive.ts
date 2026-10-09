@@ -190,7 +190,7 @@ export function deriveEcosystem(dir: string): Ecosystem {
     const history = (file(path).tables.support_history?.rows ?? []) as unknown as HistoryRow[];
     sweeps.forEach((_, i) => {
       const end = sweeps[i + 1]?.started_at;
-      const last = history.findLast((h) => end === undefined || h.started_at < end);
+      const last = history.filter((h) => end === undefined || h.started_at < end).at(-1);
       weighted[i]! += ((last?.supported_templates ?? 0) * share) / 100;
     });
   }

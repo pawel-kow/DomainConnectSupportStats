@@ -5,11 +5,18 @@
   import Notes from '../lib/components/Notes.svelte';
   import StatCard from '../lib/components/StatCard.svelte';
   import { scannerStart } from '../lib/data/config';
-  import TimeChart, { type Series } from '../lib/components/TimeChart.svelte';
+  import TimeChart, { SERIES_COLORS, type Series } from '../lib/components/TimeChart.svelte';
   import { defaultClient } from '../lib/data/load';
   import { findTable } from '../lib/data/tables';
   import type { ExportFile, Manifest, Row } from '../lib/data/types';
-  import { formatAxisPct, formatCount, formatDate, formatPct, UNKNOWN } from '../lib/format';
+  import {
+    formatAxisPct,
+    formatCount,
+    formatDate,
+    formatExact,
+    formatPct,
+    UNKNOWN,
+  } from '../lib/format';
   import { links } from '../lib/links';
   import { ofScanned, scanLabel } from '../lib/domains';
   import { importSeries, latestWith, sweepSeries } from '../lib/series';
@@ -39,6 +46,7 @@
   lists.catch(() => undefined);
   // An anchored link scrolls once the boards' height is final.
   let boardsReady = $state(false);
+  let reachReady = $state(false);
   void Promise.allSettled([lists, derived]).then(() => (boardsReady = true));
 
   const IMPROVED_SIZE = 5;
@@ -60,36 +68,71 @@
     return typeof n === 'number' ? n : null;
   }
 
-  function chartSeries(adoption: Row[], ecosystem: Row[]): Series[] {
+  const derivedEcosystem = client.ecosystem();
+  void derivedEcosystem.then(
+    () => (reachReady = true),
+    () => (reachReady = true),
+  );
+  // Preview only: both ecosystem growth variants until the maintainer picks one.
+  const growth = new URLSearchParams(location.search).get('growth') ?? 'pairs';
+
+  function adoptionSeries(adoption: Row[]): Series[] {
     return [
       {
-        label: 'DC adoption (% of scanned domains)',
+        label: 'DC adoption',
         points: importSeries(adoption, 'dc_pct', adoption),
         tooltip: (p) =>
           `DC adoption: ${formatPct(p.y)} (${ofScanned(num(p.row, 'dc_domains'), num(p.row, 'scanned_domains'), scanLabel(p.row)) ?? UNKNOWN})`,
       },
+    ];
+  }
+
+  function providersSeries(ecosystem: Row[]): Series[] {
+    return [
       {
         label: 'Supporting DNS providers',
         points: sweepSeries(ecosystem, 'supporting_dns_providers'),
-        axis: 'right',
         stepped: true,
+        color: SERIES_COLORS[1],
         tooltip: (p) =>
-          `Supporting DNS providers: ${p.y} of ${formatCount(num(p.row, 'known_dns_providers'))} known`,
+          `Supporting DNS providers: ${formatExact(p.y)} of ${formatExact(num(p.row, 'known_dns_providers'))} known`,
       },
-      {
-        label: 'Supporting stacks',
-        points: sweepSeries(ecosystem, 'supporting_stacks'),
-        axis: 'right',
-        stepped: true,
-        dashed: true,
-      },
+    ];
+  }
+
+  function templatesSeries(ecosystem: Row[]): Series[] {
+    return [
       {
         label: 'Supported templates',
         points: sweepSeries(ecosystem, 'supported_templates'),
-        axis: 'right',
         stepped: true,
+        color: SERIES_COLORS[2],
         tooltip: (p) =>
-          `Supported templates: ${p.y} of ${formatCount(num(p.row, 'published_templates'))} published`,
+          `Supported templates: ${formatExact(p.y)} of ${formatExact(num(p.row, 'published_templates'))} published`,
+      },
+    ];
+  }
+
+  function pairsSeries(ecosystem: Row[]): Series[] {
+    return [
+      {
+        label: 'Supported pairs',
+        points: sweepSeries(ecosystem, 'supported_combinations'),
+        stepped: true,
+        color: SERIES_COLORS[3],
+        tooltip: (p) => `Supported pairs: ${formatExact(p.y)}`,
+      },
+    ];
+  }
+
+  function reachSeries(rows: Row[]): Series[] {
+    return [
+      {
+        label: 'Templates per scanned domain',
+        points: sweepSeries(rows, 'templates_per_domain'),
+        stepped: true,
+        color: SERIES_COLORS[3],
+        tooltip: (p) => `Templates per scanned domain: ${p.y.toFixed(1)}`,
       },
     ];
   }
@@ -147,25 +190,97 @@
       />
     </section>
 
-    <Panel id="support-history" title="Domain Connect support over time" context="Overview">
-      {#if adoptionRows.length || ecosystemRows.length}
-        <TimeChart
-          beforeScans={scannerStart()}
-          label="Domain Connect adoption per import and support per full sweep over time"
-          series={chartSeries(adoptionRows, ecosystemRows)}
-          leftTitle="% of scanned domains"
-          rightTitle="Count"
-          formatLeft={formatAxisPct}
-          formatRight={(v) => formatCount(v)}
-        />
-        <p class="muted chart-note">
-          Adoption is measured per zone scan (import), support per full support sweep: two clocks on
-          one date axis. Missing points are not measured, not zero.
-        </p>
-      {:else}
-        <p class="no-data">No data available</p>
-      {/if}
-    </Panel>
+    <div class="charts">
+      <Panel id="support-history" title="DC adoption" context="Overview">
+        {#if adoptionRows.length}
+          <TimeChart
+            label="Domain Connect adoption per import over time"
+            series={adoptionSeries(adoptionRows)}
+            legend={false}
+            leftTitle="% of scanned domains"
+            formatLeft={formatAxisPct}
+          />
+          <p class="muted chart-note">Per zone scan (import).</p>
+        {:else}
+          <p class="no-data">No data available</p>
+        {/if}
+      </Panel>
+
+      <Panel id="supporting-dns-providers" title="Supporting DNS providers" context="Overview">
+        {#if ecosystemRows.length}
+          <TimeChart
+            beforeScans={scannerStart()}
+            label="DNS providers supporting at least one template per full sweep over time"
+            series={providersSeries(ecosystemRows)}
+            legend={false}
+            leftTitle="DNS providers"
+            formatLeft={(v) => formatCount(v)}
+          />
+          <p class="muted chart-note">With at least 1 template, per full support sweep.</p>
+        {:else}
+          <p class="no-data">No data available</p>
+        {/if}
+      </Panel>
+
+      <Panel id="supported-templates" title="Supported templates" context="Overview">
+        {#if ecosystemRows.length}
+          <TimeChart
+            beforeScans={scannerStart()}
+            label="Templates supported by at least one DNS provider per full sweep over time"
+            series={templatesSeries(ecosystemRows)}
+            legend={false}
+            leftTitle="Templates"
+            formatLeft={(v) => formatCount(v)}
+          />
+          <p class="muted chart-note">By at least 1 DNS provider, per full support sweep.</p>
+        {:else}
+          <p class="no-data">No data available</p>
+        {/if}
+      </Panel>
+
+      <Panel
+        id="ecosystem-growth"
+        title="Ecosystem growth"
+        context="Overview"
+        ready={growth === 'pairs' || reachReady}
+      >
+        {#if growth === 'pairs'}
+          {#if ecosystemRows.length}
+            <TimeChart
+              beforeScans={scannerStart()}
+              label="Supported DNS provider and template pairs per full sweep over time"
+              series={pairsSeries(ecosystemRows)}
+              legend={false}
+              leftTitle="Supported pairs"
+              formatLeft={(v) => formatCount(v)}
+            />
+            <p class="muted chart-note">
+              Supported (DNS provider, template) pairs, per full support sweep.
+            </p>
+          {:else}
+            <p class="no-data">No data available</p>
+          {/if}
+        {:else}
+          {#await derivedEcosystem}
+            <p class="no-data">Loading…</p>
+          {:then reach}
+            <TimeChart
+              beforeScans={scannerStart()}
+              label="Supported templates per scanned domain, weighted by DNS provider reach, per full sweep over time"
+              series={reachSeries(reach.ecosystem as unknown as Row[])}
+              legend={false}
+              leftTitle="Templates per domain"
+            />
+            <p class="muted chart-note">
+              Supported pairs weighted by DNS provider reach: the templates the average scanned
+              domain can use, per full support sweep. Weights from the domain-share import.
+            </p>
+          {:catch}
+            <Unavailable />
+          {/await}
+        {/if}
+      </Panel>
+    </div>
 
     <div class="boards">
       <Panel
@@ -248,6 +363,7 @@
 </Layout>
 
 <style>
+  .charts,
   .boards {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -255,6 +371,7 @@
   }
 
   @media (max-width: 900px) {
+    .charts,
     .boards {
       grid-template-columns: minmax(0, 1fr);
     }

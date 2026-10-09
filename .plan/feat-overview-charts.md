@@ -5,8 +5,8 @@ Break the overview's "Domain Connect support over time" chart into four charts, 
 ## Tasks
 
 - [x] Derive reach-weighted pairs per full sweep (`derived/ecosystem.json`), tests
-- [~] Overview: 4 panels (DC adoption; supporting DNS providers; supported templates; ecosystem growth), both growth variants for preview
-- [ ] Screenshots of both variants on real data; maintainer picks one
+- [x] Overview: 4 panels (DC adoption; supporting DNS providers; supported templates; ecosystem growth), both growth variants for preview
+- [~] Screenshots of both variants on real data; maintainer picks one
 - [ ] Remove the variant not chosen (and its derived file if unused)
 - [ ] Scanner issue for the chosen series
 - [ ] Tests (component, e2e), docs (CLAUDE.md, REQUIREMENTS.md), CHANGELOG, minor bump
@@ -31,4 +31,5 @@ Break the overview's "Domain Connect support over time" chart into four charts, 
 
 ## Open questions
 
-- Which ecosystem growth variant.
+- Which ecosystem growth variant (preview: `?growth=pairs|weighted`, temporary; screenshots in the chat).
+- Real-data preview: `node scripts/derive-data.ts <data> <out>`, then `DATA_DIR=<data> DERIVED_DIR=<out> npx vite`.
