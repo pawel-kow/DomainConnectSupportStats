@@ -1,4 +1,4 @@
-import { expect, test } from './fixtures';
+import { expect, test, expectLoadError } from './fixtures';
 
 function names(page: import('@playwright/test').Page) {
   return page.locator('tbody tr td:first-child a');
@@ -177,7 +177,7 @@ test.describe('DNS providers list (dns-providers.html)', () => {
     test('shows an error state when the list is unavailable', async ({ page }) => {
       await page.route('**/data/dns-providers.json', (route) => route.fulfill({ status: 500 }));
       await page.goto('dns-providers.html');
-      await expect(page.getByTestId('load-error')).toBeVisible();
+      await expectLoadError(page);
     });
   });
 

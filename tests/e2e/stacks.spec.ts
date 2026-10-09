@@ -1,4 +1,4 @@
-import { expect, test } from './fixtures';
+import { expect, test, expectLoadError } from './fixtures';
 
 function names(page: import('@playwright/test').Page) {
   return page.locator('tbody tr td:first-child a');
@@ -74,7 +74,7 @@ test.describe('Stacks list (stacks.html)', () => {
     test('shows an error state when the list is unavailable', async ({ page }) => {
       await page.route('**/data/stacks.json', (route) => route.fulfill({ status: 500 }));
       await page.goto('stacks.html');
-      await expect(page.getByTestId('load-error')).toBeVisible();
+      await expectLoadError(page);
     });
   });
 

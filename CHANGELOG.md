@@ -10,6 +10,11 @@ fixes, styling and dependencies.
 
 - Methodology: when a sweep counts as completed.
 
+### Fixed
+
+- A page whose data does not load shows a plain message instead of file URLs, release times and
+  HTTP status codes. When the data was just updated, it asks for a reload.
+
 ## [0.15.0] - 2026-10-08
 
 ### Changed
