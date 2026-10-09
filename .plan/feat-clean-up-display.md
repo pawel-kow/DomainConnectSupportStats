@@ -81,6 +81,12 @@ Steps (big story: pause after each for a context reset; keep mutex and branch).
   registry), no horizontal overflow at Pixel 7. Real release has `sample_percent` null → hover
   says "scan of 05-09-2026". Screenshots await acceptance.
 
+- Round 2 (maintainer review): DNS provider support in templates (F-2.21), stacks distribution
+  derived (`derived/stacks.json`), DNS provider card sorted by since desc. "Median" checked: the
+  export's `median_supported_pct` equals the true median for all 25 real stacks (plesk.com: median
+  0.0, mean 0.73); Cloudflare has 2 deployments, so median = mean. Kept median. `since` across
+  versions: Scanner issue pawel-kow/DomainConnectScanner#250 (not derivable).
+
 ## Corrections
 
 ## Open questions
