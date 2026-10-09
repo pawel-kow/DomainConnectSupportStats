@@ -103,3 +103,21 @@ export function templateShares(
     max_templates_pct: shares.at(-1)!,
   };
 }
+
+export const ECOSYSTEM_FILE = 'ecosystem.json';
+
+/** One full sweep of `overview.json` `ecosystem`, with support weighted by domain share. */
+export interface EcosystemReach extends Sweep {
+  /**
+   * Σ over DNS providers of supported templates × domain share (`domains_pct` / 100) in the sweep's
+   * window: the supported templates of the average scanned domain. `null` without a domain-share
+   * import.
+   */
+  templates_per_domain: number | null;
+}
+
+/** `ecosystem.json`: one row per row of `overview.json` `ecosystem`, in its order. */
+export interface Ecosystem {
+  generated_at: string;
+  ecosystem: EcosystemReach[];
+}

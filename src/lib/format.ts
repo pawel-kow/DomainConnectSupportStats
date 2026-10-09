@@ -33,6 +33,15 @@ export function formatCount(value: number | null | undefined): string {
   return `${Number(scaled.toFixed(1))}${UNITS[unit]}`;
 }
 
+/** A decimal number rounded to `digits` decimals, with thousands separators. */
+export function formatDecimal(value: number | null | undefined, digits = 1): string {
+  if (value === null || value === undefined) return UNKNOWN;
+  return value.toLocaleString('en-US', {
+    minimumFractionDigits: digits,
+    maximumFractionDigits: digits,
+  });
+}
+
 /**
  * A 0–100 percentage, rounded for display only: `digits` decimals, and below 1% two significant
  * digits so small shares stay distinguishable; below 0.0001% `<0.0001%`.

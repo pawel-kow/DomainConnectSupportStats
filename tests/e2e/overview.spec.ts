@@ -11,12 +11,41 @@ test.describe('overview (index.html)', () => {
     await expect(headline).toContainText('7,210 of 12K scanned domains');
     await expect(headline).toContainText(/6\s*Discovered DNS providers\s*with DC TXT record/);
     await expect(headline).toContainText(/4\s*Supporting DNS providers\s*with at least 1 template/);
+    await expect(headline).toContainText(
+      /1\.5\s*Templates per domain\s*weighted by reach, sweep of 02-09-2026/,
+    );
+    await expect(headline).not.toContainText('Supported pairs');
   });
 
-  test('draws the support-over-time chart', async ({ page }) => {
-    const chart = page.getByRole('img', { name: /adoption per import and support per full sweep/ });
-    await expect(chart).toBeVisible();
-    await expect(chart.locator('canvas')).toBeVisible();
+  test('draws four charts, the first-scan shadow on all but adoption', async ({ page }) => {
+    const charts: [string, string][] = [
+      ['support-history', 'DC adoption'],
+      ['supporting-dns-providers', 'Supporting DNS providers'],
+      ['supported-templates', 'Supported templates'],
+      ['ecosystem-growth', 'Ecosystem growth'],
+    ];
+    for (const [id, title] of charts) {
+      const panel = page.locator(`#${id}`);
+      await expect(panel.getByRole('heading', { name: title, exact: true })).toBeVisible();
+      await expect(panel.locator('canvas')).toBeVisible();
+      await expect(panel.getByTestId('before-scans')).toHaveCount(id === 'support-history' ? 0 : 1);
+    }
+  });
+
+  test('lays the charts out 2×2 on desktop, one column on a phone', async ({ page, isMobile }) => {
+    await expect(page.locator('#ecosystem-growth canvas')).toBeVisible();
+    const [adoption, providers, templates] = await Promise.all(
+      ['support-history', 'supporting-dns-providers', 'supported-templates'].map((id) =>
+        page.locator(`#${id}`).boundingBox(),
+      ),
+    );
+    if (isMobile) {
+      expect(providers!.y).toBeGreaterThan(adoption!.y);
+    } else {
+      expect(providers!.y).toBe(adoption!.y);
+      expect(templates!.x).toBe(adoption!.x);
+      expect(templates!.y).toBeGreaterThan(adoption!.y);
+    }
   });
 
   test('shows no internal id', async ({ page }) => {
@@ -24,9 +53,8 @@ test.describe('overview (index.html)', () => {
   });
 
   test('shows the chart without data tables', async ({ page }) => {
-    const chart = page.getByRole('img', { name: /adoption per import/ });
-    await expect(chart).toBeVisible();
-    await expect(page.locator('section', { has: chart }).locator('table')).toHaveCount(0);
+    await expect(page.locator('#ecosystem-growth canvas')).toBeVisible();
+    await expect(page.locator('.charts table')).toHaveCount(0);
   });
 
   test('shows the most improved DNS providers, top 5, and links to the leaderboards', async ({
@@ -101,6 +129,17 @@ test('shows "not available" in a panel whose data failed, without details', asyn
   );
   await expect(page.locator('main')).not.toContainText('leaderboards.json');
   await expect(page.getByTestId('overview-improved').locator('tbody tr')).toHaveCount(1);
+});
+
+test('shows "not available" for ecosystem growth when its derived data failed', async ({
+  page,
+}) => {
+  await page.route('**/data/derived/ecosystem.json', (route) =>
+    route.fulfill({ json: { generated_at: '2027-01-01T00:00:00Z', ecosystem: [] } }),
+  );
+  await page.goto('index.html');
+  await expect(page.locator('#ecosystem-growth').getByTestId('unavailable')).toBeVisible();
+  await expect(page.locator('#supported-templates canvas')).toBeVisible();
 });
 
 test.describe('data unavailable', () => {

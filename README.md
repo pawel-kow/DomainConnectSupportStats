@@ -14,13 +14,13 @@ statistics dashboard at [stats.domainconnect.org](https://stats.domainconnect.or
 
 ## Pages
 
-| Page                                                | Shows                                                                       |
-| --------------------------------------------------- | --------------------------------------------------------------------------- |
-| Overview (`index.html`)                             | Domain Connect support over time, latest headline numbers                   |
-| DNS provider card (`dns-provider.html?id=`)         | Support, domain share over time, supported templates, registry entry        |
-| DNS providers, Stacks, Service providers, Templates | Full lists with sort, filter and search _(in progress)_                     |
-| Stack, Service provider, Template cards             | One entity's support, domain share, history and cross-links _(in progress)_ |
-| Methodology (`methodology.html`)                    | How the figures come about, this release's zones and sampling, limits       |
+| Page                                                | Shows                                                                                                           |
+| --------------------------------------------------- | --------------------------------------------------------------------------------------------------------------- |
+| Overview (`index.html`)                             | DC adoption, supporting DNS providers, supported templates, ecosystem growth over time; latest headline numbers |
+| DNS provider card (`dns-provider.html?id=`)         | Support, domain share over time, supported templates, registry entry                                            |
+| DNS providers, Stacks, Service providers, Templates | Full lists with sort, filter and search _(in progress)_                                                         |
+| Stack, Service provider, Template cards             | One entity's support, domain share, history and cross-links _(in progress)_                                     |
+| Methodology (`methodology.html`)                    | How the figures come about, this release's zones and sampling, limits                                           |
 
 Every view is a shareable link; query parameters carry only ids and filters.
 

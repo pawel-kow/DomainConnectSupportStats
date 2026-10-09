@@ -4,6 +4,20 @@ Changes per site version. Versions follow [SemVer](https://semver.org/): major f
 parameter removed or changed incompatibly, minor for new pages, features or content, patch for
 fixes, styling and dependencies.
 
+## [0.17.0] - 2026-10-09
+
+### Changed
+
+- Overview: "Domain Connect support over time" is four charts, 2×2 on desktop: DC adoption,
+  supporting DNS providers, supported templates and ecosystem growth, each with its own link.
+  The supporting stacks line is gone.
+- Overview: "Templates per domain" (weighted by reach) replaces supported pairs in the headline.
+
+### Added
+
+- Ecosystem growth: supported pairs weighted by DNS provider reach, the templates the average
+  scanned domain can use, per full sweep (derived data `derived/ecosystem.json`).
+
 ## [0.16.0] - 2026-10-09
 
 ### Changed

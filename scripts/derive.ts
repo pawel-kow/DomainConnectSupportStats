@@ -7,6 +7,7 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import {
   templateShares,
+  type Ecosystem,
   type FirstSupport,
   type Leaderboards,
   type StacksSupport,
@@ -17,7 +18,12 @@ import {
 } from '../src/lib/data/derived.ts';
 import { cardPath, type DataFile, type FileKind, type Manifest } from './export-release.ts';
 
-export { LEADERBOARDS_FILE, STACKS_FILE, TEMPLATES_FILE } from '../src/lib/data/derived.ts';
+export {
+  ECOSYSTEM_FILE,
+  LEADERBOARDS_FILE,
+  STACKS_FILE,
+  TEMPLATES_FILE,
+} from '../src/lib/data/derived.ts';
 
 interface HistoryRow extends Sweep {
   supported_templates: number | null;
@@ -31,7 +37,7 @@ type Row = Record<string, unknown>;
 /** A release directory: its manifest, and files that must carry the manifest's `generated_at`. */
 function release(dir: string) {
   const read = <T>(rel: string): T => JSON.parse(readFileSync(join(dir, rel), 'utf8')) as T;
-  const manifest = read<Manifest>('manifest.json');
+  const manifest = read<Manifest & { share_import?: unknown }>('manifest.json');
   const file = (rel: string): DataFile => {
     const data = read<DataFile>(rel);
     if (data.generated_at !== manifest.generated_at)
@@ -162,6 +168,38 @@ export function deriveStacks(dir: string): StacksSupport {
     stacks: list('stacks', 'stacks').map((stack) => ({
       provider_id: stack.provider_id as string,
       ...templateShares(byStack.get(stack.provider_id) ?? [], templates),
+    })),
+  };
+}
+
+/**
+ * Derive each full sweep's supported templates weighted by domain share. A DNS provider's
+ * templates in a sweep's window are those of its latest `support_history` row started before the
+ * next full sweep (for the last one, its latest row), so smaller runs count towards the preceding
+ * full sweep as in `overview.json` `ecosystem`. Throws on a file of another release.
+ */
+export function deriveEcosystem(dir: string): Ecosystem {
+  const { manifest, file, cards, list } = release(dir);
+  const sweeps = list('overview', 'ecosystem') as unknown as Sweep[];
+  const { card, rows } = cards('dns_provider');
+  const weighted = manifest.share_import ? sweeps.map(() => 0) : null;
+  for (const row of rows) {
+    const share = row.domains_pct;
+    const path = cardPath(card, row);
+    if (!weighted || typeof share !== 'number' || Array.isArray(path)) continue;
+    const history = (file(path).tables.support_history?.rows ?? []) as unknown as HistoryRow[];
+    sweeps.forEach((_, i) => {
+      const end = sweeps[i + 1]?.started_at;
+      const last = history.filter((h) => end === undefined || h.started_at < end).at(-1);
+      weighted[i]! += ((last?.supported_templates ?? 0) * share) / 100;
+    });
+  }
+  return {
+    generated_at: manifest.generated_at,
+    ecosystem: sweeps.map((s, i) => ({
+      sweep_id: s.sweep_id,
+      started_at: s.started_at,
+      templates_per_domain: weighted?.[i] ?? null,
     })),
   };
 }
