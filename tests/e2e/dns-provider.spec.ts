@@ -16,7 +16,10 @@ test.describe('DNS provider card (dns-provider.html)', () => {
     );
     const headline = page.getByTestId('headline');
     await expect(headline).toContainText('of 6 template versions (66.7%)');
-    await expect(headline).toContainText('33.3% of 12K scanned domains');
+    await expect(headline).not.toContainText('4,000');
+    await expect(
+      headline.getByTitle('4,000 of 12K scanned domains in the partial scan of 01-06-2026'),
+    ).toHaveText('33.3%');
     await expect(headline).toContainText('#1');
     await expect(page.getByTestId('provider-record')).toContainText('ns2.example.net');
   });

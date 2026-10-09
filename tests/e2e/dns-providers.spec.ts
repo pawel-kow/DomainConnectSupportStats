@@ -16,7 +16,10 @@ test.describe('DNS providers list (dns-providers.html)', () => {
     await expect(cloudflare).not.toContainText('4 of 6');
     await expect(cloudflare.getByTitle('of 6 template versions')).toHaveText('4');
     await expect(cloudflare).toContainText(/1\s*16.7%/);
-    await expect(cloudflare).toContainText(/4,000\s*33.3%/);
+    await expect(cloudflare).not.toContainText('4,000');
+    await expect(
+      cloudflare.getByTitle('4,000 of 12K scanned domains in the partial scan of 01-06-2026'),
+    ).toHaveText('33.3%');
     await expect(page.getByTestId('caveats')).toContainText('total of 1');
     await expect(page.getByTestId('caveats')).toContainText('last attempt');
   });

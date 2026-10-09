@@ -9,8 +9,8 @@ test.describe('overview (index.html)', () => {
     const headline = page.getByTestId('headline');
     await expect(headline).toContainText('60.1%');
     await expect(headline).toContainText('7,210 of 12K scanned domains');
-    await expect(headline).toContainText('Supporting DNS providers');
-    await expect(headline).toContainText('of 6');
+    await expect(headline).toContainText(/6\s*Discovered DNS providers\s*with DC TXT record/);
+    await expect(headline).toContainText(/4\s*Supporting DNS providers\s*with at least 1 template/);
   });
 
   test('draws the support-over-time chart', async ({ page }) => {
@@ -20,7 +20,6 @@ test.describe('overview (index.html)', () => {
   });
 
   test('shows no internal id', async ({ page }) => {
-    await expect(page.getByTestId('headline')).toContainText('scan of 01-06-2026');
     await expect(page.locator('main')).not.toContainText('1780272000');
   });
 

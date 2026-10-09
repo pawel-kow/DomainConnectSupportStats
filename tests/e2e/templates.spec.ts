@@ -38,10 +38,14 @@ test.describe('Templates list (templates.html)', () => {
     ]);
     const website = page.locator('tbody tr', { hasText: 'Example Website' });
     await expect(website).toContainText('template1');
-    await expect(website).toContainText(/5 of 10\s*50.0%/);
-    await expect(website).toContainText(/6,900\s*57.5%/);
+    await expect(website).toContainText(/3\s*75.0%/);
+    await expect(website).not.toContainText('of 10');
+    await expect(website).not.toContainText('6,900');
+    await expect(
+      website.getByTitle('6,900 of 12K scanned domains in the partial scan of 01-06-2026'),
+    ).toHaveText('57.5%');
     await expect(page.getByText('Show all (0 hidden')).toBeVisible();
-    await expect(page.getByTestId('caveats')).toContainText('latest probe');
+    await expect(page.getByTestId('caveats')).toContainText('supporting at least one template (4)');
   });
 
   test('links the service provider first', async ({ page }) => {
@@ -58,8 +62,8 @@ test.describe('Templates list (templates.html)', () => {
     test.skip(testInfo.project.name === 'mobile', 'columns hidden at phone width');
     await page.goto('templates.html');
     const verify = page.locator('tbody tr', { hasText: 'Domain Verification' });
-    await expect(verify).toContainText('2026');
-    await expect(verify).toContainText(/1\s*25.0%/);
+    await expect(verify.getByTitle('25-03-2026', { exact: false })).toHaveText('25-03-2026');
+    await expect(verify).toContainText(/2\s*50.0%\s*2\s*50.0%/);
   });
 
   test('links the template to its card', async ({ page }) => {

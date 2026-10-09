@@ -13,7 +13,10 @@ test.describe('Stacks list (stacks.html)', () => {
     const plesk = page.locator('tbody tr', { hasText: 'Plesk' });
     await expect(plesk.locator('td').first()).toContainText('plesk.com');
     await expect(plesk).toContainText('0.0% – 33.3%');
-    await expect(plesk).toContainText(/1,150\s*9.6%/);
+    await expect(plesk).not.toContainText('1,150');
+    await expect(
+      plesk.getByTitle('1,150 of 12K scanned domains in the partial scan of 01-06-2026'),
+    ).toHaveText('9.6%');
     await expect(plesk.getByTestId('range-bar')).toBeVisible();
     await expect(page.getByTestId('caveats')).toContainText('without a stack are not listed');
   });

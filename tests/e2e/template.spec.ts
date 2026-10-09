@@ -22,8 +22,13 @@ test.describe('Template card (template.html)', () => {
     await expect(page).toHaveTitle(/^Example Website - Template/);
     await expect(page.getByTestId('service-provider-link')).toHaveText('Example Service');
     const headline = page.getByTestId('headline');
-    await expect(headline).toContainText(/3\s*Supporting DNS providers/);
-    await expect(headline).toContainText('57.5% of 12K scanned domains');
+    await expect(headline).toContainText(
+      /3\s*Supporting DNS providers\s*75.0% of 4 with at least 1 template/,
+    );
+    await expect(headline).not.toContainText('6,900');
+    await expect(
+      headline.getByTitle('6,900 of 12K scanned domains in the partial scan of 01-06-2026'),
+    ).toHaveText('57.5%');
     await expect(headline).toContainText('stored versions: 2, 1');
     const about = page.getByTestId('template-record');
     await expect(about).toContainText('Now with a www CNAME.');
@@ -43,7 +48,10 @@ test.describe('Template card (template.html)', () => {
     const supporters = section(page, 'Supporting DNS providers (current state)');
     await expect(supporters.locator('tbody tr')).toHaveCount(3);
     await expect(supporters.locator('tfoot')).toContainText('TOTAL');
-    await expect(supporters.locator('tfoot')).toContainText('6,900');
+    await expect(supporters.locator('tfoot')).toContainText('57.5%');
+    await expect(supporters.locator('thead')).toContainText(/supported since/i);
+    const ionos = supporters.locator('tbody tr', { hasText: 'IONOS' });
+    await expect(ionos.getByText('First scan')).toHaveAttribute('title', /02-06-2026/);
     // The stack column is hidden at phone width.
     await expect(supporters.locator('a[href="./stack.html?id=ionos.com"]')).toHaveCount(1);
     await supporters.getByRole('link', { name: 'Cloudflare', exact: true }).click();
@@ -178,7 +186,7 @@ test.describe('Template card (template.html)', () => {
     if (testInfo.project.name === 'mobile') {
       await expect(
         section(page, 'Supporting DNS providers (current state)').locator('thead th:visible'),
-      ).toHaveText([/NAME/, /DOMAINS/, /REACH/]);
+      ).toHaveText([/NAME/, /SUPPORTED SINCE/, /REACH/]);
     }
     for (const wrapper of await page.locator('.table-wrapper').all()) {
       expect(await wrapper.evaluate((w) => w.scrollWidth - w.clientWidth)).toBeLessThanOrEqual(0);

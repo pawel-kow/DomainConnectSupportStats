@@ -33,9 +33,11 @@ test.describe('Leaderboards (leaderboards.html)', () => {
     );
     await expect(plesk.locator('td').first()).toHaveText('3');
     await expect(names(page, 'board-domains')).toHaveText(['Cloudflare', 'IONOS', 'Plesk']);
-    await expect(page.getByTestId('board-domains').locator('tbody tr').nth(2)).toContainText(
-      /Plesk.*900/s,
-    );
+    const pleskShare = page.getByTestId('board-domains').locator('tbody tr').nth(2);
+    await expect(pleskShare).toContainText(/Plesk.*7.5%/s);
+    await expect(
+      pleskShare.getByTitle('900 of 12K scanned domains in the partial scan of 01-06-2026'),
+    ).toHaveText('7.5%');
   });
 
   test('ranks each deployment of a stack on its own', async ({ page }) => {
