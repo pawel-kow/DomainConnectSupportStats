@@ -248,6 +248,15 @@ including the daily run of recent templates while the template is covered by it;
 ecosystem-wide series count full sweeps only, a smaller run counting towards the preceding
 full sweep.
 
+Each run is published with its start and completion time. A run is complete once none of
+its probes is outstanding: each has been answered, or given up on after its retries
+(Section 6). A run that starts while an earlier one is still in progress takes over the
+earlier run's outstanding probes within its own scope - the daily run of recent templates
+takes over those templates' probes from a full sweep in progress - and the earlier run
+completes when none of its remaining probes is outstanding. A run still in progress has no
+completion time, and neither do runs from before completion times were recorded. The
+support figures after a run in progress are its state so far.
+
 ### 5.4 Number of supported templates and its change
 
 The number of templates a DNS provider supports counts each template once, irrespective of
