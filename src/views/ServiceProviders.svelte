@@ -7,8 +7,11 @@
   import { defaultClient } from '../lib/data/load';
   import { findTable } from '../lib/data/tables';
   import type { Column, Manifest, Row } from '../lib/data/types';
-  import { formatCount, formatPct, UNKNOWN } from '../lib/format';
+  import { formatCount, UNKNOWN } from '../lib/format';
   import { links } from '../lib/links';
+  import DomainShare from '../lib/components/DomainShare.svelte';
+  import type { Scan } from '../lib/domains';
+  import { overviewFacts } from '../lib/overview-facts';
   import { withHash } from '../lib/share';
   import { textParam } from '../lib/params';
 
@@ -25,8 +28,11 @@
 
   const client = defaultClient();
   let manifest = $state<Manifest | null>(null);
+  /** The domain-share import, for the hover text of domain shares. */
+  let scan = $state<Scan | null>(null);
   const loading = client.manifest().then((m) => {
     manifest = m;
+    void overviewFacts(client, m).then((f) => (scan = f.scan));
     return client.file('service_providers');
   });
 
@@ -65,9 +71,7 @@
         n,
       )}{/if}
   {:else if column.key === 'reach_domains'}
-    {@const n = num(row, 'reach_domains')}
-    <span class="count">{formatCount(n)}</span>
-    {#if n !== null}<div class="muted">{formatPct(num(row, 'reach_pct'))}</div>{/if}
+    <DomainShare pct={num(row, 'reach_pct')} domains={num(row, 'reach_domains')} {scan} />
   {/if}
 {/snippet}
 
@@ -98,8 +102,9 @@
           </li>
           <li>DNS providers: those supporting at least one of its templates, each counted once.</li>
           <li>
-            Reach: scanned domains behind those DNS providers, each counted once, as a share of the
-            scanned domains (<a href={links.methodology('11-terms')}>methodology 1.1</a>).
+            Reach: share of the scanned domains behind those DNS providers, each counted once (<a
+              href={links.methodology('11-terms')}>methodology 1.1</a
+            >).
           </li>
         </ul>
       </Panel>
@@ -112,10 +117,6 @@
 </Layout>
 
 <style>
-  .count {
-    white-space: nowrap;
-  }
-
   /* Names fall back to their id; ids are hosts without spaces. */
   .name,
   .id {

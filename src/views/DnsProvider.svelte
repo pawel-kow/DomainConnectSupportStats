@@ -24,16 +24,21 @@
   import { links } from '../lib/links';
   import { integerParam } from '../lib/params';
   import { defaultRegistryClient, entryFileUrl } from '../lib/registry/load';
-  import { importSeries, needsAdoption, sweepSeries } from '../lib/series';
+  import { importSeries, sweepSeries } from '../lib/series';
+  import { domainsTitle, importScanLabel, ofScanned, type Scan } from '../lib/domains';
+  import { overviewFacts } from '../lib/overview-facts';
 
   const id = integerParam(window.location.search, 'id');
   const client = defaultClient();
   let manifest = $state<Manifest | null>(null);
+  /** The domain-share import, for the hover text of domain shares. */
+  let scan = $state<Scan | null>(null);
 
   /** The card, or null when the id is missing, malformed or has no card (404). */
   const loading: Promise<ExportFile | null> = client.manifest().then((m) => {
     manifest = m;
     if (id === null) return null;
+    void overviewFacts(client, m).then((f) => (scan = f.scan));
     return client.file('dns_provider', { dns_provider_id: id }).then(
       (file) => {
         const name = text(oneRecord(findTable(file, 'provider')), 'name');
@@ -49,9 +54,8 @@
   /** The newest sweep the card reflects, for the data annotation. */
   const sweep = loading.then((f) => (f ? cardSweep('dns_provider', f) : null));
 
-  /** The overview's `adoption` rows, fetched only when an import lacks `completed_at`. */
-  function adoptionFor(shareHistory: Row[]): Promise<Row[]> {
-    if (!needsAdoption(shareHistory)) return Promise.resolve([]);
+  /** The overview's `adoption` rows: each import's date and sampling. */
+  function adoptionFor(): Promise<Row[]> {
     return client
       .file('overview')
       .then((f) => findTable(f, 'adoption')?.rows ?? [])
@@ -185,12 +189,10 @@
           detail="never probed, retried or failed"
         />
         <StatCard
-          value={formatCount(num(share, 'domains'))}
-          exact={num(share, 'domains')}
-          label="Domains"
-          detail={share
-            ? `${formatPct(num(share, 'share_pct'))} of ${formatCount(num(share, 'scanned_domains'))} scanned domains`
-            : 'no domain-share import'}
+          value={formatPct(num(share, 'share_pct'))}
+          title={domainsTitle(num(share, 'domains'), scan)}
+          label="Domain share"
+          detail={share ? 'of scanned domains' : 'no domain-share import'}
         />
         <StatCard
           value={num(share, 'rank') === null ? UNKNOWN : `#${num(share, 'rank')}`}
@@ -210,7 +212,7 @@
       {#if shareHistory}
         <Panel id="domain-share-history" title="Domain share over time" context={providerName}>
           {#if shareHistory.rows.length}
-            {#await adoptionFor(shareHistory.rows) then adoption}
+            {#await adoptionFor() then adoption}
               <TimeChart
                 label="Domain share over time"
                 series={[
@@ -218,8 +220,7 @@
                     label: 'Share of scanned domains',
                     points: importSeries(shareHistory.rows, 'share_pct', adoption),
                     tooltip: (p) =>
-                      `Share: ${formatPct(p.y, 2)} (${formatCount(num(p.row, 'domains'))} of ` +
-                      `${formatCount(num(p.row, 'scanned_domains'))} scanned domains)`,
+                      `Share: ${formatPct(p.y, 2)} (${ofScanned(num(p.row, 'domains'), num(p.row, 'scanned_domains'), importScanLabel(adoption, p.row?.import_id ?? null)) ?? UNKNOWN})`,
                   },
                 ]}
                 leftTitle="% of scanned domains"

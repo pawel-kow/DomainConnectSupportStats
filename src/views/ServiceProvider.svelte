@@ -18,6 +18,7 @@
   import { links } from '../lib/links';
   import { textParam } from '../lib/params';
   import { domainsTitle } from '../lib/domains';
+  import DomainShare from '../lib/components/DomainShare.svelte';
   import { NO_FACTS, overviewFacts, type OverviewFacts } from '../lib/overview-facts';
   import { ofSupporting } from '../lib/supporting';
   import { defaultShown, templateSeries, type TemplateSeries } from '../lib/service-providers';
@@ -85,9 +86,11 @@
         {formatPct(ofSupporting(n, facts.supportingDnsProviders))}
       </div>{/if}
   {:else if column.key === 'reach_pct'}
-    <span title={domainsTitle(num(row, 'reach_domains'), facts.scan)}
-      >{formatPct(num(row, 'reach_pct'))}</span
-    >
+    <DomainShare
+      pct={num(row, 'reach_pct')}
+      domains={num(row, 'reach_domains')}
+      scan={facts.scan}
+    />
   {/if}
 {/snippet}
 

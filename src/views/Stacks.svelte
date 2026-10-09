@@ -7,14 +7,20 @@
   import { defaultClient } from '../lib/data/load';
   import { findTable } from '../lib/data/tables';
   import type { Column, Manifest, Row } from '../lib/data/types';
-  import { formatCount, formatPct, UNKNOWN } from '../lib/format';
+  import { formatCount, UNKNOWN } from '../lib/format';
   import { links } from '../lib/links';
+  import DomainShare from '../lib/components/DomainShare.svelte';
+  import type { Scan } from '../lib/domains';
+  import { overviewFacts } from '../lib/overview-facts';
   import { supportLabel, supportRange } from '../lib/stacks';
 
   const client = defaultClient();
   let manifest = $state<Manifest | null>(null);
+  /** The domain-share import, for the hover text of domain shares. */
+  let scan = $state<Scan | null>(null);
   const loading = client.manifest().then((m) => {
     manifest = m;
+    void overviewFacts(client, m).then((f) => (scan = f.scan));
     return client.file('stacks');
   });
 
@@ -54,9 +60,7 @@
       </div>
     {/if}
   {:else if column.key === 'domains'}
-    {@const n = num(row, 'domains')}
-    <span class="count">{formatCount(n)}</span>
-    {#if n !== null}<div class="muted">{formatPct(num(row, 'domains_pct'))}</div>{/if}
+    <DomainShare pct={num(row, 'domains_pct')} domains={num(row, 'domains')} {scan} />
   {/if}
 {/snippet}
 
@@ -98,8 +102,9 @@
             >).
           </li>
           <li>
-            Domains: scanned domains behind the stack's DNS providers, as a share of the scanned
-            domains (<a href={links.methodology('43-attribution-of-domains')}>methodology 4.3</a>).
+            Domains: share of the scanned domains behind the stack's DNS providers (<a
+              href={links.methodology('43-attribution-of-domains')}>methodology 4.3</a
+            >).
           </li>
         </ul>
       </Panel>

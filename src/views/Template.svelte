@@ -30,6 +30,7 @@
   } from '../lib/templates';
   import type { TemplateSupporters } from '../lib/data/derived';
   import { domainsTitle } from '../lib/domains';
+  import DomainShare from '../lib/components/DomainShare.svelte';
   import { NO_FACTS, overviewFacts, type OverviewFacts } from '../lib/overview-facts';
   import { ofSupporting } from '../lib/supporting';
 
@@ -90,9 +91,7 @@
     {@const s = text(row, 'provider_id')}
     {#if s}<a href={links.stack(s)}>{s}</a>{:else}{UNKNOWN}{/if}
   {:else if column.key === 'reach_pct'}
-    <span title={domainsTitle(num(row, 'domains'), facts.scan)}
-      >{formatPct(num(row, 'reach_pct'))}</span
-    >
+    <DomainShare pct={num(row, 'reach_pct')} domains={num(row, 'domains')} scan={facts.scan} />
   {/if}
 {/snippet}
 

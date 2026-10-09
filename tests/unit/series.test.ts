@@ -1,11 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import {
-  importSeries,
-  importTimeMs,
-  latestWith,
-  needsAdoption,
-  sweepSeries,
-} from '../../src/lib/series';
+import { importSeries, importTimeMs, latestWith, sweepSeries } from '../../src/lib/series';
 
 const ms = (iso: string) => Date.parse(iso);
 
@@ -58,18 +52,5 @@ describe('series', () => {
     ];
     expect(latestWith(rows, 'dc_pct')?.import_id).toBe(1);
     expect(latestWith([], 'dc_pct')).toBeUndefined();
-  });
-});
-
-describe('needsAdoption', () => {
-  it('is true when an import row has no completed_at', () => {
-    expect(needsAdoption([{ completed_at: '2026-03-01 06:00:00' }, { completed_at: null }])).toBe(
-      true,
-    );
-  });
-
-  it('is false when every row has completed_at, or there are no rows', () => {
-    expect(needsAdoption([{ completed_at: '2026-03-01 06:00:00' }])).toBe(false);
-    expect(needsAdoption([])).toBe(false);
   });
 });

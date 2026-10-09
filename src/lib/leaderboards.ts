@@ -1,6 +1,7 @@
 import type { Leaderboards } from './data/derived';
 import type { Row } from './data/types';
-import { formatCount, formatExact, parseTimestamp } from './format';
+import { domainsTitle, type Scan } from './domains';
+import { formatCount, formatExact, formatPct, parseTimestamp } from './format';
 import { links } from './links';
 
 /**
@@ -200,18 +201,26 @@ export interface BoardRow {
   title?: string;
 }
 
-/** Display rows of a DNS provider board. */
+/**
+ * Display rows of a DNS provider board: a count, a signed change, or domains as their share of the
+ * scanned domains (the count and `scan` in the hover text).
+ */
 export function entrantRows(
   ranked: Ranked<Entrant>[],
-  value: 'count' | 'change' = 'count',
+  value: 'count' | 'change' | 'share' = 'count',
+  scan: Scan | null = null,
 ): BoardRow[] {
   return ranked.map(({ rank, value: v, entry }) => ({
     rank,
     name: entry.name,
     href: entry.href,
     detail: entry.detail,
-    value: value === 'change' ? `+${formatExact(v)}` : formatCount(v),
-    title: formatExact(v),
+    ...(value === 'share'
+      ? { value: formatPct(num(entry.row, 'domains_pct')), title: domainsTitle(v, scan) }
+      : {
+          value: value === 'change' ? `+${formatExact(v)}` : formatCount(v),
+          title: formatExact(v),
+        }),
   }));
 }
 

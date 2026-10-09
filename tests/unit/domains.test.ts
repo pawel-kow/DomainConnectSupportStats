@@ -1,5 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import { domainsTitle, ofScanned, scanLabel, shareScan } from '../../src/lib/domains';
+import {
+  domainsTitle,
+  importScanLabel,
+  ofScanned,
+  scanLabel,
+  shareScan,
+} from '../../src/lib/domains';
 import type { Manifest } from '../../src/lib/data/types';
 import { exampleJson, exampleManifest } from '../fixtures';
 
@@ -71,5 +77,18 @@ describe('domainsTitle', () => {
   it('is undefined without domains or without a domain-share import', () => {
     expect(domainsTitle(null, { scannedDomains: 12000, label: 'scan' })).toBeUndefined();
     expect(domainsTitle(7210, null)).toBeUndefined();
+  });
+});
+
+describe('importScanLabel', () => {
+  const adoption = exampleJson('overview.json').tables.adoption!.rows;
+
+  it("names an import's scan from the overview's adoption", () => {
+    expect(importScanLabel(adoption, 1780272000)).toBe('partial scan of 01-06-2026');
+  });
+
+  it('is an undated scan for an import the overview lacks', () => {
+    expect(importScanLabel(adoption, 1)).toBe('scan');
+    expect(importScanLabel(adoption, null)).toBe('scan');
   });
 });

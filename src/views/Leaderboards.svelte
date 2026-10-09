@@ -10,7 +10,7 @@
   import { defaultClient } from '../lib/data/load';
   import { findTable } from '../lib/data/tables';
   import type { ExportFile, Manifest, Row } from '../lib/data/types';
-  import { formatCount, formatDate, formatExact } from '../lib/format';
+  import { formatDate, formatPct } from '../lib/format';
   import {
     BOARD_SIZE,
     entrantRows,
@@ -29,6 +29,8 @@
     type Ranked,
   } from '../lib/leaderboards';
   import { links } from '../lib/links';
+  import { domainsTitle, type Scan } from '../lib/domains';
+  import { overviewFacts } from '../lib/overview-facts';
   import { withHash } from '../lib/share';
 
   const client = defaultClient();
@@ -43,8 +45,11 @@
     );
   });
   let manifest = $state<Manifest | null>(null);
+  /** The domain-share import, for the hover text of domain shares. */
+  let scan = $state<Scan | null>(null);
   const loading = client.manifest().then(async (m) => {
     manifest = m;
+    void overviewFacts(client, m).then((f) => (scan = f.scan));
     const [dnsProviders, templates, serviceProviders] = await Promise.all([
       client.file('dns_providers'),
       client.file('templates'),
@@ -82,8 +87,8 @@
         href:
           kind === 'template' ? links.template(spid ?? '', sid) : links.serviceProvider(spid ?? ''),
         detail: kind === 'template' ? text(entry, 'provider_name') : null,
-        value: formatCount(value),
-        title: formatExact(value),
+        value: formatPct(typeof entry.reach_pct === 'number' ? entry.reach_pct : null),
+        title: domainsTitle(value, scan),
       };
     });
   }
@@ -149,14 +154,14 @@
         testid="board-domains"
       >
         <p class="muted about">
-          Scanned domains of each DNS provider supporting at least one template. Every deployment of
-          a stack ranks on its own.
+          Share of the scanned domains of each DNS provider supporting at least one template. Every
+          deployment of a stack ranks on its own.
         </p>
         <Board
           caption="DNS providers by domains reached"
           nameHeader="DNS provider"
-          valueHeader="Domains"
-          rows={entrantRows(topByDomains(providers))}
+          valueHeader="Share"
+          rows={entrantRows(topByDomains(providers), 'share', scan)}
           emptyText="No domains measured for supporting DNS providers"
         />
       </Panel>
@@ -216,11 +221,13 @@
         ready={boardsReady}
         testid="board-template-reach"
       >
-        <p class="muted about">Scanned domains behind the DNS providers supporting the template.</p>
+        <p class="muted about">
+          Share of the scanned domains behind the DNS providers supporting the template.
+        </p>
         <Board
           caption="Templates by domains reached"
           nameHeader="Template"
-          valueHeader="Domains"
+          valueHeader="Reach"
           rows={reachRows(
             topReach(rowsOf(files.templates, 'service_templates'), templateName),
             'template',
@@ -237,13 +244,13 @@
         testid="board-service-provider-reach"
       >
         <p class="muted about">
-          Scanned domains behind the DNS providers supporting at least one of its templates, each
-          counted once.
+          Share of the scanned domains behind the DNS providers supporting at least one of its
+          templates, each counted once.
         </p>
         <Board
           caption="Service providers by domains reached"
           nameHeader="Service provider"
-          valueHeader="Domains"
+          valueHeader="Reach"
           rows={reachRows(
             topReach(rowsOf(files.serviceProviders, 'service_providers'), serviceProviderName),
             'service_provider',

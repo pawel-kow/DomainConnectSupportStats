@@ -24,6 +24,11 @@ export function scanLabel(row: ScanRow | undefined): string {
   return typeof at === 'string' ? `${kind} of ${formatDate(at)}` : kind;
 }
 
+/** An import's scan named from the overview's `adoption` rows; "scan" when it is not there. */
+export function importScanLabel(adoption: Row[], importId: unknown): string {
+  return scanLabel(importId === null ? undefined : adoption.find((r) => r.import_id === importId));
+}
+
 /** The domain-share import as a scan; null without one. Dated from the overview's `adoption`. */
 export function shareScan(manifest: Manifest, overview: ExportFile | null): Scan | null {
   const share = manifest.share_import;

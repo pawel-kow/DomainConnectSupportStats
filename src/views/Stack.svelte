@@ -18,16 +18,22 @@
   import { links } from '../lib/links';
   import { textParam } from '../lib/params';
   import { defaultRegistryClient, entryFileUrl } from '../lib/registry/load';
-  import { importSeries, needsAdoption } from '../lib/series';
+  import { importSeries } from '../lib/series';
+  import DomainShare from '../lib/components/DomainShare.svelte';
+  import { domainsTitle, importScanLabel, ofScanned, type Scan } from '../lib/domains';
+  import { overviewFacts } from '../lib/overview-facts';
 
   const id = textParam(window.location.search, 'id');
   const client = defaultClient();
   let manifest = $state<Manifest | null>(null);
+  /** The domain-share import, for the hover text of domain shares. */
+  let scan = $state<Scan | null>(null);
 
   /** The card, or null when the parameter is missing or the stack has no card (404). */
   const loading: Promise<ExportFile | null> = client.manifest().then((m) => {
     manifest = m;
     if (id === null) return null;
+    void overviewFacts(client, m).then((f) => (scan = f.scan));
     return client.file('stack', { provider_id: id }).then(
       (file) => {
         const name = text(oneRecord(findTable(file, 'stack')), 'name');
@@ -41,9 +47,8 @@
     );
   });
 
-  /** The overview's `adoption` rows, fetched only when an import lacks `completed_at`. */
-  function adoptionFor(shareHistory: Row[]): Promise<Row[]> {
-    if (!needsAdoption(shareHistory)) return Promise.resolve([]);
+  /** The overview's `adoption` rows: each import's date and sampling. */
+  function adoptionFor(): Promise<Row[]> {
     return client
       .file('overview')
       .then((f) => findTable(f, 'adoption')?.rows ?? [])
@@ -95,9 +100,7 @@
     >
     {#if n !== null}<div class="muted">{formatPct(num(row, 'supported_pct'))}</div>{/if}
   {:else if column.key === 'domains'}
-    {@const n = num(row, 'domains')}
-    <span class="count">{formatCount(n)}</span>
-    {#if n !== null}<div class="muted">{formatPct(num(row, 'domains_pct'))}</div>{/if}
+    <DomainShare pct={num(row, 'domains_pct')} domains={num(row, 'domains')} {scan} />
   {/if}
 {/snippet}
 
@@ -112,10 +115,7 @@
     <span class="count">{formatCount(num(row, 'supporting_deployments'))}</span>
     <div class="muted">{formatPct(num(row, 'supporting_pct'))}</div>
   {:else if column.key === 'reach_domains'}
-    <span class="count">{formatCount(num(row, 'reach_domains'))}</span>
-    {#if num(row, 'reach_domains') !== null}<div class="muted">
-        {formatPct(num(row, 'reach_pct'))}
-      </div>{/if}
+    <DomainShare pct={num(row, 'reach_pct')} domains={num(row, 'reach_domains')} {scan} />
   {/if}
 {/snippet}
 
@@ -166,12 +166,12 @@
           detail={`${formatPct(num(record, 'min_supported_pct'))} to ${formatPct(num(record, 'max_supported_pct'))} across deployments`}
         />
         <StatCard
-          value={formatCount(num(record, 'domains'))}
-          exact={num(record, 'domains')}
-          label="Domains"
-          detail={num(record, 'domains') === null
+          value={formatPct(num(record, 'domains_pct'))}
+          title={domainsTitle(num(record, 'domains'), scan)}
+          label="Domain share"
+          detail={num(record, 'domains_pct') === null
             ? 'no domain-share import'
-            : `${formatPct(num(record, 'domains_pct'))} of ${formatCount(manifest?.share_import?.scanned_domains ?? null)} scanned domains`}
+            : 'of scanned domains'}
         />
       </section>
 
@@ -193,7 +193,7 @@
                 href={links.methodology('42-deployments-providers-and-stacks')}>methodology 4.2</a
               >).
             </p>
-            {#await adoptionFor(shareHistory.rows) then adoption}
+            {#await adoptionFor() then adoption}
               <TimeChart
                 label="Domain share over time"
                 series={[
@@ -201,8 +201,7 @@
                     label: 'Share of scanned domains',
                     points: importSeries(shareHistory.rows, 'share_pct', adoption),
                     tooltip: (p) =>
-                      `Share: ${formatPct(p.y, 2)} (${formatCount(num(p.row, 'domains'))} of ` +
-                      `${formatCount(num(p.row, 'scanned_domains'))} scanned domains)`,
+                      `Share: ${formatPct(p.y, 2)} (${ofScanned(num(p.row, 'domains'), num(p.row, 'scanned_domains'), importScanLabel(adoption, p.row?.import_id ?? null)) ?? UNKNOWN})`,
                   },
                 ]}
                 leftTitle="% of scanned domains"

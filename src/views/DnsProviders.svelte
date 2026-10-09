@@ -11,6 +11,9 @@
   import { dnsProviderList, UNDETERMINED_KEY } from '../lib/dns-providers';
   import { formatCount, formatExact, formatPct, UNKNOWN } from '../lib/format';
   import { links } from '../lib/links';
+  import DomainShare from '../lib/components/DomainShare.svelte';
+  import type { Scan } from '../lib/domains';
+  import { overviewFacts } from '../lib/overview-facts';
   import { withHash } from '../lib/share';
   import { flagParam, textParam } from '../lib/params';
 
@@ -30,8 +33,11 @@
 
   const client = defaultClient();
   let manifest = $state<Manifest | null>(null);
+  /** The domain-share import, for the hover text of domain shares. */
+  let scan = $state<Scan | null>(null);
   const loading = client.manifest().then((m) => {
     manifest = m;
+    void overviewFacts(client, m).then((f) => (scan = f.scan));
     return client.file('dns_providers');
   });
 
@@ -91,11 +97,10 @@
       num(row, 'supported_pct'),
       n === null ? undefined : `of ${formatExact(num(row, 'total'))} template versions`,
     )}
-  {:else if column.key === 'unsupported_count' || column.key === 'domains'}
-    {@render countPct(
-      formatCount(num(row, column.key)),
-      num(row, column.key === 'domains' ? 'domains_pct' : 'unsupported_pct'),
-    )}
+  {:else if column.key === 'unsupported_count'}
+    {@render countPct(formatCount(num(row, column.key)), num(row, 'unsupported_pct'))}
+  {:else if column.key === 'domains'}
+    <DomainShare pct={num(row, 'domains_pct')} domains={num(row, 'domains')} {scan} />
   {/if}
 {/snippet}
 
@@ -150,8 +155,8 @@
             supported or not supported.
           </li>
           <li>
-            Domains: scanned domains whose Domain Connect record is attributed to the DNS provider,
-            as a share of the scanned domains. Domains of unidentified providers are not counted (<a
+            Domains: share of the scanned domains whose Domain Connect record is attributed to the
+            DNS provider. Domains of unidentified providers are not counted (<a
               href={links.methodology('43-attribution-of-domains')}>methodology 4.3</a
             >).
           </li>

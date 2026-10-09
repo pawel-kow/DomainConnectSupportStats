@@ -12,7 +12,8 @@
   import { withHash } from '../lib/share';
   import { flagParam, textParam } from '../lib/params';
   import { isNeverProbed, templateList, withSupport } from '../lib/templates-list';
-  import { domainsTitle, type Scan } from '../lib/domains';
+  import type { Scan } from '../lib/domains';
+  import DomainShare from '../lib/components/DomainShare.svelte';
   import { overviewFacts } from '../lib/overview-facts';
 
   const search = window.location.search;
@@ -102,9 +103,7 @@
   {:else if column.key === 'supporting_dns_providers' || column.key === 'not_supporting_dns_providers'}
     {@render countPct(formatCount(num(row, column.key)), num(row, `${column.key}_pct`))}
   {:else if column.key === 'reach_domains'}
-    <span class="count" title={domainsTitle(num(row, 'reach_domains'), scan)}
-      >{formatPct(num(row, 'reach_pct'))}</span
-    >
+    <DomainShare pct={num(row, 'reach_pct')} domains={num(row, 'reach_domains')} {scan} />
   {/if}
 {/snippet}
 
