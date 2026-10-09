@@ -123,5 +123,7 @@ test.describe('data unavailable', () => {
     await page.goto('index.html');
     await expectLoadError(page, 'The data was just updated');
     await expect(page.getByTestId('load-error')).toContainText('Reload the page.');
+    // The annotation's own request may still be in the handler when the test ends.
+    await page.unrouteAll({ behavior: 'ignoreErrors' });
   });
 });
