@@ -4,6 +4,25 @@ Changes per site version. Versions follow [SemVer](https://semver.org/): major f
 parameter removed or changed incompatibly, minor for new pages, features or content, patch for
 fixes, styling and dependencies.
 
+## [0.16.0] - 2026-10-09
+
+### Changed
+
+- Domain figures (domains, reach) show as a share of the scanned domains only; the hover text
+  gives the counts and the scan, e.g. "80M of 190.6M scanned domains in the partial scan of
+  05-09-2026". The overview's DC adoption keeps its counts.
+- Dates in tables and cards show the day; the hover text shows the full time in UTC.
+- Overview: "Discovered DNS providers" (every DNS provider of the list, with a DC TXT record)
+  replaces DNS providers with domains; supporting DNS providers read "with at least 1 template".
+- Templates list: supported and not supported count DNS providers, as a share of the DNS
+  providers supporting at least one template, instead of template version pairs.
+- Template card and service provider card templates: supporting DNS providers also as a share of
+  the DNS providers supporting at least one template.
+
+### Added
+
+- Template card: "Supported since" per supporting DNS provider.
+
 ## [0.15.1] - 2026-10-08
 
 ### Fixed

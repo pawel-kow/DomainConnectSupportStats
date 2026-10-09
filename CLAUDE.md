@@ -42,6 +42,9 @@ Details: [DEVELOPING.md](DEVELOPING.md) §1.
   - **ignore unknown** files, tables, columns and keys; never depend on key order;
   - `null` is "unknown", **never zero**: show `–`, draw a gap, sort it last;
   - percentages arrive unrounded; round for display only;
+  - domain figures show as % of the scanned domains only, counts and scan on hover
+    (`DomainShare`, `domains.ts`); dates show the day, the full UTC time on hover (`Timestamp`,
+    `cellTitle`);
   - text values come from third parties: never render them as HTML (`{@html}` is a lint error);
   - show `notes` verbatim; show `generated_at`, the domain-share import and the support sweep on
     every page (`Layout` annotation, `annotation.ts`);
@@ -59,7 +62,7 @@ src/views/*.svelte         one view per page (Overview, DnsProvider, Placeholder
 src/lib/components/        shared UI: Layout (header/nav/footer), DataTable, TimeChart, StatCard,
                            NotFound, LoadError, Notes, CardTitle, Panel, ShareMenu,
                            RegistryContact, Registry, ContactList, ExternalLink, StatusBadge,
-                           Board, NewSupporters, Unavailable
+                           Board, NewSupporters, Unavailable, DomainShare, Timestamp
 src/lib/data/              the contract in code: types, id encoding, manifest paths, loader
                            (ExportClient), table lookup, data and registry base URL config,
                            derived data types
@@ -101,9 +104,11 @@ F-4; the overview also shows new supporting DNS providers and the most improved 
 `window.DC_STATS_CONFIG.dataBaseUrl` in `config.js` (`src/lib/data/config.ts`). `vite dev` and
 `vite preview` serve `/data/` from `DATA_DIR` (default: the contract's example export).
 
-**Derived data.** `scripts/derive.ts` collects what the export spreads over its cards
-(first support per DNS provider) into `<data>/derived/leaderboards.json`; the deploy runs it after
-bundling the release. The site rejects it when its `generated_at` differs from the manifest's.
+**Derived data.** `scripts/derive.ts` collects what the export spreads over its cards into
+`<data>/derived/`: `leaderboards.json` (first support per DNS provider), `templates.json`
+(supporting DNS providers per template) and one file per template at its card's path (`since` per
+supporter); the deploy runs it after bundling the release. The site rejects a derived file when its
+`generated_at` differs from the manifest's.
 `vite dev`/`preview` serve `DERIVED_DIR` (default `.derived/`, written by `npm run derive`) as
 `/data/derived/`.
 
@@ -185,21 +190,24 @@ Pushing `.github/workflows/` changes needs a token with the `workflow` scope.
 
 - `src/lib/data/encode.ts`: id ↔ path-segment encoding
 - `src/lib/data/manifest.ts`: `SUPPORTED_FORMAT_VERSION`, `filePath()` from manifest path templates
-- `src/lib/data/load.ts`: `ExportClient` (manifest once, files by kind + raw ids, `leaderboards()` derived data, `NotFoundError`, `ReleaseMismatchError`)
+- `src/lib/data/load.ts`: `ExportClient` (manifest once, files by kind + raw ids, derived data `leaderboards()`, `templatesSupport()`, `templateSupporters()`, `NotFoundError`, `ReleaseMismatchError`)
 - `src/lib/data/config.ts`: data and registry base URL precedence (runtime → build time → `./data/`, `./registry/`); `shareBaseUrl` (shared links, else the browser's URL)
 - `src/lib/data/tables.ts`: `findTable()` by id (template-card suffix), `oneRecord()`
 - `src/lib/data/types.ts`: types of the export (only what the site reads)
-- `src/lib/data/derived.ts`: types of the derived data (`leaderboards.json`), shared with `scripts/derive.ts`
+- `src/lib/data/derived.ts`: types of the derived data (`leaderboards.json`, `templates.json`, per-template supporters), shared with `scripts/derive.ts`
 - `src/lib/registry/path.ts`: `registryPath()` (`<a>/<b>` folder), `entryPath()`
 - `src/lib/registry/entry.ts`: `parseEntry()` (registry entry, unknown values as `null`), `parseSource()`, `FEATURES`
 - `src/lib/registry/load.ts`: `RegistryClient` (entry, logo URL, `registry.json` once), `entryFileUrl()`
 - `src/lib/dns-providers.ts`: DNS providers list (stack filter, rows hidden by default, undetermined count, status badges)
-- `src/lib/templates-list.ts`: templates list (service provider filter, never-probed rows hidden by default)
+- `src/lib/templates-list.ts`: templates list (service provider filter, never-probed rows hidden by default, `withSupport()` derived support columns)
+- `src/lib/domains.ts`: domain figures' hover text (`scanLabel`, `shareScan`, `domainsTitle`, `ofScanned`)
+- `src/lib/supporting.ts`: DNS providers supporting at least one template (overview `ecosystem`), shares of them
+- `src/lib/overview-facts.ts`: `overviewFacts()`: scan and supporting DNS providers for pages other than the overview
 - `src/lib/paging.ts`: page count, rows and range of a paginated table
 - `src/lib/service-providers.ts`: service provider card (one series per template, default chart selection)
 - `src/lib/leaderboards.ts`: boards (one row per DNS provider, top 10, ties, `?window=`), new supporting DNS providers, display rows
 - `src/lib/annotation.ts`: data annotation (sweep a page reflects, import completion time)
-- `src/lib/templates.ts`: template card (records as type, host and details, history caveat, table titles)
+- `src/lib/templates.ts`: template card (records as type, host and details, history caveat, table titles, `withSince()`)
 - `src/lib/share.ts`: shared link, post text, share target URLs, Mastodon instance (validation, `localStorage`), `absoluteOgImage()`
 - `src/lib/share-icons.ts`: share target logos (Simple Icons paths, brand colours)
 - `src/lib/components/Panel.svelte`: chart and table panel (anchor, `#` link, share menu, scroll and highlight); `ShareMenu.svelte`: the share menu
@@ -212,7 +220,7 @@ Pushing `.github/workflows/` changes needs a token with the `workflow` scope.
 - `scripts/methodology.ts`: METHODOLOGY.md → HTML (GitHub heading ids); `vite.config.ts` bakes it into `methodology.html`
 - `scripts/export-release.ts`: `validateRelease()` (schemas, one `generated_at`, counts, card presence)
 - `scripts/validate-export.ts`, `scripts/bundle-data.ts`: CLIs over it, used by CI and deploy
-- `scripts/derive.ts`: `deriveLeaderboards()` (first support per DNS provider); CLI `derive-data.ts`, used by deploy and e2e
+- `scripts/derive.ts`: `deriveLeaderboards()` (first support per DNS provider), `deriveTemplates()` (supporting DNS providers and since per template); CLI `derive-data.ts`, used by deploy and e2e
 - `scripts/registry.ts`: `validateRegistry()` (schema, entry path, logo), `bundleRegistry()`; CLIs `validate-registry.ts`, `bundle-registry.ts`
 - `scripts/changelog.ts`: CHANGELOG parsing; `scripts/check-version.ts`, `scripts/release-notes.ts`: CLIs over it
 - `vite.config.ts`: multi-page inputs, relative base, `__APP_VERSION__`, `/data/` and `/registry/` dev/preview middleware, Vitest config
