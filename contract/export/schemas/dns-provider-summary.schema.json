@@ -279,10 +279,11 @@
           "prefixItems": [
             { "properties": { "key": { "const": "sweep_id" } } },
             { "properties": { "key": { "const": "started_at" } } },
+            { "properties": { "key": { "const": "completed_at" } } },
             { "properties": { "key": { "const": "supported_templates" } } },
             { "properties": { "key": { "const": "change" } } }
           ],
-          "minItems": 4,
+          "minItems": 5,
           "items": false
         },
         "rows": {

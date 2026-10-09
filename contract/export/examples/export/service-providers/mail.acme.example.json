@@ -1,4 +1,4 @@
-{"generated_at": "2026-10-01T00:00:00Z", "notes": ["Domain share: import 1780272000 (completed, live), 12000 domains scanned. Support columns are current state."], "tables": {
+{"generated_at": "2026-10-01T00:00:00Z", "notes": ["Domain share: import completed 2026-06-01 07:00 UTC (live), 12,000 domains scanned. Support columns are current state."], "tables": {
 "service_provider": {"title": "Service provider", "columns": [{"key": "service_provider_id", "header": "Service provider ID"}, {"key": "name", "header": "Name"}, {"key": "first_added_at", "header": "First added"}, {"key": "last_updated_at", "header": "Last updated"}], "rows": [
 {"service_provider_id": "mail.acme.example", "name": "Acme Mail Inc.", "first_added_at": "2020-02-02 09:00:00", "last_updated_at": "2026-03-25 00:00:00"}
 ], "footer": null},
@@ -9,15 +9,15 @@
 {"name": "Domain Verification", "service_id": "verify", "version": 1, "versions": [1], "added_at": "2026-03-25 00:00:00", "updated_at": "2026-03-25 00:00:00", "supporting_providers": 2, "reach_domains": 6000, "reach_pct": 50.0},
 {"name": "Acme Mail", "service_id": "mail", "version": 1, "versions": [1], "added_at": "2020-02-02 09:00:00", "updated_at": "2021-03-03 09:00:00", "supporting_providers": 2, "reach_domains": 4900, "reach_pct": 40.833333333333336}
 ], "footer": null},
-"support_history": {"title": "Supporting DNS providers per template and support sweep", "columns": [{"key": "sweep_id", "header": "SWEEP"}, {"key": "started_at", "header": "STARTED"}, {"key": "service_id", "header": "SERVICE ID"}, {"key": "supporting_providers", "header": "SUPPORTING"}], "rows": [
-{"sweep_id": 1, "started_at": "2026-03-02 02:00:00", "service_id": "mail", "supporting_providers": 0},
-{"sweep_id": 1, "started_at": "2026-03-02 02:00:00", "service_id": "verify", "supporting_providers": 0},
-{"sweep_id": 3, "started_at": "2026-04-01 02:00:00", "service_id": "verify", "supporting_providers": 1},
-{"sweep_id": 4, "started_at": "2026-06-02 02:00:00", "service_id": "mail", "supporting_providers": 1},
-{"sweep_id": 4, "started_at": "2026-06-02 02:00:00", "service_id": "verify", "supporting_providers": 1},
-{"sweep_id": 5, "started_at": "2026-07-01 02:00:00", "service_id": "mail", "supporting_providers": 2},
-{"sweep_id": 5, "started_at": "2026-07-01 02:00:00", "service_id": "verify", "supporting_providers": 1},
-{"sweep_id": 6, "started_at": "2026-09-02 02:00:00", "service_id": "mail", "supporting_providers": 2},
-{"sweep_id": 6, "started_at": "2026-09-02 02:00:00", "service_id": "verify", "supporting_providers": 2}
+"support_history": {"title": "Supporting DNS providers per template and support sweep", "columns": [{"key": "sweep_id", "header": "SWEEP"}, {"key": "started_at", "header": "STARTED"}, {"key": "completed_at", "header": "COMPLETED"}, {"key": "service_id", "header": "SERVICE ID"}, {"key": "supporting_providers", "header": "SUPPORTING"}], "rows": [
+{"sweep_id": 1, "started_at": "2026-03-02 02:00:00", "completed_at": "2026-03-04 17:12:09", "service_id": "mail", "supporting_providers": 0},
+{"sweep_id": 1, "started_at": "2026-03-02 02:00:00", "completed_at": "2026-03-04 17:12:09", "service_id": "verify", "supporting_providers": 0},
+{"sweep_id": 3, "started_at": "2026-04-01 02:00:00", "completed_at": "2026-04-01 03:05:51", "service_id": "verify", "supporting_providers": 1},
+{"sweep_id": 4, "started_at": "2026-06-02 02:00:00", "completed_at": "2026-06-05 09:48:27", "service_id": "mail", "supporting_providers": 1},
+{"sweep_id": 4, "started_at": "2026-06-02 02:00:00", "completed_at": "2026-06-05 09:48:27", "service_id": "verify", "supporting_providers": 1},
+{"sweep_id": 5, "started_at": "2026-07-01 02:00:00", "completed_at": "2026-07-01 04:20:16", "service_id": "mail", "supporting_providers": 2},
+{"sweep_id": 5, "started_at": "2026-07-01 02:00:00", "completed_at": "2026-07-01 04:20:16", "service_id": "verify", "supporting_providers": 1},
+{"sweep_id": 6, "started_at": "2026-09-02 02:00:00", "completed_at": null, "service_id": "mail", "supporting_providers": 2},
+{"sweep_id": 6, "started_at": "2026-09-02 02:00:00", "completed_at": null, "service_id": "verify", "supporting_providers": 2}
 ], "footer": null}
 }}

@@ -46,6 +46,7 @@
               "prefixItems": [
                 { "properties": { "key": { "const": "sweep_id" } } },
                 { "properties": { "key": { "const": "started_at" } } },
+                { "properties": { "key": { "const": "completed_at" } } },
                 { "properties": { "key": { "const": "supporting_dns_providers" } } },
                 { "properties": { "key": { "const": "supporting_stacks" } } },
                 { "properties": { "key": { "const": "supported_templates" } } },
@@ -53,7 +54,7 @@
                 { "properties": { "key": { "const": "known_dns_providers" } } },
                 { "properties": { "key": { "const": "published_templates" } } }
               ],
-              "minItems": 8,
+              "minItems": 9,
               "items": false
             },
             "rows": {
@@ -130,6 +131,7 @@
       "properties": {
         "sweep_id": { "description": "support_probe_job_generator_runs.id.", "$ref": "common.schema.json#/$defs/id" },
         "started_at": { "$ref": "common.schema.json#/$defs/timestamp" },
+        "completed_at": { "$ref": "common.schema.json#/$defs/sweepCompletedAt" },
         "supporting_dns_providers": {
           "description": "DNS providers supporting at least one template version once the sweep had run.",
           "$ref": "common.schema.json#/$defs/count"
@@ -147,16 +149,16 @@
           "$ref": "common.schema.json#/$defs/count"
         },
         "known_dns_providers": {
-          "description": "DNS providers first seen at or before the sweep's start (current dns_providers rows).",
+          "description": "DNS providers first seen before the next full sweep's start, any time for the last row: the same window as the support counts (current dns_providers rows).",
           "$ref": "common.schema.json#/$defs/count"
         },
         "published_templates": {
-          "description": "Stored templates whose first version was added at or before the sweep's start.",
+          "description": "Stored templates whose first version was added before the next full sweep's start, any time for the last row: the same window as the support counts.",
           "$ref": "common.schema.json#/$defs/count"
         }
       },
       "required": [
-        "sweep_id", "started_at", "supporting_dns_providers", "supporting_stacks", "supported_templates",
+        "sweep_id", "started_at", "completed_at", "supporting_dns_providers", "supporting_stacks", "supported_templates",
         "supported_combinations", "known_dns_providers", "published_templates"
       ],
       "additionalProperties": false

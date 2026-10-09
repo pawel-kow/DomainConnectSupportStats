@@ -16,6 +16,10 @@
       "type": "integer",
       "minimum": 0
     },
+    "sweepCompletedAt": {
+      "description": "When the support sweep's queue emptied (support_probe_job_generator_runs.completed_at): its last probe settled, or a later sweep took over its last outstanding probes. Null while it runs, and for a sweep that ended before completion times were recorded (GitHub issue #235).",
+      "$ref": "#/$defs/nullableTimestamp"
+    },
     "nullableCount": {
       "description": "A count, or null when there is no measurement (never a stand-in for zero).",
       "oneOf": [{ "$ref": "#/$defs/count" }, { "type": "null" }]
@@ -129,12 +133,13 @@
       "properties": {
         "sweep_id": { "$ref": "#/$defs/id" },
         "started_at": { "$ref": "#/$defs/timestamp" },
+        "completed_at": { "$ref": "#/$defs/sweepCompletedAt" },
         "change": {
           "description": "Difference to the previous row's count (to 0 for the first row).",
           "type": "integer"
         }
       },
-      "required": ["sweep_id", "started_at", "change"]
+      "required": ["sweep_id", "started_at", "completed_at", "change"]
     },
     "report": {
       "description": "The one JSON shape every report shares (GitHub issue #204): notes, then tables keyed by id, and no other key. Each report's schema pins its own tables' ids, column keys (in display order) and row types on top of this. Titles, column headers and note texts are display text: only their type is pinned, their wording may change without notice (docs/EXPORT_FORMAT.md, Versioning and compatibility). A row holds raw values only, keyed by exactly its table's column keys.",

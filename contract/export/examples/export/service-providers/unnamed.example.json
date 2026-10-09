@@ -1,4 +1,4 @@
-{"generated_at": "2026-10-01T00:00:00Z", "notes": ["Domain share: import 1780272000 (completed, live), 12000 domains scanned. Support columns are current state."], "tables": {
+{"generated_at": "2026-10-01T00:00:00Z", "notes": ["Domain share: import completed 2026-06-01 07:00 UTC (live), 12,000 domains scanned. Support columns are current state."], "tables": {
 "service_provider": {"title": "Service provider", "columns": [{"key": "service_provider_id", "header": "Service provider ID"}, {"key": "name", "header": "Name"}, {"key": "first_added_at", "header": "First added"}, {"key": "last_updated_at", "header": "Last updated"}], "rows": [
 {"service_provider_id": "unnamed.example", "name": null, "first_added_at": "2022-08-08 08:08:08", "last_updated_at": "2022-08-08 08:08:08"}
 ], "footer": null},
@@ -8,9 +8,9 @@
 "templates": {"title": "Templates (current state)", "columns": [{"key": "name", "header": "TEMPLATE"}, {"key": "service_id", "header": "SERVICE ID"}, {"key": "version", "header": "VERSION"}, {"key": "versions", "header": "VERSIONS"}, {"key": "added_at", "header": "ADDED"}, {"key": "updated_at", "header": "UPDATED"}, {"key": "supporting_providers", "header": "SUPPORTING"}, {"key": "reach_domains", "header": "REACH"}, {"key": "reach_pct", "header": "REACH %"}], "rows": [
 {"name": "x", "service_id": "x", "version": 1, "versions": [1], "added_at": "2022-08-08 08:08:08", "updated_at": "2022-08-08 08:08:08", "supporting_providers": 0, "reach_domains": 0, "reach_pct": 0.0}
 ], "footer": null},
-"support_history": {"title": "Supporting DNS providers per template and support sweep", "columns": [{"key": "sweep_id", "header": "SWEEP"}, {"key": "started_at", "header": "STARTED"}, {"key": "service_id", "header": "SERVICE ID"}, {"key": "supporting_providers", "header": "SUPPORTING"}], "rows": [
-{"sweep_id": 1, "started_at": "2026-03-02 02:00:00", "service_id": "x", "supporting_providers": 0},
-{"sweep_id": 4, "started_at": "2026-06-02 02:00:00", "service_id": "x", "supporting_providers": 0},
-{"sweep_id": 6, "started_at": "2026-09-02 02:00:00", "service_id": "x", "supporting_providers": 0}
+"support_history": {"title": "Supporting DNS providers per template and support sweep", "columns": [{"key": "sweep_id", "header": "SWEEP"}, {"key": "started_at", "header": "STARTED"}, {"key": "completed_at", "header": "COMPLETED"}, {"key": "service_id", "header": "SERVICE ID"}, {"key": "supporting_providers", "header": "SUPPORTING"}], "rows": [
+{"sweep_id": 1, "started_at": "2026-03-02 02:00:00", "completed_at": "2026-03-04 17:12:09", "service_id": "x", "supporting_providers": 0},
+{"sweep_id": 4, "started_at": "2026-06-02 02:00:00", "completed_at": "2026-06-05 09:48:27", "service_id": "x", "supporting_providers": 0},
+{"sweep_id": 6, "started_at": "2026-09-02 02:00:00", "completed_at": null, "service_id": "x", "supporting_providers": 0}
 ], "footer": null}
 }}

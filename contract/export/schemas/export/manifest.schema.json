@@ -34,6 +34,14 @@
               ]
             },
             "source": { "$ref": "../common.schema.json#/$defs/shareSource" },
+            "started_at": {
+              "description": "When the import started; null when unknown (an import pruned before its dates were kept).",
+              "$ref": "../common.schema.json#/$defs/nullableTimestamp"
+            },
+            "completed_at": {
+              "description": "When the import completed; null while it runs, and when unknown (an import pruned before its dates were kept).",
+              "$ref": "../common.schema.json#/$defs/nullableTimestamp"
+            },
             "scanned_domains": { "$ref": "../common.schema.json#/$defs/count" },
             "zones": { "$ref": "../common.schema.json#/$defs/nullableZones" },
             "zone_domains": {
@@ -42,10 +50,18 @@
             },
             "sample_percent": { "$ref": "../common.schema.json#/$defs/nullableSamplePercent" }
           },
-          "required": ["import_id", "status", "source", "scanned_domains", "zones", "zone_domains", "sample_percent"],
+          "required": ["import_id", "status", "source", "started_at", "completed_at", "scanned_domains", "zones", "zone_domains", "sample_percent"],
           "additionalProperties": false
         }
       ]
+    },
+    "latest_sweep": {
+      "description": "The support sweep that completed last, of any kind (full, one DNS provider, one template or service provider, or the daily recent-templates run): when support was last measured. Null when no sweep has completed since completion times were recorded.",
+      "$ref": "#/$defs/completedSweep"
+    },
+    "latest_full_sweep": {
+      "description": "The full support sweep (every template on every DNS provider; the sweeps overview.json's ecosystem table lists) that completed last: when the whole ecosystem was last measured. Null when no full sweep has completed since completion times were recorded.",
+      "$ref": "#/$defs/completedSweep"
     },
     "id_encoding": {
       "description": "How an id becomes a path segment, in words (docs/EXPORT_FORMAT.md).",
@@ -242,6 +258,26 @@
       "additionalProperties": false
     }
   },
-  "required": ["format_version", "generated_at", "schema_version", "share_import", "id_encoding", "files"],
-  "additionalProperties": false
+  "required": ["format_version", "generated_at", "schema_version", "share_import", "latest_sweep", "latest_full_sweep", "id_encoding", "files"],
+  "additionalProperties": false,
+  "$defs": {
+    "completedSweep": {
+      "oneOf": [
+        { "type": "null" },
+        {
+          "type": "object",
+          "properties": {
+            "sweep_id": { "$ref": "../common.schema.json#/$defs/id" },
+            "started_at": { "$ref": "../common.schema.json#/$defs/timestamp" },
+            "completed_at": {
+              "description": "When its last probe was done, or a later sweep took over the probes it had left.",
+              "$ref": "../common.schema.json#/$defs/timestamp"
+            }
+          },
+          "required": ["sweep_id", "started_at", "completed_at"],
+          "additionalProperties": false
+        }
+      ]
+    }
+  }
 }

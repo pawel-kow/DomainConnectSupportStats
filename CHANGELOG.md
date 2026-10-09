@@ -25,6 +25,10 @@ fixes, styling and dependencies.
 
 ## [0.15.1] - 2026-10-08
 
+### Changed
+
+- Methodology: when a sweep counts as completed.
+
 ### Fixed
 
 - A page whose data does not load shows a plain message instead of file URLs, release times and
