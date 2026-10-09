@@ -1,5 +1,5 @@
 import { resolve } from 'node:path';
-import { expect, test } from './fixtures';
+import { expect, test, expectLoadError } from './fixtures';
 
 const LOGO = resolve(import.meta.dirname, '../../public/assets/DomainConnectBlackSmall.png');
 
@@ -131,7 +131,7 @@ test.describe('Templates list (templates.html)', () => {
     test('shows an error state when the list is unavailable', async ({ page }) => {
       await page.route('**/data/templates.json', (route) => route.fulfill({ status: 500 }));
       await page.goto('templates.html');
-      await expect(page.getByTestId('load-error')).toBeVisible();
+      await expectLoadError(page);
     });
   });
 

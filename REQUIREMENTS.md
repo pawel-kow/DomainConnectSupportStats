@@ -203,7 +203,11 @@ times are not shown.
 - F-2.3 Cross-links as plain `<a href>` page links: DNS provider ↔ stack, DNS provider ↔ template,
   template ↔ service provider, stack → its deployments (EXPORT_FORMAT.md "Cross-links").
 - F-2.4 A card page with a missing parameter or unknown id shows "not found" linking to its list;
-  any other load failure shows an error state. Never a blank page.
+  any other load failure shows an error state. Never a blank page. The error state shows no file
+  URL, release time or HTTP status: "The data was just updated. Reload the page." when a file is
+  from another release than the manifest, otherwise "Could not load the data. The data is not
+  available at the moment. Try again later." The technical message goes to the console as a
+  warning.
 - F-2.5 Query parameters carry only raw entity ids and filters; every view is a shareable link.
 - F-2.6 Lists hide dead, never-probed and zero-domain entries by default, with a visible "show all
   (N hidden)" toggle.

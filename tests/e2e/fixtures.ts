@@ -1,4 +1,4 @@
-import { test as base, expect } from '@playwright/test';
+import { test as base, expect, type Page } from '@playwright/test';
 
 /** The deploy writes `registry/registry.json`; the example registry has none, so it is routed. */
 export const REGISTRY_SOURCE = { repository: 'Domain-Connect/DnsProviders', commit: 'abc1234' };
@@ -50,3 +50,13 @@ export const PAGES = [
   'template',
   'leaderboards',
 ] as const;
+
+/** The page-level error state: plain text, no file URL. */
+export async function expectLoadError(
+  page: Page,
+  text = 'The data is not available at the moment. Try again later.',
+) {
+  const error = page.getByTestId('load-error');
+  await expect(error).toContainText(text);
+  await expect(error).not.toContainText('.json');
+}
