@@ -10,11 +10,11 @@ on template supporters.
 Steps (big story: pause after each for a context reset; keep mutex and branch).
 
 - [x] Investigate, ask, plan
-- [~] Step 1 — derived data: `scripts/derive.ts` writes `derived/templates.json` (supporting DNS
+- [x] Step 1 — derived data: `scripts/derive.ts` writes `derived/templates.json` (supporting DNS
       providers per template) and `derived/templates/{spid}/{sid}.json` (`since` per supporting DNS
       provider) from DNS provider cards' `supported_templates`; types in `src/lib/data/derived.ts`;
       `ExportClient` loaders; unit tests first
-- [ ] Step 2 — helpers (TDD): `formatCell` timestamps date only, `cellTitle` full datetime UTC;
+- [~] Step 2 — helpers (TDD): `formatCell` timestamps date only, `cellTitle` full datetime UTC;
       domain-share hover text ("80M of 190.6M scanned domains in the partial scan of 01-06-2026");
       scan label from manifest + overview `adoption`; denominator = overview last `ecosystem`
       `supporting_dns_providers`; templates list rows with derived support columns
@@ -58,6 +58,21 @@ Steps (big story: pause after each for a context reset; keep mutex and branch).
 - Version: minor (0.16.0).
 - Scanner issues: `since` in template `supporters`; supporting DNS providers per template in
   `templates.json`.
+
+## Step notes (resume here)
+
+- Step 1 done: `deriveTemplates(dir)` in `scripts/derive.ts` → `{ list, cards }`;
+  `scripts/derive-data.ts` writes `derived/templates.json` and `derived/templates/<spid>/<sid>.json`;
+  `ExportClient.templatesSupport()`, `templateSupporters(spid, sid)`; types `TemplatesSupport`,
+  `TemplateSupporters` in `src/lib/data/derived.ts`. CLAUDE.md/DEPLOYMENT docs for derived files
+  still to update (step 5).
+- Places showing domain counts (step 4): DnsProviders/Stacks/ServiceProviders/Templates lists
+  (custom cells), Stack card (deployments `domains`, template_coverage `reach_domains`, stat card,
+  share chart tooltip), DnsProvider card (stat card, share chart tooltip), ServiceProvider card
+  (stat card, templates `reach_domains`), Template card (stat card, supporters `domains`),
+  Leaderboards (`entrantRows` count for domains board, `reachRows`), Overview chart tooltip.
+- Places showing datetimes (step 3): `cells.ts` `formatCell` timestamp, card `<dd>`s in
+  Template/ServiceProvider/DnsProvider views; NewSupporters date needs the hover.
 
 ## Corrections
 
