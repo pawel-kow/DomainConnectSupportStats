@@ -144,7 +144,7 @@ Against a real release: `DATA_DIR=<release> REGISTRY_DIR=<registry> npm run test
 | Golden registry valid               | `npm run validate:registry -- contract/registry/examples` | CI                                     |
 | Version has a CHANGELOG section     | `npm run check:version`                                   | CI, `verify`                           |
 | Build                               | `npm run build`                                           | CI, deploy, `verify`                   |
-| E2E                                 | `npm run test:e2e`                                        | CI, `verify`                           |
+| E2E                                 | `npm run test:e2e`                                        | CI (not drafts), `verify`              |
 | Incoming release valid              | `npm run bundle:data -- <release> dist`                   | deploy (refuses to publish on failure) |
 | Incoming registry valid             | `npm run bundle:registry -- <dir> dist <repo> <commit>`   | deploy (refuses to publish on failure) |
 | No `.plan/` files                   | `no-plan-files` job                                       | CI on PRs, not drafts                  |
