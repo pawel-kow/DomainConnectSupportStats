@@ -14,11 +14,11 @@ Steps (big story: pause after each for a context reset; keep mutex and branch).
       providers per template) and `derived/templates/{spid}/{sid}.json` (`since` per supporting DNS
       provider) from DNS provider cards' `supported_templates`; types in `src/lib/data/derived.ts`;
       `ExportClient` loaders; unit tests first
-- [~] Step 2 — helpers (TDD): `formatCell` timestamps date only, `cellTitle` full datetime UTC;
+- [x] Step 2 — helpers (TDD): `formatCell` timestamps date only, `cellTitle` full datetime UTC;
       domain-share hover text ("80M of 190.6M scanned domains in the partial scan of 01-06-2026");
       scan label from manifest + overview `adoption`; denominator = overview last `ecosystem`
       `supporting_dns_providers`; templates list rows with derived support columns
-- [ ] Step 3 — views: overview cards; templates list Support/Not supported; template card headline
+- [~] Step 3 — views: overview cards; templates list Support/Not supported; template card headline
       and `since` column; service provider card templates %; dates in card records and
       NewSupporters with hover
 - [ ] Step 4 — views: domain counts → % with hover on lists, cards, stat cards, charts tooltips,

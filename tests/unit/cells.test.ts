@@ -3,6 +3,7 @@ import {
   FIRST_SCAN_SPAN_TITLE,
   beforeScansTitle,
   cellKind,
+  cellTitle,
   compareCells,
   formatCell,
   isBeforeScans,
@@ -18,7 +19,7 @@ describe('formatCell', () => {
     expect(formatCell('domains', 9000)).toBe('9,000');
     expect(formatCell('domains', 38531012)).toBe('38.5M');
     expect(formatCell('import_id', 1780272000)).toBe('1780272000');
-    expect(formatCell('completed_at', '2026-06-01 07:00:00')).toBe('01-06-2026 07:00 UTC');
+    expect(formatCell('completed_at', '2026-06-01 07:00:00')).toBe('01-06-2026');
     expect(formatCell('versions', [1, 2])).toBe('1, 2');
     expect(formatCell('name', 'Plesk')).toBe('Plesk');
   });
@@ -133,5 +134,19 @@ describe('before scans', () => {
       '2026-09-30 00:00:00',
       '2026-10-01 03:00:00',
     ]);
+  });
+});
+
+describe('cellTitle', () => {
+  it('is the full timestamp of a date cell', () => {
+    expect(cellTitle('completed_at', '2026-06-01 07:00:00')).toBe('01-06-2026 07:00 UTC');
+    expect(cellTitle('since', '2026-03-02 03:00:00')).toBe('02-03-2026 03:00 UTC');
+  });
+
+  it('is the exact count of a shortened count, else nothing', () => {
+    expect(cellTitle('supported_count', 38531012)).toBe('38,531,012');
+    expect(cellTitle('supported_count', 9000)).toBeUndefined();
+    expect(cellTitle('name', 'Plesk')).toBeUndefined();
+    expect(cellTitle('since', null)).toBeUndefined();
   });
 });
