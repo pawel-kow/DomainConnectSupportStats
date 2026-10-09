@@ -6,10 +6,11 @@ Break the overview's "Domain Connect support over time" chart into four charts, 
 
 - [x] Derive reach-weighted pairs per full sweep (`derived/ecosystem.json`), tests
 - [x] Overview: 4 panels (DC adoption; supporting DNS providers; supported templates; ecosystem growth), both growth variants for preview
-- [~] Screenshots of both variants on real data; maintainer picks one
-- [ ] Remove the variant not chosen (and its derived file if unused)
-- [ ] Scanner issue for the chosen series
-- [ ] Tests (component, e2e), docs (CLAUDE.md, REQUIREMENTS.md), CHANGELOG, minor bump
+- [x] Screenshots of both variants on real data; maintainer picks one
+- [x] Remove the variant not chosen; headline: templates per domain replaces supported pairs
+- [x] Scanner issue: pawel-kow/DomainConnectScanner#257
+- [x] Tests (unit, e2e), docs (CLAUDE.md, REQUIREMENTS.md F-1.1, F-1g, F-1h, F-4.5), CHANGELOG, 0.17.0
+- [~] PR, final screenshots accepted by the maintainer
 - [ ] Remove plan
 
 ## Findings
@@ -20,6 +21,7 @@ Break the overview's "Domain Connect support over time" chart into four charts, 
 
 ## Decisions
 
+- Ecosystem growth: weighted variant (maintainer). Headline card "Templates per domain" replaces supported pairs (maintainer).
 - Variant 1: `ecosystem.supported_combinations` (export).
 - Variant 2 unit: templates per scanned domain (Σ templates × domain share); weights from the domain-share import, applied to every sweep.
 - First-scan shadow on all but DC adoption.
@@ -31,5 +33,5 @@ Break the overview's "Domain Connect support over time" chart into four charts, 
 
 ## Open questions
 
-- Which ecosystem growth variant (preview: `?growth=pairs|weighted`, temporary; screenshots in the chat).
+
 - Real-data preview: `node scripts/derive-data.ts <data> <out>`, then `DATA_DIR=<data> DERIVED_DIR=<out> npx vite`.

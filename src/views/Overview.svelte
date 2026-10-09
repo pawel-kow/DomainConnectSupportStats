@@ -13,6 +13,7 @@
     formatAxisPct,
     formatCount,
     formatDate,
+    formatDecimal,
     formatExact,
     formatPct,
     UNKNOWN,
@@ -73,8 +74,6 @@
     () => (reachReady = true),
     () => (reachReady = true),
   );
-  // Preview only: both ecosystem growth variants until the maintainer picks one.
-  const growth = new URLSearchParams(location.search).get('growth') ?? 'pairs';
 
   function adoptionSeries(adoption: Row[]): Series[] {
     return [
@@ -113,18 +112,6 @@
     ];
   }
 
-  function pairsSeries(ecosystem: Row[]): Series[] {
-    return [
-      {
-        label: 'Supported pairs',
-        points: sweepSeries(ecosystem, 'supported_combinations'),
-        stepped: true,
-        color: SERIES_COLORS[3],
-        tooltip: (p) => `Supported pairs: ${formatExact(p.y)}`,
-      },
-    ];
-  }
-
   function reachSeries(rows: Row[]): Series[] {
     return [
       {
@@ -132,7 +119,7 @@
         points: sweepSeries(rows, 'templates_per_domain'),
         stepped: true,
         color: SERIES_COLORS[3],
-        tooltip: (p) => `Templates per scanned domain: ${p.y.toFixed(1)}`,
+        tooltip: (p) => `Templates per scanned domain: ${formatDecimal(p.y)}`,
       },
     ];
   }
@@ -182,12 +169,20 @@
         label="Supported templates"
         detail={ofTotal(latestSweep, 'published_templates')}
       />
-      <StatCard
-        value={formatCount(num(latestSweep, 'supported_combinations'))}
-        exact={num(latestSweep, 'supported_combinations')}
-        label="Supported pairs"
-        detail={latestSweep ? `sweep of ${formatDate(latestSweep.started_at as string)}` : UNKNOWN}
-      />
+      {#await derivedEcosystem}
+        <StatCard value={UNKNOWN} label="Templates per domain" />
+      {:then reach}
+        {@const latest = latestWith(reach.ecosystem as unknown as Row[], 'templates_per_domain')}
+        <StatCard
+          value={formatDecimal(num(latest, 'templates_per_domain'))}
+          label="Templates per domain"
+          detail={latest
+            ? `weighted by reach, sweep of ${formatDate(latest.started_at as string)}`
+            : undefined}
+        />
+      {:catch}
+        <StatCard value={UNKNOWN} label="Templates per domain" />
+      {/await}
     </section>
 
     <div class="charts">
@@ -238,36 +233,16 @@
         {/if}
       </Panel>
 
-      <Panel
-        id="ecosystem-growth"
-        title="Ecosystem growth"
-        context="Overview"
-        ready={growth === 'pairs' || reachReady}
-      >
-        {#if growth === 'pairs'}
-          {#if ecosystemRows.length}
-            <TimeChart
-              beforeScans={scannerStart()}
-              label="Supported DNS provider and template pairs per full sweep over time"
-              series={pairsSeries(ecosystemRows)}
-              legend={false}
-              leftTitle="Supported pairs"
-              formatLeft={(v) => formatCount(v)}
-            />
-            <p class="muted chart-note">
-              Supported (DNS provider, template) pairs, per full support sweep.
-            </p>
-          {:else}
-            <p class="no-data">No data available</p>
-          {/if}
-        {:else}
-          {#await derivedEcosystem}
-            <p class="no-data">Loading…</p>
-          {:then reach}
+      <Panel id="ecosystem-growth" title="Ecosystem growth" context="Overview" ready={reachReady}>
+        {#await derivedEcosystem}
+          <p class="no-data">Loading…</p>
+        {:then reach}
+          {@const series = reachSeries(reach.ecosystem as unknown as Row[])}
+          {#if series[0]?.points.length}
             <TimeChart
               beforeScans={scannerStart()}
               label="Supported templates per scanned domain, weighted by DNS provider reach, per full sweep over time"
-              series={reachSeries(reach.ecosystem as unknown as Row[])}
+              {series}
               legend={false}
               leftTitle="Templates per domain"
             />
@@ -275,10 +250,12 @@
               Supported pairs weighted by DNS provider reach: the templates the average scanned
               domain can use, per full support sweep. Weights from the domain-share import.
             </p>
-          {:catch}
-            <Unavailable />
-          {/await}
-        {/if}
+          {:else}
+            <p class="no-data">No data available</p>
+          {/if}
+        {:catch}
+          <Unavailable />
+        {/await}
       </Panel>
     </div>
 

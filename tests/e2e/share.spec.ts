@@ -5,7 +5,17 @@ const LOGO = resolve(import.meta.dirname, '../../public/assets/DomainConnectBlac
 
 /** Each page with the anchors of its chart and table panels, in page order. */
 const PANELS: [string, string[]][] = [
-  ['index.html', ['support-history', 'new-supporting', 'most-improved']],
+  [
+    'index.html',
+    [
+      'support-history',
+      'supporting-dns-providers',
+      'supported-templates',
+      'ecosystem-growth',
+      'new-supporting',
+      'most-improved',
+    ],
+  ],
   ['dns-providers.html', ['dns-providers']],
   ['stacks.html', ['stacks']],
   ['service-providers.html', ['service-providers']],

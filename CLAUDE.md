@@ -84,7 +84,7 @@ every view is a shareable link:
 
 | Page                                             | Data                                                | State |
 | ------------------------------------------------ | --------------------------------------------------- | ----- |
-| `index.html`                                     | `overview.json`                                     | built |
+| `index.html`                                     | `overview.json`, `derived/ecosystem.json`           | built |
 | `dns-providers.html` (`?stack=`, `&q=`, `&all=`) | `dns-providers.json`                                | built |
 | `stacks.html`                                    | `stacks.json`                                       | built |
 | `service-providers.html` (`?q=`)                 | `service-providers.json`                            | built |
@@ -98,14 +98,14 @@ every view is a shareable link:
 
 A card page with a missing parameter or a 404 shows `NotFound` linking to its list; any other load
 failure shows `LoadError`; a section that loads on its own (leaderboard panels) shows `Unavailable` instead. Never a blank page. Card layout: REQUIREMENTS.md F-1a. Leaderboards:
-F-4; the overview also shows new supporting DNS providers and the most improved top 5.
+F-4; the overview shows four charts (F-1.1) and also new supporting DNS providers and the most improved top 5.
 
 **Data location.** Default `./data/`. Build time: `VITE_DATA_BASE_URL`. Runtime:
 `window.DC_STATS_CONFIG.dataBaseUrl` in `config.js` (`src/lib/data/config.ts`). `vite dev` and
 `vite preview` serve `/data/` from `DATA_DIR` (default: the contract's example export).
 
 **Derived data.** `scripts/derive.ts` collects what the export spreads over its cards into
-`<data>/derived/`: `leaderboards.json` (first support per DNS provider), `stacks.json` (template support per stack), `templates.json`
+`<data>/derived/`: `leaderboards.json` (first support per DNS provider), `ecosystem.json` (templates per scanned domain per full sweep), `stacks.json` (template support per stack), `templates.json`
 (supporting DNS providers per template) and one file per template at its card's path (`since` per
 supporter); the deploy runs it after bundling the release. The site rejects a derived file when its
 `generated_at` differs from the manifest's.
@@ -190,11 +190,11 @@ Pushing `.github/workflows/` changes needs a token with the `workflow` scope.
 
 - `src/lib/data/encode.ts`: id ↔ path-segment encoding
 - `src/lib/data/manifest.ts`: `SUPPORTED_FORMAT_VERSION`, `filePath()` from manifest path templates
-- `src/lib/data/load.ts`: `ExportClient` (manifest once, files by kind + raw ids, derived data `leaderboards()`, `stacksSupport()`, `templatesSupport()`, `templateSupporters()`, `NotFoundError`, `ReleaseMismatchError`)
+- `src/lib/data/load.ts`: `ExportClient` (manifest once, files by kind + raw ids, derived data `leaderboards()`, `ecosystem()`, `stacksSupport()`, `templatesSupport()`, `templateSupporters()`, `NotFoundError`, `ReleaseMismatchError`)
 - `src/lib/data/config.ts`: data and registry base URL precedence (runtime → build time → `./data/`, `./registry/`); `shareBaseUrl` (shared links, else the browser's URL)
 - `src/lib/data/tables.ts`: `findTable()` by id (template-card suffix), `oneRecord()`
 - `src/lib/data/types.ts`: types of the export (only what the site reads)
-- `src/lib/data/derived.ts`: types of the derived data (`leaderboards.json`, `stacks.json`, `templates.json`, per-template supporters), `templateShares()`, shared with `scripts/derive.ts`
+- `src/lib/data/derived.ts`: types of the derived data (`leaderboards.json`, `ecosystem.json`, `stacks.json`, `templates.json`, per-template supporters), `templateShares()`, shared with `scripts/derive.ts`
 - `src/lib/registry/path.ts`: `registryPath()` (`<a>/<b>` folder), `entryPath()`
 - `src/lib/registry/entry.ts`: `parseEntry()` (registry entry, unknown values as `null`), `parseSource()`, `FEATURES`
 - `src/lib/registry/load.ts`: `RegistryClient` (entry, logo URL, `registry.json` once), `entryFileUrl()`
@@ -220,7 +220,7 @@ Pushing `.github/workflows/` changes needs a token with the `workflow` scope.
 - `scripts/methodology.ts`: METHODOLOGY.md → HTML (GitHub heading ids); `vite.config.ts` bakes it into `methodology.html`
 - `scripts/export-release.ts`: `validateRelease()` (schemas, one `generated_at`, counts, card presence)
 - `scripts/validate-export.ts`, `scripts/bundle-data.ts`: CLIs over it, used by CI and deploy
-- `scripts/derive.ts`: `deriveLeaderboards()` (first support per DNS provider), `deriveTemplates()` (supporting DNS providers and since per template), `deriveStacks()`; CLI `derive-data.ts`, used by deploy and e2e
+- `scripts/derive.ts`: `deriveLeaderboards()` (first support per DNS provider), `deriveTemplates()` (supporting DNS providers and since per template), `deriveStacks()`, `deriveEcosystem()` (templates per scanned domain per full sweep); CLI `derive-data.ts`, used by deploy and e2e
 - `scripts/registry.ts`: `validateRegistry()` (schema, entry path, logo), `bundleRegistry()`; CLIs `validate-registry.ts`, `bundle-registry.ts`
 - `scripts/changelog.ts`: CHANGELOG parsing; `scripts/check-version.ts`, `scripts/release-notes.ts`: CLIs over it
 - `vite.config.ts`: multi-page inputs, relative base, `__APP_VERSION__`, `/data/` and `/registry/` dev/preview middleware, Vitest config

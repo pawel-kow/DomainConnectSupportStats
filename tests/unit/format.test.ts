@@ -4,6 +4,7 @@ import {
   formatCount,
   formatExact,
   formatDate,
+  formatDecimal,
   formatDateTime,
   formatFlag,
   formatPct,
@@ -119,5 +120,18 @@ describe('formatFlag', () => {
     expect(formatFlag(true)).toBe('yes');
     expect(formatFlag(false)).toBe('no');
     expect(formatFlag(null)).toBe('–');
+  });
+});
+
+describe('formatDecimal', () => {
+  it('rounds to one decimal by default, with thousands separators', () => {
+    expect(formatDecimal(141.35291)).toBe('141.4');
+    expect(formatDecimal(1234.56)).toBe('1,234.6');
+    expect(formatDecimal(2, 2)).toBe('2.00');
+  });
+
+  it('shows null as unknown, never 0', () => {
+    expect(formatDecimal(null)).toBe(UNKNOWN);
+    expect(formatDecimal(undefined)).toBe(UNKNOWN);
   });
 });
