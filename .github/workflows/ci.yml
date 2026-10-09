@@ -3,6 +3,7 @@ name: CI
 
 on:
   pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
   push:
     branches: [main]
 
@@ -37,12 +38,15 @@ jobs:
         run: npm run check:version
       - name: Build
         run: npm run build
+      # E2E is costly: drafts skip it, it runs once ready for review.
       - name: Install Playwright Chromium
+        if: ${{ !github.event.pull_request.draft }}
         run: npx playwright install --with-deps chromium
       - name: E2E tests
+        if: ${{ !github.event.pull_request.draft }}
         run: npm run test:e2e
       - name: Upload Playwright report
-        if: failure()
+        if: failure() && !github.event.pull_request.draft
         uses: actions/upload-artifact@v7
         with:
           name: playwright-report
@@ -50,8 +54,9 @@ jobs:
           retention-days: 7
 
   # Iteration plans are committed during work, never merged (DEVELOPING.md §3.11).
+  # Drafts are not mergeable: checked once ready for review.
   no-plan-files:
-    if: github.event_name == 'pull_request'
+    if: github.event_name == 'pull_request' && !github.event.pull_request.draft
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7

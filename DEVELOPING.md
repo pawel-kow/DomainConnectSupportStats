@@ -331,7 +331,7 @@ Template:
 - <needs a human answer>
 ```
 
-CI job `no-plan-files` fails a PR that still tracks `.plan/` files.
+CI job `no-plan-files` fails a PR that still tracks `.plan/` files; it skips draft PRs.
 
 ---
 
@@ -350,7 +350,8 @@ CI job `no-plan-files` fails a PR that still tracks `.plan/` files.
 ### 5.1 CI
 
 Every PR and push to `main`: lint, format, types, Vitest, example-export validation, version
-check, build, Playwright (desktop + mobile), `.plan/` gate. Never merge red.
+check, build, Playwright (desktop + mobile), `.plan/` gate. Draft PRs skip Playwright and the `.plan/`
+gate; both run once the PR is ready for review. Never merge red.
 
 ### 5.2 Dependencies
 
