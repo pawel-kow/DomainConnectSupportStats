@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import type { ExportFile } from '../../src/lib/data/types';
-import { ofSupporting, supportingDnsProviders } from '../../src/lib/supporting';
+import { ofSupporting, supportingDnsProviders, templateCount } from '../../src/lib/supporting';
+import { exampleManifest } from '../fixtures';
 import { exampleJson } from '../fixtures';
 
 describe('supportingDnsProviders', () => {
@@ -26,5 +27,15 @@ describe('ofSupporting', () => {
     expect(ofSupporting(null, 4)).toBeNull();
     expect(ofSupporting(1, null)).toBeNull();
     expect(ofSupporting(0, 0)).toBeNull();
+  });
+});
+
+describe('templateCount', () => {
+  it('is the row count of the templates list', () => {
+    expect(templateCount(exampleManifest())).toBe(5);
+  });
+
+  it('is null without a manifest', () => {
+    expect(templateCount(null)).toBeNull();
   });
 });

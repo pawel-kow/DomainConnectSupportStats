@@ -15,13 +15,24 @@ test.describe('DNS provider card (dns-provider.html)', () => {
       './stack.html?id=cloudflare.com',
     );
     const headline = page.getByTestId('headline');
-    await expect(headline).toContainText('of 6 template versions (66.7%)');
+    await expect(headline).toContainText(/3\s*Supported templates\s*of 5 templates \(60.0%\)/);
+    await expect(headline).toContainText(/2\s*Not supported\s*40.0%, not yet determined included/);
+    await expect(headline).not.toContainText('template versions');
     await expect(headline).not.toContainText('4,000');
     await expect(
       headline.getByTitle('4,000 of 12K scanned domains in the partial scan of 01-06-2026'),
     ).toHaveText('33.3%');
     await expect(headline).toContainText('#1');
     await expect(page.getByTestId('provider-record')).toContainText('ns2.example.net');
+  });
+
+  test('sorts supported templates by since, most recent first', async ({ page }) => {
+    await page.goto('dns-provider.html?id=1');
+    const templates = section(page, 'Supported templates (current state)');
+    await expect(templates.getByRole('columnheader', { name: /SUPPORTED SINCE/ })).toHaveAttribute(
+      'aria-sort',
+      'descending',
+    );
   });
 
   test('links supported templates to their template and service provider cards', async ({

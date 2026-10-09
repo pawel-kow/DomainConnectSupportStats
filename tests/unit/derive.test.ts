@@ -2,7 +2,7 @@ import { cpSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:f
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterEach, describe, expect, it } from 'vitest';
-import { deriveLeaderboards, deriveTemplates } from '../../scripts/derive';
+import { deriveLeaderboards, deriveStacks, deriveTemplates } from '../../scripts/derive';
 import { EXAMPLE_DIR } from '../fixtures';
 
 describe('deriveLeaderboards on the example export', () => {
@@ -168,5 +168,38 @@ describe('deriveTemplates on an edited copy', () => {
     cpSync(EXAMPLE_DIR, dir, { recursive: true });
     edit('dns-providers/2.json', (j) => Object.assign(j, { generated_at: '2026-09-01T00:00:00Z' }));
     expect(() => deriveTemplates(dir)).toThrow(/dns-providers\/2\.json: generated_at/);
+  });
+});
+
+describe('deriveStacks on the example export', () => {
+  it("gives each stack its deployments' supported templates as shares of every template", () => {
+    const derived = deriveStacks(EXAMPLE_DIR);
+    expect(derived.generated_at).toBe('2026-10-01T00:00:00Z');
+    expect(derived.stacks).toEqual([
+      {
+        provider_id: 'cloudflare.com',
+        min_templates_pct: 60,
+        median_templates_pct: 60,
+        max_templates_pct: 60,
+      },
+      {
+        provider_id: 'ionos.com',
+        min_templates_pct: 40,
+        median_templates_pct: 40,
+        max_templates_pct: 40,
+      },
+      {
+        provider_id: 'plesk.com',
+        min_templates_pct: 40,
+        median_templates_pct: 40,
+        max_templates_pct: 40,
+      },
+      {
+        provider_id: 'quiet-host.example',
+        min_templates_pct: 0,
+        median_templates_pct: 0,
+        max_templates_pct: 0,
+      },
+    ]);
   });
 });

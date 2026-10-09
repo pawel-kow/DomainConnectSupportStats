@@ -12,20 +12,25 @@
   import DomainShare from '../lib/components/DomainShare.svelte';
   import type { Scan } from '../lib/domains';
   import { overviewFacts } from '../lib/overview-facts';
-  import { supportLabel, supportRange } from '../lib/stacks';
+  import { supportLabel, supportRange, withStackSupport } from '../lib/stacks';
+  import { templateCount } from '../lib/supporting';
 
   const client = defaultClient();
   let manifest = $state<Manifest | null>(null);
   /** The domain-share import, for the hover text of domain shares. */
   let scan = $state<Scan | null>(null);
-  const loading = client.manifest().then((m) => {
+  const loading = client.manifest().then(async (m) => {
     manifest = m;
     void overviewFacts(client, m).then((f) => (scan = f.scan));
-    return client.file('stacks');
+    const [file, support] = await Promise.all([
+      client.file('stacks'),
+      client.stacksSupport().catch(() => null),
+    ]);
+    return { file, support };
   });
 
   // One column shows the range; it sorts by its lowest value.
-  const KEYS = ['name', 'deployments', 'min_supported_pct', 'domains'];
+  const KEYS = ['name', 'deployments', 'min_templates_pct', 'domains'];
   const CUSTOM_KEYS = KEYS;
 
   function num(row: Row, key: string): number | null {
@@ -50,7 +55,7 @@
     {@const n = num(row, 'deployments')}
     {#if id && n}<a href={links.dnsProviders({ stack: id })}>{formatCount(n)}</a
       >{:else}{formatCount(n)}{/if}
-  {:else if column.key === 'min_supported_pct'}
+  {:else if column.key === 'min_templates_pct'}
     {@const range = supportRange(row)}
     <span class="count">{supportLabel(row)}</span>
     {#if range}
@@ -67,7 +72,7 @@
 <Layout current="stacks" {manifest}>
   {#await loading}
     <p class="no-data">Loading…</p>
-  {:then file}
+  {:then { file, support }}
     {@const source = findTable(file, 'stacks')}
     {#if source}
       <Panel id="stacks" title="Stacks" context="Stacks">
@@ -75,9 +80,8 @@
         <DataTable
           table={{
             ...source,
-            columns: source.columns.map((c) =>
-              c.key === 'min_supported_pct' ? { ...c, header: 'SUPPORT' } : c,
-            ),
+            columns: [...source.columns, { key: 'min_templates_pct', header: 'SUPPORT' }],
+            rows: withStackSupport(source.rows, support),
           }}
           keys={KEYS}
           customKeys={CUSTOM_KEYS}
@@ -90,9 +94,10 @@
         />
         <ul class="caveats" data-testid="caveats">
           <li>
-            Support: the share of supported template versions of each deployment with probe
-            combinations; lowest and highest across the stack, shown as a bar on a 0–100% scale (<a
-              href={links.methodology('52-support-probe')}>methodology 5.2</a
+            Support: the share of every template ({formatCount(templateCount(manifest))}) each
+            deployment with a probe answer supports in any version; lowest and highest across the
+            stack, shown as a bar on a 0–100% scale (<a href={links.methodology('52-support-probe')}
+              >methodology 5.2</a
             >).
           </li>
           <li>

@@ -32,6 +32,19 @@ describe('DataTable', () => {
     expect(bodyColumn(2)[0]).toBe('33.3%');
   });
 
+  it('starts in the given order when asked', () => {
+    render(DataTable, {
+      table: stacks(),
+      keys: ['name', 'domains'],
+      sort: { key: 'name', direction: -1 },
+    });
+    expect(bodyColumn(0)).toEqual(['Quiet Host', 'Plesk', 'IONOS', 'Cloudflare']);
+    expect(screen.getByRole('columnheader', { name: /STACK/ })).toHaveAttribute(
+      'aria-sort',
+      'descending',
+    );
+  });
+
   it('sorts on header click, numbers descending first, nulls last, and back to export order', async () => {
     const table = stacks();
     table.rows[1]!.domains = null;

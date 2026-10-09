@@ -2,8 +2,10 @@ import { dataBaseUrl } from './config';
 import {
   DERIVED_DIR,
   LEADERBOARDS_FILE,
+  STACKS_FILE,
   TEMPLATES_FILE,
   type Leaderboards,
+  type StacksSupport,
   type TemplateSupporters,
   type TemplatesSupport,
 } from './derived';
@@ -88,6 +90,11 @@ export class ExportClient {
   /** The derived `leaderboards.json`. */
   leaderboards(): Promise<Leaderboards> {
     return this.derived(() => LEADERBOARDS_FILE);
+  }
+
+  /** The derived `stacks.json`: template support distribution per stack. */
+  stacksSupport(): Promise<StacksSupport> {
+    return this.derived(() => STACKS_FILE);
   }
 
   /** The derived `templates.json`: supporting DNS providers per template. */

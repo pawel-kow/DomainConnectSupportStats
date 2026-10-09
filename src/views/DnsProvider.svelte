@@ -17,7 +17,8 @@
   import { scannerStart } from '../lib/data/config';
   import { cardSweep } from '../lib/annotation';
   import { defaultClient, NotFoundError } from '../lib/data/load';
-  import { undeterminedCount } from '../lib/dns-providers';
+  import { templateSupport } from '../lib/dns-providers';
+  import { templateCount } from '../lib/supporting';
   import { findTable, oneRecord } from '../lib/data/tables';
   import type { Column, ExportFile, Manifest, Row } from '../lib/data/types';
   import { formatAxisPct, formatCount, formatPct, UNKNOWN } from '../lib/format';
@@ -139,10 +140,12 @@
       />
     {:else}
       {@const provider = oneRecord(findTable(file, 'provider'))}
-      {@const support = oneRecord(findTable(file, 'support'))}
       {@const share = oneRecord(findTable(file, 'share'))}
       {@const urls = findTable(file, 'urls')}
       {@const templates = findTable(file, 'supported_templates')}
+      {@const probed = text(provider, 'support_last_status') !== null}
+      {@const supportedTemplates = templates ? templates.rows.length : null}
+      {@const templateShare = templateSupport(supportedTemplates, templateCount(manifest))}
       {@const supportHistory = findTable(file, 'support_history')}
       {@const shareHistory = findTable(file, 'share_history')}
       {@const stack = text(provider, 'provider_id')}
@@ -171,22 +174,18 @@
 
       <section class="summary-stats" aria-label="Support and domain share" data-testid="headline">
         <StatCard
-          value={formatCount(num(support, 'supported_count'))}
-          exact={num(support, 'supported_count')}
-          label="Supported"
-          detail={`of ${formatCount(num(support, 'total'))} template versions (${formatPct(num(support, 'supported_pct'))})`}
+          value={formatCount(supportedTemplates)}
+          label="Supported templates"
+          detail={probed
+            ? `of ${formatCount(templateCount(manifest))} templates (${formatPct(templateShare.supportedPct)})`
+            : 'not probed yet'}
         />
         <StatCard
-          value={formatCount(num(support, 'unsupported_count'))}
-          exact={num(support, 'unsupported_count')}
+          value={probed ? formatCount(templateShare.notSupported) : UNKNOWN}
           label="Not supported"
-          detail={formatPct(num(support, 'unsupported_pct'))}
-        />
-        <StatCard
-          value={formatCount(undeterminedCount(support))}
-          exact={undeterminedCount(support)}
-          label="Not yet determined"
-          detail="never probed, retried or failed"
+          detail={probed
+            ? `${formatPct(templateShare.notSupportedPct)}, not yet determined included`
+            : 'not probed yet'}
         />
         <StatCard
           value={formatPct(num(share, 'share_pct'))}
@@ -266,6 +265,7 @@
             searchable
             pageSize={20}
             cell={templateCell}
+            sort={{ key: 'since', direction: -1 }}
             emptyText="No template supported in the latest probes"
           />
         </Panel>

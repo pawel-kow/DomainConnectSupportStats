@@ -3,24 +3,31 @@ import type { Row, Table } from '../../src/lib/data/types';
 import {
   dnsProviderList,
   isHiddenByDefault,
+  NOT_SUPPORTED_KEY,
   statusBadge,
-  undeterminedCount,
-  UNDETERMINED_KEY,
+  SUPPORTED_PCT_KEY,
+  templateSupport,
 } from '../../src/lib/dns-providers';
 import { exampleJson } from '../fixtures';
 
 const providers = () => exampleJson('dns-providers.json').tables.dns_providers as Table;
 const ids = (rows: Row[]) => rows.map((r) => r.dns_provider_id);
 
-describe('undeterminedCount', () => {
-  it('is total minus supported minus not supported', () => {
-    expect(undeterminedCount({ total: 6, supported_count: 4, unsupported_count: 1 })).toBe(1);
+describe('templateSupport', () => {
+  it('is supported and the rest as shares of every template', () => {
+    expect(templateSupport(1, 4)).toEqual({
+      supportedPct: 25,
+      notSupported: 3,
+      notSupportedPct: 75,
+    });
   });
 
-  it('is unknown when a count is unknown', () => {
-    expect(undeterminedCount({ total: null, supported_count: 4, unsupported_count: 1 })).toBeNull();
-    expect(undeterminedCount({ total: 6, supported_count: 4 })).toBeNull();
-    expect(undeterminedCount(undefined)).toBeNull();
+  it('is unknown when a count is unknown, or supported exceeds the templates', () => {
+    const unknown = { supportedPct: null, notSupported: null, notSupportedPct: null };
+    expect(templateSupport(null, 4)).toEqual(unknown);
+    expect(templateSupport(1, null)).toEqual(unknown);
+    expect(templateSupport(0, 0)).toEqual(unknown);
+    expect(templateSupport(5, 4)).toEqual(unknown);
   });
 });
 
@@ -65,11 +72,12 @@ describe('dnsProviderList', () => {
     expect(dnsProviderList(providers(), { stack: 'nope', showAll: true }).table.rows).toEqual([]);
   });
 
-  it('adds the not-yet-determined column after the not-supported columns', () => {
-    const { table } = dnsProviderList(providers(), { stack: null, showAll: true });
+  it('adds template support out of every template after supported_templates', () => {
+    const { table } = dnsProviderList(providers(), { stack: null, showAll: true }, 5);
     const keys = table.columns.map((c) => c.key);
-    expect(keys.indexOf(UNDETERMINED_KEY)).toBe(keys.indexOf('unsupported_pct') + 1);
-    expect(table.rows.map((r) => r[UNDETERMINED_KEY])).toEqual([1, 3, 1, 6, 1, 0]);
+    expect(keys.indexOf(SUPPORTED_PCT_KEY)).toBe(keys.indexOf('supported_templates') + 1);
+    expect(table.rows.map((r) => r[NOT_SUPPORTED_KEY])).toEqual([2, 3, 3, 5, null, 5]);
+    expect(table.rows[0]![SUPPORTED_PCT_KEY]).toBe(60);
   });
 
   it('keeps unknown columns and keys', () => {

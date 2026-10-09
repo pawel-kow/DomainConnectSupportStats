@@ -5,17 +5,19 @@
  */
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import type {
-  FirstSupport,
-  Leaderboards,
-  SupporterSince,
-  Sweep,
-  TemplateSupporters,
-  TemplatesSupport,
+import {
+  templateShares,
+  type FirstSupport,
+  type Leaderboards,
+  type StacksSupport,
+  type SupporterSince,
+  type Sweep,
+  type TemplateSupporters,
+  type TemplatesSupport,
 } from '../src/lib/data/derived.ts';
 import { cardPath, type DataFile, type FileKind, type Manifest } from './export-release.ts';
 
-export { LEADERBOARDS_FILE, TEMPLATES_FILE } from '../src/lib/data/derived.ts';
+export { LEADERBOARDS_FILE, STACKS_FILE, TEMPLATES_FILE } from '../src/lib/data/derived.ts';
 
 interface HistoryRow extends Sweep {
   supported_templates: number | null;
@@ -43,7 +45,13 @@ function release(dir: string) {
     if (!card || !list) throw new Error(`manifest.json: no ${kind} card kind with its list`);
     return { card, rows: file(list.path).tables[card.table ?? '']?.rows ?? [] };
   };
-  return { manifest, file, cards };
+  /** The rows of list `kind`'s table `table`. */
+  const list = (kind: string, table: string): Row[] => {
+    const path = manifest.files[kind]?.path;
+    if (!path) throw new Error(`manifest.json: no ${kind} list`);
+    return file(path).tables[table]?.rows ?? [];
+  };
+  return { manifest, file, cards, list };
 }
 
 /** Derive `leaderboards.json` from a release directory. Throws on a file of another release. */
@@ -137,4 +145,23 @@ export function deriveTemplates(dir: string): DerivedTemplates {
       cardFiles.set(path, { generated_at: manifest.generated_at, supporters });
   }
   return { list, cards: cardFiles };
+}
+
+/**
+ * Derive each stack's template support distribution from its deployments in the DNS providers list,
+ * as shares of every template (the templates list's rows). Throws on a file of another release.
+ */
+export function deriveStacks(dir: string): StacksSupport {
+  const { manifest, list } = release(dir);
+  const templates = manifest.files.templates?.rows?.service_templates ?? null;
+  const byStack = new Map<unknown, Row[]>();
+  for (const row of list('dns_providers', 'dns_providers'))
+    byStack.set(row.provider_id, [...(byStack.get(row.provider_id) ?? []), row]);
+  return {
+    generated_at: manifest.generated_at,
+    stacks: list('stacks', 'stacks').map((stack) => ({
+      provider_id: stack.provider_id as string,
+      ...templateShares(byStack.get(stack.provider_id) ?? [], templates),
+    })),
+  };
 }

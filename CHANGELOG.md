@@ -19,6 +19,13 @@ fixes, styling and dependencies.
 - Template card and service provider card templates: supporting DNS providers also as a share of
   the DNS providers supporting at least one template.
 
+- DNS provider support counts templates instead of template versions: supported and not
+  supported (not yet determined included) of every template, on the DNS providers list, the DNS
+  provider card and the stack card's deployments. The "Not yet determined" card and column are gone.
+- Stacks: median, lowest and highest support are shares of every template, over deployments with
+  a probe answer.
+- DNS provider card: supported templates sorted by "Supported since", newest first.
+
 ### Added
 
 - Template card: "Supported since" per supporting DNS provider.

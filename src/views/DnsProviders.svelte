@@ -8,8 +8,15 @@
   import { defaultClient } from '../lib/data/load';
   import { findTable } from '../lib/data/tables';
   import type { Column, Manifest, Row } from '../lib/data/types';
-  import { dnsProviderList, UNDETERMINED_KEY } from '../lib/dns-providers';
-  import { formatCount, formatExact, formatPct, UNKNOWN } from '../lib/format';
+  import {
+    dnsProviderList,
+    isNeverProbed,
+    NOT_SUPPORTED_KEY,
+    NOT_SUPPORTED_PCT_KEY,
+    SUPPORTED_PCT_KEY,
+  } from '../lib/dns-providers';
+  import { templateCount } from '../lib/supporting';
+  import { formatCount, formatPct, UNKNOWN } from '../lib/format';
   import { links } from '../lib/links';
   import DomainShare from '../lib/components/DomainShare.svelte';
   import type { Scan } from '../lib/domains';
@@ -48,9 +55,8 @@
     'provider_id',
     'settings_status',
     'support_status',
-    'supported_count',
-    'unsupported_count',
-    UNDETERMINED_KEY,
+    'supported_templates',
+    NOT_SUPPORTED_KEY,
     'domains',
   ];
   const CUSTOM_KEYS = [
@@ -58,8 +64,8 @@
     'provider_id',
     'settings_status',
     'support_status',
-    'supported_count',
-    'unsupported_count',
+    'supported_templates',
+    NOT_SUPPORTED_KEY,
     'domains',
   ];
 
@@ -90,15 +96,12 @@
     {#if s}<a href={links.stack(s)}>{s}</a>{:else}{UNKNOWN}{/if}
   {:else if column.key === 'settings_status' || column.key === 'support_status'}
     <StatusBadge status={row[column.key] ?? null} />
-  {:else if column.key === 'supported_count'}
-    {@const n = num(row, 'supported_count')}
-    {@render countPct(
-      formatCount(n),
-      num(row, 'supported_pct'),
-      n === null ? undefined : `of ${formatExact(num(row, 'total'))} template versions`,
-    )}
-  {:else if column.key === 'unsupported_count'}
-    {@render countPct(formatCount(num(row, column.key)), num(row, 'unsupported_pct'))}
+  {:else if isNeverProbed(row) && column.key === 'supported_templates'}
+    <span class="muted count">Not probed yet</span>
+  {:else if column.key === 'supported_templates'}
+    {@render countPct(formatCount(num(row, column.key)), num(row, SUPPORTED_PCT_KEY))}
+  {:else if column.key === NOT_SUPPORTED_KEY}
+    {@render countPct(formatCount(num(row, column.key)), num(row, NOT_SUPPORTED_PCT_KEY))}
   {:else if column.key === 'domains'}
     <DomainShare pct={num(row, 'domains_pct')} domains={num(row, 'domains')} {scan} />
   {/if}
@@ -110,7 +113,7 @@
   {:then file}
     {@const source = findTable(file, 'dns_providers')}
     {#if source}
-      {@const list = dnsProviderList(source, { stack, showAll })}
+      {@const list = dnsProviderList(source, { stack, showAll }, templateCount(manifest))}
       <Panel
         id="dns-providers"
         title={stack ? `DNS providers of stack ${stack}` : 'DNS providers'}
@@ -133,7 +136,7 @@
           table={list.table}
           keys={KEYS}
           customKeys={CUSTOM_KEYS}
-          phoneKeys={['name', 'supported_count', 'domains']}
+          phoneKeys={['name', 'supported_templates', 'domains']}
           cell={providerCell}
           searchable
           pageSize={20}
@@ -145,14 +148,11 @@
         />
         <ul class="caveats" data-testid="caveats">
           <li>
-            Support counts template versions by the latest probe; the share is of the provider's
-            template versions on record. Undetermined: not yet determined (never probed, being
-            retried or failed) (<a href={links.methodology('52-support-probe')}>methodology 5.2</a
+            Supported: templates supported in any version by the latest probes; not supported: the
+            other templates, not yet determined included (never probed, being retried or failed).
+            Both as a share of every template ({formatCount(templateCount(manifest))}) (<a
+              href={links.methodology('52-support-probe')}>methodology 5.2</a
             >).
-          </li>
-          <li>
-            A DNS provider without template versions on record shows a total of 1, with nothing
-            supported or not supported.
           </li>
           <li>
             Domains: share of the scanned domains whose Domain Connect record is attributed to the

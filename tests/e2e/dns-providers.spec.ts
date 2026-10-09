@@ -12,15 +12,13 @@ test.describe('DNS providers list (dns-providers.html)', () => {
     await expect(names(page)).toHaveText(['Cloudflare', 'IONOS', 'Plesk']);
     const cloudflare = page.locator('tbody tr', { hasText: 'Cloudflare' });
     await expect(cloudflare).toContainText('api.cloudflare.com');
-    await expect(cloudflare).toContainText(/4\s*66.7%/);
-    await expect(cloudflare).not.toContainText('4 of 6');
-    await expect(cloudflare.getByTitle('of 6 template versions')).toHaveText('4');
-    await expect(cloudflare).toContainText(/1\s*16.7%/);
+    await expect(cloudflare).toContainText(/3\s*60.0%/);
+    await expect(cloudflare).toContainText(/2\s*40.0%/);
     await expect(cloudflare).not.toContainText('4,000');
     await expect(
       cloudflare.getByTitle('4,000 of 12K scanned domains in the partial scan of 01-06-2026'),
     ).toHaveText('33.3%');
-    await expect(page.getByTestId('caveats')).toContainText('total of 1');
+    await expect(page.getByTestId('caveats')).toContainText('share of every template (5)');
     await expect(page.getByTestId('caveats')).toContainText('last attempt');
   });
 
@@ -92,11 +90,10 @@ test.describe('DNS providers list (dns-providers.html)', () => {
     await expect(names(page).first()).toHaveText('Quiet Host');
   });
 
-  test('sorts by the undetermined count on wide screens', async ({ page }, testInfo) => {
-    test.skip(testInfo.project.name === 'mobile', 'column hidden at phone width');
+  test('shows a never-probed DNS provider as not probed yet', async ({ page }) => {
     await page.goto('dns-providers.html?all=1');
-    await page.getByRole('button', { name: /Undetermined/i }).click();
-    await expect(page.locator('tbody tr').first()).toContainText('domainconnect.plesk.com');
+    const never = page.locator('tbody tr', { hasText: 'Small Registrar' });
+    await expect(never).toContainText('Not probed yet');
   });
 
   test('links names to DNS provider cards and stacks to stack cards', async ({ page }) => {
@@ -194,7 +191,7 @@ test.describe('DNS providers list (dns-providers.html)', () => {
         .evaluate((w) => w.scrollWidth - w.clientWidth);
       expect(overflow).toBeLessThanOrEqual(0);
     } else {
-      await expect(headers).toHaveCount(8);
+      await expect(headers).toHaveCount(7);
     }
   });
 

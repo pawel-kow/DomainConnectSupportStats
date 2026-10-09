@@ -87,7 +87,7 @@ The site shows the latest release the Scanner publishes and always states its ag
 | ------ | ------------------------------------------------ | ------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | F-1.1  | `index.html` (landing)                           | `overview.json`                 | One "Domain Connect support over time" chart on a shared date axis: adoption `dc_pct` per import (with `dc_domains` in the tooltip) and `supporting_dns_providers`, `supporting_stacks`, `supported_templates` per full sweep (secondary axis); the latest values as headline numbers (F-1g); F-4.6 |
 | F-1.2  | `dns-providers.html` (`?stack=`, `&q=`, `&all=`) | `dns-providers.json`            | Every DNS provider; filter by stack and search; layout F-1b                                                                                                                                                                                                                                         |
-| F-1.3  | `stacks.html`                                    | `stacks.json`                   | Every stack with its support distribution                                                                                                                                                                                                                                                           |
+| F-1.3  | `stacks.html`                                    | `stacks.json`, derived data     | Every stack with its support distribution                                                                                                                                                                                                                                                           |
 | F-1.4  | `service-providers.html` (`?q=`)                 | `service-providers.json`        | Every service provider, including ones without templates; search; layout F-1f                                                                                                                                                                                                                       |
 | F-1.5  | `templates.html` (`?spid=`, `&q=`, `&all=`)      | `templates.json`                | Every template; filter by service provider and search; layout F-1d                                                                                                                                                                                                                                  |
 | F-1.6  | `dns-provider.html?id=`                          | DNS provider card               | Layout F-1a; charts: domain share per import, supported templates per sweep; the stack's registry entry                                                                                                                                                                                             |
@@ -117,20 +117,23 @@ load: a short error in their place.
 Settings show the URLs, name servers and first-seen time; probe statuses, errors and last-success
 times are not shown.
 
+Headline: supported and not supported templates (F-2.21), domain share, rank. Stack card: median,
+lowest and highest template support across its deployments (F-2.21); deployments table as F-1b.
+DNS provider card supported templates: newest `since` first by default.
+
 ### F-1b DNS providers list
 
 - Columns: name (card link) with its API host below; stack (stack card link); settings and support
-  status badges; supported (of total, %); not supported (%); undetermined
-  (`total - supported - not supported`); domains (F-2.18). Sorted by the counts. Phone width:
-  name, supported and domains only. Paginated (F-2.10).
+  status badges; supported and not supported templates (F-2.21); domains (F-2.18). Sorted by the
+  counts. Phone width: name, supported and domains only. Paginated (F-2.10).
 - Badges: `ok` "OK" green; `http_error`, `error` "HTTP error" and `connection_error` "Connection
   error" orange; `dead` "Given up" and `null` "Not checked yet" grey. The hover text shows the raw
   value.
 - Hidden by default (F-2.6): either status `dead`, support status `null`, or `domains` 0 (`null`
   domains stays visible). The toggle is `&all=1`; it applies after `?stack=`.
 - `?q=` and `&all=` follow the search box and toggle in the URL.
-- Footnotes: undetermined, `total` 1 without template versions, attributed domains only, statuses
-  describe the last attempt.
+- Footnotes: what supported and not supported count, and of what; attributed domains only;
+  statuses describe the last attempt.
 
 ### F-1c Template card
 
@@ -276,6 +279,13 @@ scan of DD-MM-YYYY`: "full scan" at `sample_percent` 100, "partial scan" below, 
   overview shows (templates list, template card headline, service provider card templates).
 - F-2.20 Timestamps in tables, cards and records show the date (`DD-MM-YYYY`); the hover text
   shows `DD-MM-YYYY HH:MM UTC`. Sentences (the annotation, F-2.1) keep the full time.
+- F-2.21 A DNS provider's support counts templates, never template versions: supported =
+  `supported_templates` (any version), not supported = every other template (not yet determined
+  included; the export has no per-template split), both also as a share of every template (the
+  templates list's rows, `manifest.files.templates.rows`). A DNS provider never probed (support
+  status `null`) reads "Not probed yet". A stack's support: min, median and max of that share over
+  its deployments with at least one probe answer (`supported_count + unsupported_count` > 0);
+  derived for the stacks list (F-4.5).
 - F-2.9 Internal ids (`dns_provider_id`, `import_id`, `sweep_id`) are not shown: no columns, titles,
   tooltips or messages. They stay in URLs and lookups. Charts speak of time only: no "import" or
   "sweep" in headings, labels or tooltips. Public ids (`provider_id`,
@@ -318,7 +328,8 @@ Page `leaderboards.html` with every board; each says what it ranks, of what, and
 - F-4.5 Derived data: `scripts/derive.ts` collects F-4.4 from the cards into
   `derived/leaderboards.json` next to the export at deploy, and from the DNS provider cards'
   `supported_templates` each template's supporting DNS providers into `derived/templates.json` and
-  their `since` into `derived/<template card path>`; the site rejects a derived file when its
+  their `since` into `derived/<template card path>`, and from the DNS providers list each stack's
+  template support (F-2.21) into `derived/stacks.json`; the site rejects a derived file when its
   `generated_at` differs from the manifest's. Without them, the templates list's supported columns
   and the supporters' since are `–`. A board whose data fails to load (missing, another release) says "Not available at the moment", without technical details; the rest of the page shows.
 - F-4.6 The overview shows F-4.4 and the most improved top 5 (since the previous sweep) below the chart, side by side on desktop, with a link to the page.
