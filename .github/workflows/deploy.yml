@@ -123,7 +123,13 @@ jobs:
       - name: Unit, contract and component tests
         run: npm test
       - name: Build
-        run: npm run build
+        # The site origin goes into every page's absolute og:image (vite.config.ts
+        # absoluteOgImage). Override with the SITE_URL repository variable; defaults
+        # to the Pages URL of this repository.
+        run: |
+          VITE_SITE_URL="${VITE_SITE_URL:-https://${GITHUB_REPOSITORY_OWNER}.github.io/${GITHUB_REPOSITORY#*/}/}" npm run build
+        env:
+          VITE_SITE_URL: ${{ vars.SITE_URL }}
       - name: Validate and bundle the release
         run: npm run bundle:data -- "export-data/${{ vars.DATA_PATH || '.' }}" dist
       - name: Derive data from the release

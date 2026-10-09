@@ -59,13 +59,14 @@ one at a time (`concurrency: pages`).
 2. **Settings → Environments → New environment `release`** → Required reviewers: the maintainer.
 3. **Settings → Secrets and variables → Actions → Variables:**
 
-   | Variable        | Required | Default | Meaning                                            |
-   | --------------- | -------- | ------- | -------------------------------------------------- |
-   | `DATA_REPO`     | yes      | —       | `owner/name` of the data repo                      |
-   | `DATA_REF`      | no       | `main`  | Branch or tag of the data repo                     |
-   | `DATA_PATH`     | no       | `.`     | Directory in the data repo holding `manifest.json` |
-   | `REGISTRY_REPO` | yes      | —       | `owner/name` of the DNS provider registry (public) |
-   | `REGISTRY_REF`  | no       | `main`  | Branch or tag of the registry                      |
+   | Variable        | Required | Default   | Meaning                                                                                |
+   | --------------- | -------- | --------- | -------------------------------------------------------------------------------------- |
+   | `DATA_REPO`     | yes      | —         | `owner/name` of the data repo                                                          |
+   | `DATA_REF`      | no       | `main`    | Branch or tag of the data repo                                                         |
+   | `DATA_PATH`     | no       | `.`       | Directory in the data repo holding `manifest.json`                                     |
+   | `REGISTRY_REPO` | yes      | —         | `owner/name` of the DNS provider registry (public)                                     |
+   | `REGISTRY_REF`  | no       | `main`    | Branch or tag of the registry                                                          |
+   | `SITE_URL`      | no       | Pages URL | Site origin written into `og:image` at build time; default `<owner>.github.io/<repo>/` |
 
 4. **Secret `DATA_REPO_TOKEN`**, only for a private data repo: fine-grained token, _Contents:
    read_ on the data repo.

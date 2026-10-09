@@ -4,6 +4,16 @@ Changes per site version. Versions follow [SemVer](https://semver.org/): major f
 parameter removed or changed incompatibly, minor for new pages, features or content, patch for
 fixes, styling and dependencies.
 
+## [0.16.1] - 2026-10-09
+
+### Fixed
+
+- `og:image` is written absolute at build time, from the deploy's site origin
+  (`VITE_SITE_URL`, `SITE_URL` variable, deploy default the Pages URL). Link-preview
+  crawlers (Bluesky, Mastodon, LinkedIn) read the raw HTML and never run the
+  browser-side `absoluteOgImage`, so a relative image is lost for them. Keeps the
+  relative value when unset (dev, preview, PR builds).
+
 ## [0.16.0] - 2026-10-09
 
 ### Changed
