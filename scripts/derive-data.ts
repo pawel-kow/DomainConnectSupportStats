@@ -1,6 +1,6 @@
 /**
  * Write the derived data of an export release into `<outDir>/`: `leaderboards.json`,
- * `stacks.json`, `templates.json` and one file per template at its card's path.
+ * `ecosystem.json`, `stacks.json`, `templates.json` and one file per template at its card's path.
  * Usage: node scripts/derive-data.ts [releaseDir] [outDir]
  * releaseDir defaults to DATA_DIR, else the contract's example export; outDir to DERIVED_DIR, else
  * `.derived`. The deploy writes into
@@ -9,9 +9,11 @@
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import {
+  ECOSYSTEM_FILE,
   LEADERBOARDS_FILE,
   STACKS_FILE,
   TEMPLATES_FILE,
+  deriveEcosystem,
   deriveLeaderboards,
   deriveStacks,
   deriveTemplates,
@@ -37,8 +39,9 @@ const templates = deriveTemplates(releaseDir);
 write(TEMPLATES_FILE, templates.list);
 for (const [path, card] of templates.cards) write(path, card);
 write(STACKS_FILE, deriveStacks(releaseDir));
+write(ECOSYSTEM_FILE, deriveEcosystem(releaseDir));
 console.log(
-  `derived ${LEADERBOARDS_FILE}, ${STACKS_FILE}, ${TEMPLATES_FILE} and ${templates.cards.size} template file(s) ` +
+  `derived ${LEADERBOARDS_FILE}, ${ECOSYSTEM_FILE}, ${STACKS_FILE}, ${TEMPLATES_FILE} and ${templates.cards.size} template file(s) ` +
     `from ${releaseDir} into ${outDir}: ` +
     `${leaderboards.first_support.length} DNS provider(s) with a first support`,
 );

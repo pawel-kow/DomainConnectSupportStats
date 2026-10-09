@@ -1,9 +1,11 @@
 import { dataBaseUrl } from './config';
 import {
   DERIVED_DIR,
+  ECOSYSTEM_FILE,
   LEADERBOARDS_FILE,
   STACKS_FILE,
   TEMPLATES_FILE,
+  type Ecosystem,
   type Leaderboards,
   type StacksSupport,
   type TemplateSupporters,
@@ -90,6 +92,11 @@ export class ExportClient {
   /** The derived `leaderboards.json`. */
   leaderboards(): Promise<Leaderboards> {
     return this.derived(() => LEADERBOARDS_FILE);
+  }
+
+  /** The derived `ecosystem.json`: support weighted by domain share per full sweep. */
+  ecosystem(): Promise<Ecosystem> {
+    return this.derived(() => ECOSYSTEM_FILE);
   }
 
   /** The derived `stacks.json`: template support distribution per stack. */

@@ -4,8 +4,8 @@ Break the overview's "Domain Connect support over time" chart into four charts, 
 
 ## Tasks
 
-- [~] Derive reach-weighted pairs per full sweep (`derived/ecosystem.json`), tests
-- [ ] Overview: 4 panels (DC adoption; supporting DNS providers; supported templates; ecosystem growth), both growth variants for preview
+- [x] Derive reach-weighted pairs per full sweep (`derived/ecosystem.json`), tests
+- [~] Overview: 4 panels (DC adoption; supporting DNS providers; supported templates; ecosystem growth), both growth variants for preview
 - [ ] Screenshots of both variants on real data; maintainer picks one
 - [ ] Remove the variant not chosen (and its derived file if unused)
 - [ ] Scanner issue for the chosen series

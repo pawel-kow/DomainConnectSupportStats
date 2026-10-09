@@ -122,4 +122,10 @@ describe('ExportClient', () => {
     const fetchFn = exampleFetch({ 'derived/stacks.json': support });
     await expect(new ExportClient(BASE, fetchFn).stacksSupport()).resolves.toEqual(support);
   });
+
+  it('reads the derived ecosystem of the same release', async () => {
+    const ecosystem = { generated_at: '2026-10-01T00:00:00Z', ecosystem: [] };
+    const fetchFn = exampleFetch({ 'derived/ecosystem.json': ecosystem });
+    await expect(new ExportClient(BASE, fetchFn).ecosystem()).resolves.toEqual(ecosystem);
+  });
 });
