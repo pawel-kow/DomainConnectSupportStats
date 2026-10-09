@@ -2,9 +2,9 @@
 
 ## Tasks
 
-- [~] `no-plan-files` skips draft PRs; runs on `ready_for_review`
-- [ ] Docs: DEVELOPING.md §3.11, TESTING.md §7
-- [ ] PR, remove plan
+- [x] `no-plan-files` skips draft PRs; runs on `ready_for_review`
+- [x] Docs: DEVELOPING.md §3.11, TESTING.md §7
+- [~] PR, remove plan
 
 ## Findings
 

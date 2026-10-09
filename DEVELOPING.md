@@ -331,7 +331,7 @@ Template:
 - <needs a human answer>
 ```
 
-CI job `no-plan-files` fails a PR that still tracks `.plan/` files.
+CI job `no-plan-files` fails a PR that still tracks `.plan/` files; it skips draft PRs.
 
 ---
 

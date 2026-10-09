@@ -147,7 +147,7 @@ Against a real release: `DATA_DIR=<release> REGISTRY_DIR=<registry> npm run test
 | E2E                                 | `npm run test:e2e`                                        | CI, `verify`                           |
 | Incoming release valid              | `npm run bundle:data -- <release> dist`                   | deploy (refuses to publish on failure) |
 | Incoming registry valid             | `npm run bundle:registry -- <dir> dist <repo> <commit>`   | deploy (refuses to publish on failure) |
-| No `.plan/` files                   | `no-plan-files` job                                       | CI on PRs                              |
+| No `.plan/` files                   | `no-plan-files` job                                       | CI on PRs, not drafts                  |
 
 A fresh container needs `npx playwright install --with-deps chromium` (the devcontainer's
 postCreate runs it).
