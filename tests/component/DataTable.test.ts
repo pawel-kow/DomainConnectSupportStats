@@ -186,7 +186,10 @@ describe('DataTable pagination', () => {
       const table = dnsProvider();
       table.rows[0]!.since = '2026-10-01 03:00:00';
       render(DataTable, { table, keys: ['service_name', 'since'] });
-      expect(bodyColumn(1)).toEqual(['01-10-2026 03:00 UTC', 'First scan', 'First scan']);
+      expect(bodyColumn(1)).toEqual(['01-10-2026', 'First scan', 'First scan']);
+      const cells = screen.getAllByRole('row').map((r) => within(r).queryAllByRole('cell')[1]);
+      expect(cells[1]).toHaveAttribute('title', '01-10-2026 03:00 UTC');
+      expect(cells[2]).not.toHaveAttribute('title');
       expect(screen.getAllByText('First scan')[0]).toHaveAttribute(
         'title',
         'Already present on the first scan on 01-04-2026. The real date is unknown.',
@@ -197,7 +200,7 @@ describe('DataTable pagination', () => {
       window.DC_STATS_CONFIG = {};
       render(DataTable, { table: dnsProvider(), keys: ['service_name', 'since'] });
       expect(screen.queryByText('First scan')).not.toBeInTheDocument();
-      expect(bodyColumn(1)[0]).toBe('01-07-2026 03:00 UTC');
+      expect(bodyColumn(1)[0]).toBe('01-07-2026');
     });
 
     it('keeps null as a dash', () => {
@@ -212,7 +215,7 @@ describe('DataTable pagination', () => {
       table.rows[0]!.since = '2026-10-01 03:00:00';
       render(DataTable, { table, keys: ['service_name', 'since'] });
       await fireEvent.click(screen.getByRole('button', { name: /SUPPORTED SINCE/ }));
-      expect(bodyColumn(1)).toEqual(['First scan', 'First scan', '01-10-2026 03:00 UTC']);
+      expect(bodyColumn(1)).toEqual(['First scan', 'First scan', '01-10-2026']);
       expect(bodyColumn(0)).toEqual(['Example Website', 'Domain Verification', 'Acme Mail']);
     });
   });

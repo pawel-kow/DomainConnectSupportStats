@@ -56,8 +56,8 @@ export function withSupport(
     ...source,
     columns: [
       ...source.columns,
-      { key: 'supporting_dns_providers', header: 'Supported' },
-      { key: 'not_supporting_dns_providers', header: 'Not supported' },
+      { key: 'supporting_dns_providers', header: 'SUPPORTED' },
+      { key: 'not_supporting_dns_providers', header: 'NOT SUPP.' },
     ],
     rows: source.rows.map((row) => {
       const n = counts.get(JSON.stringify([row.provider_id, row.service_id])) ?? null;

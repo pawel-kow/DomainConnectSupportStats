@@ -169,15 +169,17 @@
         <tr>
           {#each columns as column (column.key)}
             {@const value = row[column.key] ?? null}
+            {@const custom = cell !== undefined && customKeys.includes(column.key)}
+            {@const badge = !custom && isBeforeScans(column.key, value, start)}
             <td
-              title={cellTitle(column.key, value)}
+              title={custom || badge ? undefined : cellTitle(column.key, value)}
               class:num={isNumeric(column.key)}
               class:nowrap={isTimestamp(column.key)}
               class:wide-only={isWideOnly(column.key)}
             >
-              {#if cell && customKeys.includes(column.key)}
-                {@render cell(column, row)}
-              {:else if isBeforeScans(column.key, value, start)}
+              {#if custom}
+                {@render cell!(column, row)}
+              {:else if badge}
                 <BeforeScansBadge value={String(value)} />
               {:else}
                 {formatCell(column.key, value)}

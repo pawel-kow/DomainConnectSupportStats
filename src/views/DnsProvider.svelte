@@ -5,6 +5,7 @@
   import DataTable from '../lib/components/DataTable.svelte';
   import ExternalLink from '../lib/components/ExternalLink.svelte';
   import Layout from '../lib/components/Layout.svelte';
+  import Timestamp from '../lib/components/Timestamp.svelte';
   import LoadError from '../lib/components/LoadError.svelte';
   import NotFound from '../lib/components/NotFound.svelte';
   import Notes from '../lib/components/Notes.svelte';
@@ -19,7 +20,7 @@
   import { undeterminedCount } from '../lib/dns-providers';
   import { findTable, oneRecord } from '../lib/data/tables';
   import type { Column, ExportFile, Manifest, Row } from '../lib/data/types';
-  import { formatAxisPct, formatCount, formatDateTime, formatPct, UNKNOWN } from '../lib/format';
+  import { formatAxisPct, formatCount, formatPct, UNKNOWN } from '../lib/format';
   import { links } from '../lib/links';
   import { integerParam } from '../lib/params';
   import { defaultRegistryClient, entryFileUrl } from '../lib/registry/load';
@@ -300,7 +301,7 @@
             {#if isBeforeScans('first_seen_at', text(provider, 'first_seen_at'), scannerStart())}
               <BeforeScansBadge value={text(provider, 'first_seen_at') ?? ''} />
             {:else}
-              {formatDateTime(text(provider, 'first_seen_at'))}
+              <Timestamp value={text(provider, 'first_seen_at')} />
             {/if}
           </dd>
         </dl>

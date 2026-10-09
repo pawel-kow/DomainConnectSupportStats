@@ -11,7 +11,9 @@
   import { links } from '../lib/links';
   import { withHash } from '../lib/share';
   import { flagParam, textParam } from '../lib/params';
-  import { isNeverProbed, templateList } from '../lib/templates-list';
+  import { isNeverProbed, templateList, withSupport } from '../lib/templates-list';
+  import { domainsTitle, type Scan } from '../lib/domains';
+  import { overviewFacts } from '../lib/overview-facts';
 
   const search = window.location.search;
   const spid = textParam(search, 'spid');
@@ -29,9 +31,17 @@
 
   const client = defaultClient();
   let manifest = $state<Manifest | null>(null);
-  const loading = client.manifest().then((m) => {
+  /** The domain-share import, for the hover text of reach. */
+  let scan = $state<Scan | null>(null);
+  const loading = client.manifest().then(async (m) => {
     manifest = m;
-    return client.file('templates');
+    const [file, facts, support] = await Promise.all([
+      client.file('templates'),
+      overviewFacts(client, m),
+      client.templatesSupport().catch(() => null),
+    ]);
+    scan = facts.scan;
+    return { file, support, total: facts.supportingDnsProviders };
   });
 
   if (spid) document.title = `${spid} - Templates - Domain Connect Support Statistics`;
@@ -40,15 +50,15 @@
     'provider_name',
     'service_name',
     'added_at',
-    'supported_count',
-    'unsupported_count',
+    'supporting_dns_providers',
+    'not_supporting_dns_providers',
     'reach_domains',
   ];
   const CUSTOM_KEYS = [
     'service_name',
     'provider_name',
-    'supported_count',
-    'unsupported_count',
+    'supporting_dns_providers',
+    'not_supporting_dns_providers',
     'reach_domains',
   ];
 
@@ -86,28 +96,25 @@
         >{row.provider_name ?? spidOf}</a
       >{:else}{row.provider_name ?? UNKNOWN}{/if}
   {:else if isNeverProbed(row) && column.key !== 'reach_domains'}
-    {#if column.key === 'supported_count'}<span class="muted not-probed">Not probed yet</span
+    {#if column.key === 'supporting_dns_providers'}<span class="muted not-probed"
+        >Not probed yet</span
       >{:else}{UNKNOWN}{/if}
-  {:else if column.key === 'supported_count'}
-    {@const n = num(row, 'supported_count')}
-    {@render countPct(
-      n === null ? UNKNOWN : `${formatCount(n)} of ${formatCount(num(row, 'total'))}`,
-      num(row, 'supported_pct'),
-    )}
-  {:else if column.key === 'unsupported_count'}
-    {@render countPct(formatCount(num(row, 'unsupported_count')), num(row, 'unsupported_pct'))}
+  {:else if column.key === 'supporting_dns_providers' || column.key === 'not_supporting_dns_providers'}
+    {@render countPct(formatCount(num(row, column.key)), num(row, `${column.key}_pct`))}
   {:else if column.key === 'reach_domains'}
-    {@render countPct(formatCount(num(row, 'reach_domains')), num(row, 'reach_pct'))}
+    <span class="count" title={domainsTitle(num(row, 'reach_domains'), scan)}
+      >{formatPct(num(row, 'reach_pct'))}</span
+    >
   {/if}
 {/snippet}
 
 <Layout current="templates" {manifest}>
   {#await loading}
     <p class="no-data">Loading…</p>
-  {:then file}
+  {:then { file, support, total }}
     {@const source = findTable(file, 'service_templates')}
     {#if source}
-      {@const list = templateList(source, { spid, showAll })}
+      {@const list = templateList(withSupport(source, support, total), { spid, showAll })}
       {@const spName = spid ? providerName(source.rows, spid) : null}
       <Panel
         id="templates"
@@ -131,7 +138,7 @@
           table={list.table}
           keys={KEYS}
           customKeys={CUSTOM_KEYS}
-          phoneKeys={['provider_name', 'service_name', 'supported_count', 'reach_domains']}
+          phoneKeys={['provider_name', 'service_name', 'supporting_dns_providers', 'reach_domains']}
           cell={templateCell}
           searchable
           pageSize={20}
@@ -143,15 +150,15 @@
         />
         <ul class="caveats" data-testid="caveats">
           <li>
-            Supported and not supported count pairs of DNS provider and template version by their
-            latest probe; the rest are not yet determined (<a
+            Supported: DNS providers supporting any version of the template; not supported: the
+            other DNS providers supporting at least one template ({formatCount(total)}), including
+            those not yet determined. Both as a share of those {formatCount(total)} (<a
               href={links.methodology('52-support-probe')}>methodology 5.2</a
             >).
           </li>
           <li>
-            Reach: scanned domains behind the DNS providers that support it, each counted once, as a
-            share of the scanned domains (<a href={links.methodology('11-terms')}>methodology 1.1</a
-            >).
+            Reach: share of the scanned domains behind the DNS providers that support it, each
+            counted once (<a href={links.methodology('11-terms')}>methodology 1.1</a>).
           </li>
         </ul>
       </Panel>

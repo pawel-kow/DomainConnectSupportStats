@@ -1,5 +1,6 @@
 <script lang="ts">
-  import { formatDate, formatExact } from '../format';
+  import { formatExact } from '../format';
+  import Timestamp from './Timestamp.svelte';
   import { NEW_SUPPORT_DAYS, type NewSupporter } from '../leaderboards';
 
   interface Props {
@@ -28,7 +29,7 @@
             <a class="name" href={row.href}>{row.name}</a>
             {#if row.apiHost}<div class="muted detail">{row.apiHost}</div>{/if}
           </td>
-          <td class="date">{formatDate(row.since)}</td>
+          <td class="date"><Timestamp value={row.since} /></td>
           <td class="num">{formatExact(row.supportedTemplates)}</td>
         </tr>
       {:else}

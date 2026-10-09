@@ -3,6 +3,7 @@
   import CardTitle from '../lib/components/CardTitle.svelte';
   import DataTable from '../lib/components/DataTable.svelte';
   import Layout from '../lib/components/Layout.svelte';
+  import Timestamp from '../lib/components/Timestamp.svelte';
   import LoadError from '../lib/components/LoadError.svelte';
   import NotFound from '../lib/components/NotFound.svelte';
   import Notes from '../lib/components/Notes.svelte';
@@ -13,14 +14,18 @@
   import { defaultClient, NotFoundError } from '../lib/data/load';
   import { findTable, oneRecord } from '../lib/data/tables';
   import type { Column, ExportFile, Manifest, Row } from '../lib/data/types';
-  import { formatCount, formatDateTime, formatPct, UNKNOWN } from '../lib/format';
+  import { formatCount, formatPct, UNKNOWN } from '../lib/format';
   import { links } from '../lib/links';
   import { textParam } from '../lib/params';
+  import { domainsTitle } from '../lib/domains';
+  import { NO_FACTS, overviewFacts, type OverviewFacts } from '../lib/overview-facts';
+  import { ofSupporting } from '../lib/supporting';
   import { defaultShown, templateSeries, type TemplateSeries } from '../lib/service-providers';
 
   const id = textParam(window.location.search, 'id');
   const client = defaultClient();
   let manifest = $state<Manifest | null>(null);
+  let facts = $state<OverviewFacts>(NO_FACTS);
   /** Service ids whose line is drawn; set once the card has loaded. */
   let shown = $state<string[]>([]);
 
@@ -28,6 +33,7 @@
   const loading: Promise<ExportFile | null> = client.manifest().then((m) => {
     manifest = m;
     if (id === null) return null;
+    void overviewFacts(client, m).then((f) => (facts = f));
     return client.file('service_provider', { service_provider_id: id }).then(
       (file) => {
         const name = text(oneRecord(findTable(file, 'service_provider')), 'name');
@@ -72,6 +78,16 @@
     {#if sid && id}<a href={links.template(id, sid)}>{row.name ?? sid}</a>{:else}{row.name ??
         UNKNOWN}{/if}
     <div class="mono muted id">{sid ?? UNKNOWN}</div>
+  {:else if column.key === 'supporting_providers'}
+    {@const n = num(row, 'supporting_providers')}
+    <span class="count">{formatCount(n)}</span>
+    {#if n !== null && facts.supportingDnsProviders !== null}<div class="muted">
+        {formatPct(ofSupporting(n, facts.supportingDnsProviders))}
+      </div>{/if}
+  {:else if column.key === 'reach_pct'}
+    <span title={domainsTitle(num(row, 'reach_domains'), facts.scan)}
+      >{formatPct(num(row, 'reach_pct'))}</span
+    >
   {/if}
 {/snippet}
 
@@ -116,12 +132,12 @@
           detail="of any of its templates, in the latest probes"
         />
         <StatCard
-          value={formatCount(num(support, 'reach_domains'))}
-          exact={num(support, 'reach_domains')}
-          label="Domains reached"
-          detail={num(support, 'reach_domains') === null
+          value={formatPct(num(support, 'reach_pct'))}
+          title={domainsTitle(num(support, 'reach_domains'), facts.scan)}
+          label="Reach"
+          detail={num(support, 'reach_pct') === null
             ? 'no domain-share import'
-            : `${formatPct(num(support, 'reach_pct'))} of ${formatCount(manifest?.share_import?.scanned_domains ?? null)} scanned domains`}
+            : 'of scanned domains'}
         />
       </section>
 
@@ -194,10 +210,9 @@
               'added_at',
               'updated_at',
               'supporting_providers',
-              'reach_domains',
               'reach_pct',
             ]}
-            customKeys={['name']}
+            customKeys={['name', 'supporting_providers', 'reach_pct']}
             phoneKeys={['name', 'supporting_providers', 'reach_pct']}
             searchable
             pageSize={20}
@@ -211,9 +226,9 @@
         <h2>Details</h2>
         <dl class="record" data-testid="service-provider-record">
           <dt>First added</dt>
-          <dd>{formatDateTime(text(record, 'first_added_at'))}</dd>
+          <dd><Timestamp value={text(record, 'first_added_at')} /></dd>
           <dt>Last updated</dt>
-          <dd>{formatDateTime(text(record, 'last_updated_at'))}</dd>
+          <dd><Timestamp value={text(record, 'last_updated_at')} /></dd>
         </dl>
       </section>
 

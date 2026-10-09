@@ -11,6 +11,7 @@
   import type { ExportFile, Manifest, Row } from '../lib/data/types';
   import { formatAxisPct, formatCount, formatDate, formatPct, UNKNOWN } from '../lib/format';
   import { links } from '../lib/links';
+  import { ofScanned, scanLabel } from '../lib/domains';
   import { importSeries, latestWith, sweepSeries } from '../lib/series';
   import Board from '../lib/components/Board.svelte';
   import NewSupporters from '../lib/components/NewSupporters.svelte';
@@ -52,10 +53,11 @@
     return total === null ? undefined : `of ${formatCount(total)}`;
   }
 
-  /** When the import's scan ran, e.g. "scan of 01-06-2026". */
-  function scanDate(row: Row | undefined): string | undefined {
-    const at = row?.started_at ?? row?.completed_at;
-    return typeof at === 'string' ? `scan of ${formatDate(at)}` : undefined;
+  /** Every DNS provider of the list: discovered through a Domain Connect record. */
+  function discovered(m: Manifest | null): number | null {
+    const kind = m?.files.dns_providers;
+    const n = kind && 'rows' in kind ? kind.rows.dns_providers : undefined;
+    return typeof n === 'number' ? n : null;
   }
 
   function chartSeries(adoption: Row[], ecosystem: Row[]): Series[] {
@@ -64,8 +66,7 @@
         label: 'DC adoption (% of scanned domains)',
         points: importSeries(adoption, 'dc_pct', adoption),
         tooltip: (p) =>
-          `DC adoption: ${formatPct(p.y)} (${formatCount(num(p.row, 'dc_domains'))} of ` +
-          `${formatCount(num(p.row, 'scanned_domains'))} domains)`,
+          `DC adoption: ${formatPct(p.y)} (${ofScanned(num(p.row, 'dc_domains'), num(p.row, 'scanned_domains'), scanLabel(p.row)) ?? UNKNOWN})`,
       },
       {
         label: 'Supporting DNS providers',
@@ -116,16 +117,16 @@
           : undefined}
       />
       <StatCard
-        value={formatCount(num(latestImport, 'dns_providers'))}
-        exact={num(latestImport, 'dns_providers')}
-        label="DNS providers with domains"
-        detail={scanDate(latestImport)}
+        value={formatCount(discovered(manifest))}
+        exact={discovered(manifest)}
+        label="Discovered DNS providers"
+        detail="with DC TXT record"
       />
       <StatCard
         value={formatCount(num(latestSweep, 'supporting_dns_providers'))}
         exact={num(latestSweep, 'supporting_dns_providers')}
         label="Supporting DNS providers"
-        detail={ofTotal(latestSweep, 'known_dns_providers')}
+        detail="with at least 1 template"
       />
       <StatCard
         value={formatCount(num(latestSweep, 'supporting_stacks'))}
