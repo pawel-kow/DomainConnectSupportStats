@@ -107,6 +107,28 @@ function methodology(): Plugin {
   };
 }
 
+/**
+ * Writes the pages' relative `og:image` absolute at build time when `VITE_SITE_URL`
+ * is set (the deploy's site origin). Link-preview crawlers (Bluesky, Mastodon,
+ * LinkedIn) read the raw HTML and never run the browser-side `absoluteOgImage`
+ * (src/lib/share.ts), so a relative image is lost for them. Keeps the relative
+ * value when unset (dev, preview, PR builds).
+ */
+function absoluteOgImage(): Plugin {
+  return {
+    name: 'absolute-og-image',
+    transformIndexHtml: (html) => {
+      const siteUrl = process.env.VITE_SITE_URL;
+      if (!siteUrl) return html;
+      const base = siteUrl.endsWith('/') ? siteUrl : siteUrl + '/';
+      return html.replace(
+        /(<meta\s+property="og:image"\s+content=")([^"]*)/g,
+        (_match, pre: string, path: string) => `${pre}${new URL(path, base).href}`,
+      );
+    },
+  };
+}
+
 export default defineConfig({
   root: PAGES_DIR,
   publicDir: resolve(ROOT, 'public'),
@@ -117,6 +139,7 @@ export default defineConfig({
     svelte({ configFile: resolve(ROOT, 'svelte.config.js') }),
     serveInputs(),
     methodology(),
+    absoluteOgImage(),
   ],
   // All addresses: `localhost` may resolve to `::1` only, which a devcontainer port forward
   // (IPv4) cannot reach.

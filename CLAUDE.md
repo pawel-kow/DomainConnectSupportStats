@@ -118,6 +118,10 @@ logo next to it, `registry.json` `{repository, commit}` (footer, entry link). `v
 `vite preview` serve `/registry/` from `REGISTRY_DIR` (default: the `registry/` submodule;
 e2e: `contract/registry/examples/`).
 
+**Site origin.** Build time: `VITE_SITE_URL`, the site origin written into the pages'
+absolute `og:image` (vite.config.ts `absoluteOgImage`). Relative when unset (dev, preview,
+PR builds); the deploy sets it (DEPLOYMENT.md, `SITE_URL` variable).
+
 **Version.** `package.json` `version`, injected at build time as `__APP_VERSION__`, shown in the
 footer.
 
@@ -138,6 +142,7 @@ npm run dev                              # dev server on :5173 with the example 
 DATA_DIR=../data-repo npm run dev        # ... against a real release
 REGISTRY_DIR=../registry npm run dev     # ... against a registry checkout
 npm run build                            # dist/ (site only, no data)
+VITE_SITE_URL=https://example.com npm run build   # absolute og:image (deploy sets it)
 npm run preview                          # serve dist/ on :4173 with DATA_DIR under /data/
 
 npm test                                 # Vitest: unit + contract + component
