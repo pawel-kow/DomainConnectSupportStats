@@ -61,7 +61,7 @@ export function formatCell(key: string, value: CellValue): string {
     case 'pct':
       return formatPct(value as number);
     case 'timestamp':
-      return formatDateTime(String(value));
+      return formatDate(String(value));
     case 'count':
       return formatCount(value as number);
     default:
@@ -69,9 +69,12 @@ export function formatCell(key: string, value: CellValue): string {
   }
 }
 
-/** Tooltip of a cell: the exact count behind a compacted one. */
+/** Tooltip of a cell: the full timestamp behind a date, the exact count behind a compacted one. */
 export function cellTitle(key: string, value: CellValue): string | undefined {
-  return typeof value === 'number' && cellKind(key, value) === 'count' && isCompact(value)
+  if (value === null || value === undefined) return undefined;
+  const kind = cellKind(key, value);
+  if (kind === 'timestamp') return formatDateTime(String(value));
+  return typeof value === 'number' && kind === 'count' && isCompact(value)
     ? formatExact(value)
     : undefined;
 }

@@ -76,11 +76,3 @@ export function latestWith(rows: readonly Row[], key: string): Row | undefined {
   }
   return undefined;
 }
-
-/**
- * Whether an import series needs the overview's `adoption` rows to be placed: only rows without
- * `completed_at` (old pruned imports) do; the rest are placed at `completed_at`.
- */
-export function needsAdoption(rows: readonly Row[]): boolean {
-  return rows.some((row) => row.completed_at === null || row.completed_at === undefined);
-}

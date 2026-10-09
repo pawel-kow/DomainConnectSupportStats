@@ -15,7 +15,10 @@ test.describe('Service providers list (service-providers.html)', () => {
     await expect(names(page)).toHaveText(['Acme Mail Inc.', 'Example Service', 'unnamed.example']);
     const acme = page.locator('tbody tr', { hasText: 'Acme Mail Inc.' });
     await expect(acme.locator('td').first()).toContainText('mail.acme.example');
-    await expect(acme).toContainText(/6,900\s*57.5%/);
+    await expect(acme).not.toContainText('6,900');
+    await expect(
+      acme.getByTitle('6,900 of 12K scanned domains in the partial scan of 01-06-2026'),
+    ).toHaveText('57.5%');
     await expect(page.getByTestId('caveats')).toContainText('share of the scanned domains');
   });
 
@@ -29,7 +32,7 @@ test.describe('Service providers list (service-providers.html)', () => {
     test.skip(testInfo.project.name === 'mobile', 'columns hidden at phone width');
     await page.goto('service-providers.html');
     const cells = page.locator('tbody tr', { hasText: 'Example Service' }).locator('td');
-    await expect(cells).toHaveText([/Example Service/, '2', '1', '3', /2017/, /2026/, /6,900/]);
+    await expect(cells).toHaveText([/Example Service/, '2', '1', '3', /2017/, /2026/, '57.5%']);
   });
 
   test('links the name to the card', async ({ page }) => {

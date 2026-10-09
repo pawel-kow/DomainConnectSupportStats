@@ -1,26 +1,73 @@
-import type { CellValue, Row, Table } from './data/types';
+import type { CellValue, Column, Row, Table } from './data/types';
 
 /**
  * The DNS providers list (EXPORT_FORMAT.md "dns-providers.json"): stack filter, rows hidden by
- * default, the derived not-yet-determined column and status badges.
+ * default, template support out of every template, and status badges.
  */
 
-/** Key of the derived column `total - supported_count - unsupported_count`. */
-export const UNDETERMINED_KEY = 'undetermined_count';
+/** Keys of the derived columns: supported templates as a share, and the rest of the templates. */
+export const SUPPORTED_PCT_KEY = 'supported_templates_pct';
+export const NOT_SUPPORTED_KEY = 'not_supported_templates';
+export const NOT_SUPPORTED_PCT_KEY = 'not_supported_templates_pct';
 
 function num(row: Row | undefined, key: string): number | null {
   const v = row?.[key];
   return typeof v === 'number' ? v : null;
 }
 
-/** Template versions neither supported nor not supported: never probed, being retried or failed. */
-export function undeterminedCount(row: Row | undefined): number | null {
-  const total = num(row, 'total');
-  const supported = num(row, 'supported_count');
-  const unsupported = num(row, 'unsupported_count');
-  return total === null || supported === null || unsupported === null
-    ? null
-    : total - supported - unsupported;
+/** Never probed: no support probe attempted yet. */
+export function isNeverProbed(row: Row): boolean {
+  return row.support_status === null;
+}
+
+export interface TemplateSupport {
+  supportedPct: number | null;
+  /** Templates not supported, not yet determined included. */
+  notSupported: number | null;
+  notSupportedPct: number | null;
+}
+
+/** `supported` of `templates` templates, and the rest; unknown when either is or it exceeds. */
+export function templateSupport(
+  supported: number | null,
+  templates: number | null,
+): TemplateSupport {
+  if (supported === null || templates === null || templates === 0 || supported > templates)
+    return { supportedPct: null, notSupported: null, notSupportedPct: null };
+  return {
+    supportedPct: (supported / templates) * 100,
+    notSupported: templates - supported,
+    notSupportedPct: ((templates - supported) / templates) * 100,
+  };
+}
+
+/** A row with its template support columns; unknown for a DNS provider never probed. */
+export function withTemplateSupport(row: Row, templates: number | null): Row {
+  const t = isNeverProbed(row)
+    ? templateSupport(null, null)
+    : templateSupport(num(row, 'supported_templates'), templates);
+  return {
+    ...row,
+    [SUPPORTED_PCT_KEY]: t.supportedPct,
+    [NOT_SUPPORTED_KEY]: t.notSupported,
+    [NOT_SUPPORTED_PCT_KEY]: t.notSupportedPct,
+  };
+}
+
+/** The columns with the template support columns after `supported_templates`. */
+export function withTemplateSupportColumns(columns: Column[]): Column[] {
+  const out = columns.map((c) =>
+    c.key === 'supported_templates' ? { ...c, header: 'SUPPORTED' } : c,
+  );
+  const at = out.findIndex((c) => c.key === 'supported_templates');
+  out.splice(
+    at === -1 ? out.length : at + 1,
+    0,
+    { key: SUPPORTED_PCT_KEY, header: 'SUPPORTED %' },
+    { key: NOT_SUPPORTED_KEY, header: 'NOT SUPP.' },
+    { key: NOT_SUPPORTED_PCT_KEY, header: 'NOT SUPP. %' },
+  );
+  return out;
 }
 
 /** Given up, never probed, or no domains in the domain-share import (`null` domains is unknown). */
@@ -40,26 +87,24 @@ export interface DnsProviderList {
   hiddenCount: number;
 }
 
-/** The list rows for `?stack=` and the show-all toggle; unknown columns and keys are kept. */
+/**
+ * The list rows for `?stack=` and the show-all toggle, with template support out of `templates`
+ * templates; unknown columns and keys are kept.
+ */
 export function dnsProviderList(
   source: Table,
   filters: { stack: string | null; showAll: boolean },
+  templates: number | null = null,
 ): DnsProviderList {
   const inStack = source.rows.filter(
     (r) => filters.stack === null || r.provider_id === filters.stack,
   );
   const shown = filters.showAll ? inStack : inStack.filter((r) => !isHiddenByDefault(r));
-  const columns = [...source.columns];
-  const at = columns.findIndex((c) => c.key === 'unsupported_pct');
-  columns.splice(at === -1 ? columns.length : at + 1, 0, {
-    key: UNDETERMINED_KEY,
-    header: 'Undetermined',
-  });
   return {
     table: {
       ...source,
-      columns,
-      rows: shown.map((r) => ({ ...r, [UNDETERMINED_KEY]: undeterminedCount(r) })),
+      columns: withTemplateSupportColumns(source.columns),
+      rows: shown.map((r) => withTemplateSupport(r, templates)),
     },
     hiddenCount: inStack.filter(isHiddenByDefault).length,
   };

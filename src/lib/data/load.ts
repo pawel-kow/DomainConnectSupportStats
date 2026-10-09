@@ -1,5 +1,14 @@
 import { dataBaseUrl } from './config';
-import { DERIVED_DIR, LEADERBOARDS_FILE, type Leaderboards } from './derived';
+import {
+  DERIVED_DIR,
+  LEADERBOARDS_FILE,
+  STACKS_FILE,
+  TEMPLATES_FILE,
+  type Leaderboards,
+  type StacksSupport,
+  type TemplateSupporters,
+  type TemplatesSupport,
+} from './derived';
 import { assertSupportedFormat, filePath } from './manifest';
 import type { ExportFile, FileKindName, Manifest } from './types';
 
@@ -65,15 +74,39 @@ export class ExportClient {
     return file;
   }
 
-  /** The derived `leaderboards.json`; rejected like a file when it is of another release. */
-  async leaderboards(): Promise<Leaderboards> {
+  /** A derived file; rejected like a file when it is of another release. */
+  private async derived<T extends { generated_at: string }>(
+    path: (manifest: Manifest) => string,
+  ): Promise<T> {
     const manifest = await this.manifest();
-    const url = new URL(DERIVED_DIR + LEADERBOARDS_FILE, this.baseUrl).href;
-    const file = await fetchJson<Leaderboards>(this.fetchFn, url);
+    const url = new URL(DERIVED_DIR + path(manifest), this.baseUrl).href;
+    const file = await fetchJson<T>(this.fetchFn, url);
     if (file.generated_at !== manifest.generated_at) {
       throw new ReleaseMismatchError(url, manifest.generated_at, file.generated_at);
     }
     return file;
+  }
+
+  /** The derived `leaderboards.json`. */
+  leaderboards(): Promise<Leaderboards> {
+    return this.derived(() => LEADERBOARDS_FILE);
+  }
+
+  /** The derived `stacks.json`: template support distribution per stack. */
+  stacksSupport(): Promise<StacksSupport> {
+    return this.derived(() => STACKS_FILE);
+  }
+
+  /** The derived `templates.json`: supporting DNS providers per template. */
+  templatesSupport(): Promise<TemplatesSupport> {
+    return this.derived(() => TEMPLATES_FILE);
+  }
+
+  /** A template's derived supporters, at its card's path under `derived/`. */
+  templateSupporters(serviceProviderId: string, serviceId: string): Promise<TemplateSupporters> {
+    return this.derived((m) =>
+      filePath(m, 'template', { service_provider_id: serviceProviderId, service_id: serviceId }),
+    );
   }
 }
 

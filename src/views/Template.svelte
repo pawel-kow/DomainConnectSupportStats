@@ -3,6 +3,7 @@
   import CardTitle from '../lib/components/CardTitle.svelte';
   import DataTable from '../lib/components/DataTable.svelte';
   import Layout from '../lib/components/Layout.svelte';
+  import Timestamp from '../lib/components/Timestamp.svelte';
   import LoadError from '../lib/components/LoadError.svelte';
   import NotFound from '../lib/components/NotFound.svelte';
   import Notes from '../lib/components/Notes.svelte';
@@ -13,7 +14,7 @@
   import { defaultClient, NotFoundError } from '../lib/data/load';
   import { findTable, oneRecord } from '../lib/data/tables';
   import type { Column, ExportFile, Manifest, Row } from '../lib/data/types';
-  import { formatCount, formatDateTime, formatPct, UNKNOWN } from '../lib/format';
+  import { formatCount, formatPct, UNKNOWN } from '../lib/format';
   import { links, safeUrl } from '../lib/links';
   import { textParam } from '../lib/params';
   import { sweepSeries } from '../lib/series';
@@ -25,17 +26,30 @@
     RECORD_DETAILS_KEY,
     recordValue,
     tableTitle,
+    withSince,
   } from '../lib/templates';
+  import type { TemplateSupporters } from '../lib/data/derived';
+  import { domainsTitle } from '../lib/domains';
+  import DomainShare from '../lib/components/DomainShare.svelte';
+  import { NO_FACTS, overviewFacts, type OverviewFacts } from '../lib/overview-facts';
+  import { ofSupporting } from '../lib/supporting';
 
   const spid = textParam(window.location.search, 'spid');
   const sid = textParam(window.location.search, 'sid');
   const client = defaultClient();
   let manifest = $state<Manifest | null>(null);
+  let facts = $state<OverviewFacts>(NO_FACTS);
+  /** When each supporter's support began (derived); null when unavailable. */
+  const since: Promise<TemplateSupporters | null> =
+    spid !== null && sid !== null
+      ? client.templateSupporters(spid, sid).catch(() => null)
+      : Promise.resolve(null);
 
   /** The card, or null when a parameter is missing or the template has no card (404). */
   const loading: Promise<ExportFile | null> = client.manifest().then((m) => {
     manifest = m;
     if (spid === null || sid === null) return null;
+    void overviewFacts(client, m).then((f) => (facts = f));
     return client.file('template', { service_provider_id: spid, service_id: sid }).then(
       (file) => {
         const name = text(oneRecord(findTable(file, 'metadata')), 'name');
@@ -76,6 +90,8 @@
   {:else if column.key === 'provider_id'}
     {@const s = text(row, 'provider_id')}
     {#if s}<a href={links.stack(s)}>{s}</a>{:else}{UNKNOWN}{/if}
+  {:else if column.key === 'reach_pct'}
+    <DomainShare pct={num(row, 'reach_pct')} domains={num(row, 'domains')} scan={facts.scan} />
   {/if}
 {/snippet}
 
@@ -112,15 +128,17 @@
         <StatCard
           value={supporters ? formatCount(supporters.rows.length) : UNKNOWN}
           label="Supporting DNS providers"
-          detail="any version, in the latest probes"
+          detail={supporters && facts.supportingDnsProviders !== null
+            ? `${formatPct(ofSupporting(supporters.rows.length, facts.supportingDnsProviders))} of ${formatCount(facts.supportingDnsProviders)} with at least 1 template`
+            : 'any version, in the latest probes'}
         />
         <StatCard
-          value={formatCount(num(total, 'domains'))}
-          exact={num(total, 'domains')}
-          label="Domains reached"
-          detail={num(total, 'domains') === null
+          value={formatPct(num(total, 'reach_pct'))}
+          title={domainsTitle(num(total, 'domains'), facts.scan)}
+          label="Reach"
+          detail={num(total, 'reach_pct') === null
             ? 'no domain-share import'
-            : `${formatPct(num(total, 'reach_pct'))} of ${formatCount(manifest?.share_import?.scanned_domains ?? null)} scanned domains`}
+            : 'of scanned domains'}
         />
         <StatCard
           value={num(metadata, 'version') === null ? UNKNOWN : `${num(metadata, 'version')}`}
@@ -137,9 +155,9 @@
           <dt>Variables</dt>
           <dd class="multiline">{text(metadata, 'variable_description') ?? UNKNOWN}</dd>
           <dt>Added</dt>
-          <dd>{formatDateTime(text(metadata, 'created_at'))}</dd>
+          <dd><Timestamp value={text(metadata, 'created_at')} /></dd>
           <dt>Updated</dt>
-          <dd>{formatDateTime(text(metadata, 'updated_at'))}</dd>
+          <dd><Timestamp value={text(metadata, 'updated_at')} /></dd>
           <dt>Template SHA</dt>
           <dd class="mono break">{text(metadata, 'template_sha') ?? UNKNOWN}</dd>
         </dl>
@@ -189,16 +207,18 @@
           title={tableTitle(supporters.title, serviceProviderId, serviceId)}
           context={templateName}
         >
-          <DataTable
-            table={supporters}
-            keys={['name', 'provider_id', 'versions', 'domains', 'reach_pct']}
-            customKeys={['name', 'provider_id']}
-            phoneKeys={['name', 'domains', 'reach_pct']}
-            searchable
-            pageSize={20}
-            cell={supporterCell}
-            emptyText="No DNS provider supports it in the latest probes"
-          />
+          {#await since then derived}
+            <DataTable
+              table={withSince(supporters, derived)}
+              keys={['name', 'provider_id', 'versions', 'since', 'reach_pct']}
+              customKeys={['name', 'provider_id', 'reach_pct']}
+              phoneKeys={['name', 'since', 'reach_pct']}
+              searchable
+              pageSize={20}
+              cell={supporterCell}
+              emptyText="No DNS provider supports it in the latest probes"
+            />
+          {/await}
         </Panel>
       {/if}
 

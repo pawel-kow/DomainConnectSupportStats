@@ -14,8 +14,10 @@ test.describe('Stack card (stack.html)', () => {
     await expect(page).toHaveTitle(/^Plesk - Stack/);
     const headline = page.getByTestId('headline');
     await expect(headline).toContainText('Deployments');
-    await expect(headline).toContainText('1,150');
-    await expect(headline).toContainText('9.6% of 12K scanned domains');
+    await expect(headline).not.toContainText('1,150');
+    await expect(
+      headline.getByTitle('1,150 of 12K scanned domains in the partial scan of 01-06-2026'),
+    ).toHaveText('9.6%');
     await expect(page.getByTestId('deployments-link')).toHaveAttribute(
       'href',
       './dns-providers.html?stack=plesk.com',

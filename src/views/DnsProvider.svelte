@@ -5,6 +5,7 @@
   import DataTable from '../lib/components/DataTable.svelte';
   import ExternalLink from '../lib/components/ExternalLink.svelte';
   import Layout from '../lib/components/Layout.svelte';
+  import Timestamp from '../lib/components/Timestamp.svelte';
   import LoadError from '../lib/components/LoadError.svelte';
   import NotFound from '../lib/components/NotFound.svelte';
   import Notes from '../lib/components/Notes.svelte';
@@ -16,23 +17,29 @@
   import { scannerStart } from '../lib/data/config';
   import { cardSweep } from '../lib/annotation';
   import { defaultClient, NotFoundError } from '../lib/data/load';
-  import { undeterminedCount } from '../lib/dns-providers';
+  import { templateSupport } from '../lib/dns-providers';
+  import { templateCount } from '../lib/supporting';
   import { findTable, oneRecord } from '../lib/data/tables';
   import type { Column, ExportFile, Manifest, Row } from '../lib/data/types';
-  import { formatAxisPct, formatCount, formatDateTime, formatPct, UNKNOWN } from '../lib/format';
+  import { formatAxisPct, formatCount, formatPct, UNKNOWN } from '../lib/format';
   import { links } from '../lib/links';
   import { integerParam } from '../lib/params';
   import { defaultRegistryClient, entryFileUrl } from '../lib/registry/load';
-  import { importSeries, needsAdoption, sweepSeries } from '../lib/series';
+  import { importSeries, sweepSeries } from '../lib/series';
+  import { domainsTitle, importScanLabel, ofScanned, type Scan } from '../lib/domains';
+  import { overviewFacts } from '../lib/overview-facts';
 
   const id = integerParam(window.location.search, 'id');
   const client = defaultClient();
   let manifest = $state<Manifest | null>(null);
+  /** The domain-share import, for the hover text of domain shares. */
+  let scan = $state<Scan | null>(null);
 
   /** The card, or null when the id is missing, malformed or has no card (404). */
   const loading: Promise<ExportFile | null> = client.manifest().then((m) => {
     manifest = m;
     if (id === null) return null;
+    void overviewFacts(client, m).then((f) => (scan = f.scan));
     return client.file('dns_provider', { dns_provider_id: id }).then(
       (file) => {
         const name = text(oneRecord(findTable(file, 'provider')), 'name');
@@ -48,9 +55,8 @@
   /** The newest sweep the card reflects, for the data annotation. */
   const sweep = loading.then((f) => (f ? cardSweep('dns_provider', f) : null));
 
-  /** The overview's `adoption` rows, fetched only when an import lacks `completed_at`. */
-  function adoptionFor(shareHistory: Row[]): Promise<Row[]> {
-    if (!needsAdoption(shareHistory)) return Promise.resolve([]);
+  /** The overview's `adoption` rows: each import's date and sampling. */
+  function adoptionFor(): Promise<Row[]> {
     return client
       .file('overview')
       .then((f) => findTable(f, 'adoption')?.rows ?? [])
@@ -134,10 +140,12 @@
       />
     {:else}
       {@const provider = oneRecord(findTable(file, 'provider'))}
-      {@const support = oneRecord(findTable(file, 'support'))}
       {@const share = oneRecord(findTable(file, 'share'))}
       {@const urls = findTable(file, 'urls')}
       {@const templates = findTable(file, 'supported_templates')}
+      {@const probed = text(provider, 'support_last_status') !== null}
+      {@const supportedTemplates = templates ? templates.rows.length : null}
+      {@const templateShare = templateSupport(supportedTemplates, templateCount(manifest))}
       {@const supportHistory = findTable(file, 'support_history')}
       {@const shareHistory = findTable(file, 'share_history')}
       {@const stack = text(provider, 'provider_id')}
@@ -166,30 +174,24 @@
 
       <section class="summary-stats" aria-label="Support and domain share" data-testid="headline">
         <StatCard
-          value={formatCount(num(support, 'supported_count'))}
-          exact={num(support, 'supported_count')}
-          label="Supported"
-          detail={`of ${formatCount(num(support, 'total'))} template versions (${formatPct(num(support, 'supported_pct'))})`}
+          value={formatCount(supportedTemplates)}
+          label="Supported templates"
+          detail={probed
+            ? `of ${formatCount(templateCount(manifest))} templates (${formatPct(templateShare.supportedPct)})`
+            : 'not probed yet'}
         />
         <StatCard
-          value={formatCount(num(support, 'unsupported_count'))}
-          exact={num(support, 'unsupported_count')}
+          value={probed ? formatCount(templateShare.notSupported) : UNKNOWN}
           label="Not supported"
-          detail={formatPct(num(support, 'unsupported_pct'))}
+          detail={probed
+            ? `${formatPct(templateShare.notSupportedPct)}, not yet determined included`
+            : 'not probed yet'}
         />
         <StatCard
-          value={formatCount(undeterminedCount(support))}
-          exact={undeterminedCount(support)}
-          label="Not yet determined"
-          detail="never probed, retried or failed"
-        />
-        <StatCard
-          value={formatCount(num(share, 'domains'))}
-          exact={num(share, 'domains')}
-          label="Domains"
-          detail={share
-            ? `${formatPct(num(share, 'share_pct'))} of ${formatCount(num(share, 'scanned_domains'))} scanned domains`
-            : 'no domain-share import'}
+          value={formatPct(num(share, 'share_pct'))}
+          title={domainsTitle(num(share, 'domains'), scan)}
+          label="Domain share"
+          detail={share ? 'of scanned domains' : 'no domain-share import'}
         />
         <StatCard
           value={num(share, 'rank') === null ? UNKNOWN : `#${num(share, 'rank')}`}
@@ -209,7 +211,7 @@
       {#if shareHistory}
         <Panel id="domain-share-history" title="Domain share over time" context={providerName}>
           {#if shareHistory.rows.length}
-            {#await adoptionFor(shareHistory.rows) then adoption}
+            {#await adoptionFor() then adoption}
               <TimeChart
                 label="Domain share over time"
                 series={[
@@ -217,8 +219,7 @@
                     label: 'Share of scanned domains',
                     points: importSeries(shareHistory.rows, 'share_pct', adoption),
                     tooltip: (p) =>
-                      `Share: ${formatPct(p.y, 2)} (${formatCount(num(p.row, 'domains'))} of ` +
-                      `${formatCount(num(p.row, 'scanned_domains'))} scanned domains)`,
+                      `Share: ${formatPct(p.y, 2)} (${ofScanned(num(p.row, 'domains'), num(p.row, 'scanned_domains'), importScanLabel(adoption, p.row?.import_id ?? null)) ?? UNKNOWN})`,
                   },
                 ]}
                 leftTitle="% of scanned domains"
@@ -264,6 +265,7 @@
             searchable
             pageSize={20}
             cell={templateCell}
+            sort={{ key: 'since', direction: -1 }}
             emptyText="No template supported in the latest probes"
           />
         </Panel>
@@ -300,7 +302,7 @@
             {#if isBeforeScans('first_seen_at', text(provider, 'first_seen_at'), scannerStart())}
               <BeforeScansBadge value={text(provider, 'first_seen_at') ?? ''} />
             {:else}
-              {formatDateTime(text(provider, 'first_seen_at'))}
+              <Timestamp value={text(provider, 'first_seen_at')} />
             {/if}
           </dd>
         </dl>

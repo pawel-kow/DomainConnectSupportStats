@@ -8,13 +8,17 @@
     detail?: string;
     /** The count behind `value`; shown as a tooltip when `value` is compacted. */
     exact?: number | null;
+    /** Hover text of the value; replaces the exact count. */
+    title?: string;
   }
 
-  let { value, label, detail, exact }: Props = $props();
+  let { value, label, detail, exact, title }: Props = $props();
 </script>
 
 <div class="stat-card">
-  <div class="stat-value" title={isCompact(exact) ? formatExact(exact) : undefined}>{value}</div>
+  <div class="stat-value" title={title ?? (isCompact(exact) ? formatExact(exact) : undefined)}>
+    {value}
+  </div>
   <div class="stat-label">{label}</div>
   {#if detail}<div class="stat-detail">{detail}</div>{/if}
 </div>

@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import type { Row, Table } from '../../src/lib/data/types';
-import { isNeverProbed, templateList } from '../../src/lib/templates-list';
+import type { TemplatesSupport } from '../../src/lib/data/derived';
+import { isNeverProbed, templateList, withSupport } from '../../src/lib/templates-list';
 import { exampleJson } from '../fixtures';
 
 const templates = () => exampleJson('templates.json').tables.service_templates as Table;
@@ -65,5 +66,75 @@ describe('templateList', () => {
     const { table } = templateList(source, { spid: null, showAll: false });
     expect(table.columns.map((c) => c.key)).toContain('brand_new');
     expect(table.rows[0]!.brand_new).toBe('x');
+  });
+});
+
+describe('withSupport', () => {
+  const support: TemplatesSupport = {
+    generated_at: '2026-10-01T00:00:00Z',
+    templates: [
+      {
+        service_provider_id: 'exampleservice.domainconnect.org',
+        service_id: 'template1',
+        supporting_dns_providers: 3,
+      },
+      {
+        service_provider_id: 'mail.acme.example',
+        service_id: 'verify',
+        supporting_dns_providers: 0,
+      },
+    ],
+  };
+  const row = (table: ReturnType<typeof withSupport>, id: string) =>
+    table.rows.find((r) => `${r.provider_id}/${r.service_id}` === id)!;
+
+  it('adds supporting and not supporting DNS providers, as shares of the supporting ones', () => {
+    const table = withSupport(templates(), support, 4);
+    expect(table.columns.map((c) => c.key)).toEqual(
+      expect.arrayContaining(['supporting_dns_providers', 'not_supporting_dns_providers']),
+    );
+    expect(row(table, 'exampleservice.domainconnect.org/template1')).toMatchObject({
+      supporting_dns_providers: 3,
+      supporting_dns_providers_pct: 75,
+      not_supporting_dns_providers: 1,
+      not_supporting_dns_providers_pct: 25,
+    });
+    expect(row(table, 'mail.acme.example/verify')).toMatchObject({
+      supporting_dns_providers: 0,
+      not_supporting_dns_providers: 4,
+      not_supporting_dns_providers_pct: 100,
+    });
+  });
+
+  it('leaves unknown what the derived data or the denominator lacks', () => {
+    const missing = row(withSupport(templates(), support, 4), 'mail.acme.example/mail');
+    expect(missing).toMatchObject({
+      supporting_dns_providers: null,
+      supporting_dns_providers_pct: null,
+      not_supporting_dns_providers: null,
+    });
+    const noDerived = row(
+      withSupport(templates(), null, 4),
+      'exampleservice.domainconnect.org/template1',
+    );
+    expect(noDerived.supporting_dns_providers).toBeNull();
+    const noTotal = row(
+      withSupport(templates(), support, null),
+      'exampleservice.domainconnect.org/template1',
+    );
+    expect(noTotal).toMatchObject({
+      supporting_dns_providers: 3,
+      supporting_dns_providers_pct: null,
+      not_supporting_dns_providers: null,
+    });
+  });
+
+  it('never shows a negative count of not supporting DNS providers', () => {
+    const r = row(
+      withSupport(templates(), support, 2),
+      'exampleservice.domainconnect.org/template1',
+    );
+    expect(r.not_supporting_dns_providers).toBeNull();
+    expect(r.not_supporting_dns_providers_pct).toBeNull();
   });
 });

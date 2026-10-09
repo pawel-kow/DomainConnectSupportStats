@@ -35,6 +35,8 @@
     /** Text shown when the table has no rows. */
     emptyText?: string;
     caption?: string;
+    /** Initial sort; default: the export's order. */
+    sort?: { key: string; direction: 1 | -1 };
   }
 
   let {
@@ -48,6 +50,7 @@
     pageSize,
     emptyText = 'No data available',
     caption,
+    sort,
   }: Props = $props();
 
   const columns = $derived(
@@ -59,8 +62,8 @@
   const start = scannerStart();
 
   // `null` sort key = the export's own order, which is the meaningful default (by domains/reach).
-  let sortKey = $state<string | null>(null);
-  let sortDirection = $state<1 | -1>(1);
+  let sortKey = $state<string | null>(untrack(() => sort?.key ?? null));
+  let sortDirection = $state<1 | -1>(untrack(() => sort?.direction ?? 1));
 
   const filtered = $derived(table.rows.filter((r) => rowMatches(r, query)));
   const rows = $derived(
@@ -169,15 +172,17 @@
         <tr>
           {#each columns as column (column.key)}
             {@const value = row[column.key] ?? null}
+            {@const custom = cell !== undefined && customKeys.includes(column.key)}
+            {@const badge = !custom && isBeforeScans(column.key, value, start)}
             <td
-              title={cellTitle(column.key, value)}
+              title={custom || badge ? undefined : cellTitle(column.key, value)}
               class:num={isNumeric(column.key)}
               class:nowrap={isTimestamp(column.key)}
               class:wide-only={isWideOnly(column.key)}
             >
-              {#if cell && customKeys.includes(column.key)}
-                {@render cell(column, row)}
-              {:else if isBeforeScans(column.key, value, start)}
+              {#if custom}
+                {@render cell!(column, row)}
+              {:else if badge}
                 <BeforeScansBadge value={String(value)} />
               {:else}
                 {formatCell(column.key, value)}

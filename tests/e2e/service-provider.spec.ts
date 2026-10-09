@@ -18,7 +18,9 @@ test.describe('Service provider card (service-provider.html)', () => {
     await expect(headline).toContainText(/2\s*Templates/);
     await expect(headline).toContainText('2 supported by a DNS provider');
     await expect(headline).toContainText(/3\s*Supporting DNS providers/);
-    await expect(headline).toContainText('57.5% of 12K scanned domains');
+    await expect(
+      headline.getByTitle('6,900 of 12K scanned domains in the partial scan of 01-06-2026'),
+    ).toHaveText('57.5%');
     const record = page.getByTestId('service-provider-record');
     await expect(record).toContainText('02-02-2020');
   });

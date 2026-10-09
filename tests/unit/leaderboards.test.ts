@@ -265,14 +265,24 @@ describe('newSupporting', () => {
 
 describe('entrantRows', () => {
   it('formats counts, with the API host', () => {
-    const rows = entrantRows(topByDomains(entrants(dnsProviders())));
+    const rows = entrantRows(topByTemplates(entrants(dnsProviders())));
     expect(rows[0]).toEqual({
       rank: 1,
       name: 'Cloudflare',
       href: './dns-provider.html?id=1',
       detail: 'api.cloudflare.com',
-      value: '4,000',
-      title: '4,000',
+      value: '3',
+      title: '3',
+    });
+  });
+
+  it('formats domains as their share, the count and scan in the hover text', () => {
+    const scan = { scannedDomains: 12000, label: 'partial scan of 01-06-2026' };
+    const rows = entrantRows(topByDomains(entrants(dnsProviders())), 'share', scan);
+    expect(rows[0]).toMatchObject({
+      name: 'Cloudflare',
+      value: '33.3%',
+      title: '4,000 of 12K scanned domains in the partial scan of 01-06-2026',
     });
   });
 
