@@ -18,12 +18,12 @@ Steps (big story: pause after each for a context reset; keep mutex and branch).
       domain-share hover text ("80M of 190.6M scanned domains in the partial scan of 01-06-2026");
       scan label from manifest + overview `adoption`; denominator = overview last `ecosystem`
       `supporting_dns_providers`; templates list rows with derived support columns
-- [~] Step 3 — views: overview cards; templates list Support/Not supported; template card headline
+- [x] Step 3 — views: overview cards; templates list Support/Not supported; template card headline
       and `since` column; service provider card templates %; dates in card records and
       NewSupporters with hover
-- [ ] Step 4 — views: domain counts → % with hover on lists, cards, stat cards, charts tooltips,
+- [x] Step 4 — views: domain counts → % with hover on lists, cards, stat cards, charts tooltips,
       leaderboards
-- [ ] Step 5 — e2e updates, Scanner issues, docs (REQUIREMENTS, CLAUDE.md file ref), version
+- [~] Step 5 — e2e updates, Scanner issues, docs (REQUIREMENTS, CLAUDE.md file ref), version
       0.16.0 + CHANGELOG, real-release check, screenshots, draft PR
 - [ ] Promote findings, delete this file
 
@@ -73,6 +73,13 @@ Steps (big story: pause after each for a context reset; keep mutex and branch).
   Leaderboards (`entrantRows` count for domains board, `reachRows`), Overview chart tooltip.
 - Places showing datetimes (step 3): `cells.ts` `formatCell` timestamp, card `<dd>`s in
   Template/ServiceProvider/DnsProvider views; NewSupporters date needs the hover.
+
+- Step 5: e2e green on the example export (364); docs, 0.16.0, Scanner issues
+  pawel-kow/DomainConnectScanner#248 (since), #249 (supporting providers per template). Real
+  release (generated_at 2026-10-07T15:10:05Z, data repo cloned to the scratchpad): validates,
+  derive 1,695 template files in 4 s; pages load without errors (only registry 404s of the dev
+  registry), no horizontal overflow at Pixel 7. Real release has `sample_percent` null → hover
+  says "scan of 05-09-2026". Screenshots await acceptance.
 
 ## Corrections
 
