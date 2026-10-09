@@ -1,0 +1,67 @@
+# clean-up-display — iteration plan
+
+**Branch:** feat/clean-up-display **Started:** 2026-10-09 **Issue:** #55
+**Goal:** domain figures as % only (absolute in hover, with scan), dates without time (datetime in
+hover), overview cards relabelled, template support as DNS providers of the supporting ones, `since`
+on template supporters.
+
+## Tasks
+
+Steps (big story: pause after each for a context reset; keep mutex and branch).
+
+- [x] Investigate, ask, plan
+- [~] Step 1 — derived data: `scripts/derive.ts` writes `derived/templates.json` (supporting DNS
+      providers per template) and `derived/templates/{spid}/{sid}.json` (`since` per supporting DNS
+      provider) from DNS provider cards' `supported_templates`; types in `src/lib/data/derived.ts`;
+      `ExportClient` loaders; unit tests first
+- [ ] Step 2 — helpers (TDD): `formatCell` timestamps date only, `cellTitle` full datetime UTC;
+      domain-share hover text ("80M of 190.6M scanned domains in the partial scan of 01-06-2026");
+      scan label from manifest + overview `adoption`; denominator = overview last `ecosystem`
+      `supporting_dns_providers`; templates list rows with derived support columns
+- [ ] Step 3 — views: overview cards; templates list Support/Not supported; template card headline
+      and `since` column; service provider card templates %; dates in card records and
+      NewSupporters with hover
+- [ ] Step 4 — views: domain counts → % with hover on lists, cards, stat cards, charts tooltips,
+      leaderboards
+- [ ] Step 5 — e2e updates, Scanner issues, docs (REQUIREMENTS, CLAUDE.md file ref), version
+      0.16.0 + CHANGELOG, real-release check, screenshots, draft PR
+- [ ] Promote findings, delete this file
+
+## Findings
+
+- `templates.json` `supported_count`/`unsupported_count`/`total` count probe combinations (DNS
+  provider × template version), not DNS providers — example: `template1` supported_count 5, its
+  card has 3 supporters.
+- "of 451" in the templates list is `total` (combinations on record) — `src/views/Templates.svelte`
+  `supported_count` cell.
+- "2,902 DNS providers with domains" is overview `adoption.dns_providers`; 2,912 is the
+  `dns_providers` list row count = `manifest.files.dns_providers.rows.dns_providers`.
+- 284 is overview last `ecosystem` row `supporting_dns_providers` (history replay); current-state
+  count (dns-providers rows with `supported_templates` > 0) can differ: example 4 vs 3.
+- Template card `supporters` has no `since`; DNS provider card `supported_templates` has it per
+  template → derivable.
+- Layout already loads `overview.json` on every page (annotation); `ExportClient.file` does not
+  cache (HTTP cache does).
+- No data repo next to the checkout: real-release check needs one.
+
+## Decisions (maintainer, 2026-10-09)
+
+- Templates list: Supported = DNS providers supporting it (derived), % of the supporting DNS
+  providers (284); Not supported = 284 − supporters (includes not yet determined), % of 284.
+  Never-probed rows keep "Not probed yet".
+- Same denominator on: service provider card Templates table (`supporting_providers`), template card
+  headline "Supporting DNS providers".
+- Denominator: overview last `ecosystem` `supporting_dns_providers` (the number on the overview).
+- Full/partial scan: `sample_percent` 100 → "full scan", < 100 → "partial scan", unknown → "scan".
+  Date: import `started_at` (else `completed_at`), as the overview's "scan of".
+- Footer annotation "(190.6M domains scanned)" and methodology scan totals stay.
+- Version: minor (0.16.0).
+- Scanner issues: `since` in template `supporters`; supporting DNS providers per template in
+  `templates.json`.
+
+## Corrections
+
+## Open questions
+
+- Phone columns of the template supporters table after `domains` goes (proposal: name, since,
+  reach_pct) — confirm with screenshots.
