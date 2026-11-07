@@ -88,20 +88,20 @@ tests/                     unit/, contract/, component/ (Vitest), e2e/ (Playwrig
 Pages and their data (EXPORT_FORMAT.md "Pages"). Query parameters carry raw ids and filters only;
 every view is a shareable link:
 
-| Page                                             | Data                                                | State |
-| ------------------------------------------------ | --------------------------------------------------- | ----- |
-| `index.html`                                     | `overview.json`, `derived/ecosystem.json`           | built |
-| `dns-providers.html` (`?stack=`, `&q=`, `&all=`) | `dns-providers.json`                                | built |
-| `stacks.html`                                    | `stacks.json`                                       | built |
-| `service-providers.html` (`?q=`)                 | `service-providers.json`                            | built |
-| `templates.html` (`?spid=`, `&q=`, `&all=`)      | `templates.json`                                    | built |
-| `dns-provider.html?id=`                          | `dns-providers/{dns_provider_id}.json`, registry    | built |
-| `stack.html?id=`                                 | `stacks/{provider_id}.json`, registry               | built |
-| `service-provider.html?id=`                      | `service-providers/{service_provider_id}.json`      | built |
-| `template.html?spid=&sid=`                       | `templates/{service_provider_id}/{service_id}.json` | built |
-| `leaderboards.html` (`?window=`)                 | the four lists, `derived/leaderboards.json`         | built |
-| `methodology.html`                               | `manifest.json`, `contract/export/METHODOLOGY.md`   | built |
-| `privacy.html`, `imprint.html`                   | `content/privacy.md`, `content/imprint.md`          | built |
+| Page                                                | Data                                                | State |
+| --------------------------------------------------- | --------------------------------------------------- | ----- |
+| `index.html`                                        | `overview.json`, `derived/ecosystem.json`           | built |
+| `dns-providers.html` (`?stack=`, `&q=`, `&filter=`) | `dns-providers.json`, `derived/dns-providers.json`  | built |
+| `stacks.html`                                       | `stacks.json`                                       | built |
+| `service-providers.html` (`?q=`)                    | `service-providers.json`                            | built |
+| `templates.html` (`?spid=`, `&q=`, `&all=`)         | `templates.json`                                    | built |
+| `dns-provider.html?id=`                             | `dns-providers/{dns_provider_id}.json`, registry    | built |
+| `stack.html?id=`                                    | `stacks/{provider_id}.json`, registry               | built |
+| `service-provider.html?id=`                         | `service-providers/{service_provider_id}.json`      | built |
+| `template.html?spid=&sid=`                          | `templates/{service_provider_id}/{service_id}.json` | built |
+| `leaderboards.html` (`?window=`)                    | the four lists, `derived/leaderboards.json`         | built |
+| `methodology.html`                                  | `manifest.json`, `contract/export/METHODOLOGY.md`   | built |
+| `privacy.html`, `imprint.html`                      | `content/privacy.md`, `content/imprint.md`          | built |
 
 A card page with a missing parameter or a 404 shows `NotFound` linking to its list; any other load
 failure shows `LoadError`; a section that loads on its own (leaderboard panels) shows `Unavailable` instead. Never a blank page. Card layout: REQUIREMENTS.md F-1a. Leaderboards:
@@ -112,7 +112,7 @@ F-4; the overview shows four charts (F-1.1) and also new supporting DNS provider
 `vite preview` serve `/data/` from `DATA_DIR` (default: the contract's example export).
 
 **Derived data.** `scripts/derive.ts` collects what the export spreads over its cards into
-`<data>/derived/`: `leaderboards.json` (first support per DNS provider) and `ecosystem.json` (templates per scanned domain per full sweep);
+`<data>/derived/`: `leaderboards.json` (first support per DNS provider), `ecosystem.json` (templates per scanned domain per full sweep) and `dns-providers.json` (first found per DNS provider);
 the deploy runs it after bundling the release. The site rejects a derived file when its
 `generated_at` differs from the manifest's.
 `vite dev`/`preview` serve `DERIVED_DIR` (default `.derived/`, written by `npm run derive`) as
@@ -198,16 +198,16 @@ Pushing `.github/workflows/` changes needs a token with the `workflow` scope.
 
 - `src/lib/data/encode.ts`: id ↔ path-segment encoding
 - `src/lib/data/manifest.ts`: `SUPPORTED_FORMAT_VERSION`, `filePath()` from manifest path templates
-- `src/lib/data/load.ts`: `ExportClient` (manifest once, files by kind + raw ids, derived data `leaderboards()`, `ecosystem()`, `NotFoundError`, `ReleaseMismatchError`)
+- `src/lib/data/load.ts`: `ExportClient` (manifest once, files by kind + raw ids, derived data `leaderboards()`, `ecosystem()`, `dnsProviderFacts()`, `NotFoundError`, `ReleaseMismatchError`)
 - `src/lib/data/config.ts`: data and registry base URL precedence (runtime → build time → `./data/`, `./registry/`); `shareBaseUrl` (shared links, else the browser's URL)
 - `src/lib/data/tables.ts`: `findTable()` by id (template-card suffix), `oneRecord()`
 - `src/lib/data/types.ts`: types of the export (only what the site reads)
-- `src/lib/data/derived.ts`: types of the derived data (`leaderboards.json`, `ecosystem.json`), shared with `scripts/derive.ts`
+- `src/lib/data/derived.ts`: types of the derived data (`leaderboards.json`, `ecosystem.json`, `dns-providers.json`), shared with `scripts/derive.ts`
 - `src/lib/registry/path.ts`: `registryPath()` (`<a>/<b>` folder), `entryPath()`
 - `src/lib/registry/entry.ts`: `parseEntry()` (registry entry, unknown values as `null`), `parseSource()`
 - `src/lib/registry/schema.ts`: `label()` (schema title, description), `enumTexts()`, `FEATURE_GROUPS`/`FEATURES` from the schema
 - `src/lib/registry/load.ts`: `RegistryClient` (entry, logo URL, `registry.json` once), `entryFileUrl()`
-- `src/lib/dns-providers.ts`: DNS providers list (stack filter, rows hidden by default, status badges, `probeCounts()`)
+- `src/lib/dns-providers.ts`: DNS providers list (stack filter, predefined filters, `withFirstSeen()`, status badges, `probeCounts()`)
 - `src/lib/templates-list.ts`: templates list (service provider filter, never-probed rows hidden by default, `withSupport()` support columns from `supported_count`)
 - `src/lib/served.ts`: what supporting DNS providers serve: `servedLabel()` (version, response kind, match), `servedCounts()`, `templateServedCounts()`, `supportedPairs()`; shown by `Served.svelte`, `ServedCounts.svelte`
 - `src/lib/domains.ts`: domain figures' hover text (`scanLabel`, `shareScan`, `domainsTitle`, `ofScanned`)
@@ -232,7 +232,7 @@ Pushing `.github/workflows/` changes needs a token with the `workflow` scope.
 - `scripts/markdown.ts`: Markdown → HTML (GitHub heading ids, raw HTML escaped); `vite.config.ts` bakes METHODOLOGY.md into `methodology.html` and `content/<name>.md` into pages with `<!-- content:<name> -->`; `MarkdownDoc.svelte` shows it
 - `scripts/export-release.ts`: `validateRelease()` (schemas, one `generated_at`, counts, card presence)
 - `scripts/validate-export.ts`, `scripts/bundle-data.ts`: CLIs over it, used by CI and deploy
-- `scripts/derive.ts`: `deriveLeaderboards()` (first support per DNS provider), `deriveEcosystem()` (templates per scanned domain per full sweep); CLI `derive-data.ts`, used by deploy and e2e
+- `scripts/derive.ts`: `deriveLeaderboards()` (first support per DNS provider), `deriveEcosystem()` (templates per scanned domain per full sweep), `deriveDnsProviders()` (first found per DNS provider); CLI `derive-data.ts`, used by deploy and e2e
 - `scripts/registry.ts`: `validateRegistry()` (schema, entry path, embedded logo), `bundleRegistry()` (logos decoded or downloaded into files), `servedRegistryFile()` (dev/preview), `vendorRegistry()` (`FIXTURE_PROVIDER_IDS`); CLIs `validate-registry.ts`, `bundle-registry.ts`, `contract-registry.ts`
 - `scripts/content.ts`: `CONTENT_VALUES` (JSON) → `{{ key }}` placeholders of `content/*.md`; with values set, a missing one fails the build
 - `scripts/changelog.ts`: CHANGELOG parsing; `scripts/check-version.ts`, `scripts/release-notes.ts`: CLIs over it

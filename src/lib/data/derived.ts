@@ -31,6 +31,15 @@ export interface Leaderboards {
   first_support: FirstSupport[];
 }
 
+export const DNS_PROVIDERS_FILE = 'dns-providers.json';
+
+/** `dns-providers.json`: what the DNS providers list needs from the cards. */
+export interface DnsProviderFacts {
+  generated_at: string;
+  /** Each card's `first_seen_at`, by `dns_provider_id`. */
+  first_seen: Record<string, string | null>;
+}
+
 export const ECOSYSTEM_FILE = 'ecosystem.json';
 
 /** One full sweep of `overview.json` `ecosystem`, with support weighted by domain share. */

@@ -172,8 +172,9 @@
       >
         Stack <span class="mono">{stackId}</span>
         ·
-        <a href={links.dnsProviders({ stack: stackId })} data-testid="deployments-link"
-          >Its deployments in the DNS providers list</a
+        <a
+          href={links.dnsProviders({ stack: stackId, filter: 'all' })}
+          data-testid="deployments-link">Its deployments in the DNS providers list</a
         >
       </CardTitle>
 

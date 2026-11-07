@@ -35,7 +35,7 @@ test.describe('Stacks list (stacks.html)', () => {
       .locator('tbody tr', { hasText: 'Plesk' })
       .getByRole('link', { name: '2', exact: true })
       .click();
-    await expect(page).toHaveURL(/dns-providers\.html\?stack=plesk\.com$/);
+    await expect(page).toHaveURL(/dns-providers\.html\?stack=plesk\.com&filter=all$/);
     await expect(page.getByTestId('stack-filter')).toBeVisible();
   });
 

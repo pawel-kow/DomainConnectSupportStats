@@ -6,6 +6,7 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import {
+  type DnsProviderFacts,
   type Ecosystem,
   type FirstSupport,
   type Leaderboards,
@@ -13,7 +14,7 @@ import {
 } from '../src/lib/data/derived.ts';
 import { cardPath, type DataFile, type FileKind, type Manifest } from './export-release.ts';
 
-export { ECOSYSTEM_FILE, LEADERBOARDS_FILE } from '../src/lib/data/derived.ts';
+export { DNS_PROVIDERS_FILE, ECOSYSTEM_FILE, LEADERBOARDS_FILE } from '../src/lib/data/derived.ts';
 
 interface HistoryRow extends Sweep {
   supported_templates: number | null;
@@ -48,6 +49,20 @@ function release(dir: string) {
     return file(path).tables[table]?.rows ?? [];
   };
   return { manifest, file, cards, list };
+}
+
+/** Derive `dns-providers.json` from a release directory. Throws on a file of another release. */
+export function deriveDnsProviders(dir: string): DnsProviderFacts {
+  const { manifest, file, cards } = release(dir);
+  const { card, rows } = cards('dns_provider');
+  const firstSeen: DnsProviderFacts['first_seen'] = {};
+  for (const row of rows) {
+    const path = cardPath(card, row);
+    if (Array.isArray(path)) continue;
+    const provider = file(path).tables.provider?.rows[0];
+    firstSeen[String(row.dns_provider_id)] = (provider?.first_seen_at ?? null) as string | null;
+  }
+  return { generated_at: manifest.generated_at, first_seen: firstSeen };
 }
 
 /** Derive `leaderboards.json` from a release directory. Throws on a file of another release. */

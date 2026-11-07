@@ -1,8 +1,10 @@
 import { dataBaseUrl } from './config';
 import {
   DERIVED_DIR,
+  DNS_PROVIDERS_FILE,
   ECOSYSTEM_FILE,
   LEADERBOARDS_FILE,
+  type DnsProviderFacts,
   type Ecosystem,
   type Leaderboards,
 } from './derived';
@@ -87,6 +89,11 @@ export class ExportClient {
   /** The derived `leaderboards.json`. */
   leaderboards(): Promise<Leaderboards> {
     return this.derived(() => LEADERBOARDS_FILE);
+  }
+
+  /** The derived `dns-providers.json`: first found per DNS provider. */
+  dnsProviderFacts(): Promise<DnsProviderFacts> {
+    return this.derived(() => DNS_PROVIDERS_FILE);
   }
 
   /** The derived `ecosystem.json`: support weighted by domain share per full sweep. */

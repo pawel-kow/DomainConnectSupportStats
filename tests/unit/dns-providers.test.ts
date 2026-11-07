@@ -1,59 +1,98 @@
 import { describe, expect, it } from 'vitest';
 import type { Row, Table } from '../../src/lib/data/types';
 import {
+  DEFAULT_FILTER,
+  dnsProviderFilter,
   dnsProviderList,
-  isHiddenByDefault,
   probeCounts,
   statusBadge,
+  withFirstSeen,
+  type DnsProviderFilter,
 } from '../../src/lib/dns-providers';
 import { exampleJson } from '../fixtures';
 
 const providers = () => exampleJson('dns-providers.json').tables.dns_providers as Table;
 const ids = (rows: Row[]) => rows.map((r) => r.dns_provider_id);
 
-describe('isHiddenByDefault', () => {
-  const visible: Row = { settings_status: 'ok', support_status: 'ok', domains: 10 };
-
-  it('hides given-up, never-probed and zero-domain providers', () => {
-    expect(isHiddenByDefault(visible)).toBe(false);
-    expect(isHiddenByDefault({ ...visible, support_status: 'dead' })).toBe(true);
-    expect(isHiddenByDefault({ ...visible, support_status: null })).toBe(true);
-    expect(isHiddenByDefault({ ...visible, domains: 0 })).toBe(true);
-  });
-
-  it('keeps unmeasured domains and failing probes visible', () => {
-    expect(isHiddenByDefault({ ...visible, domains: null })).toBe(false);
-    expect(isHiddenByDefault({ ...visible, settings_status: 'failed' })).toBe(false);
-    expect(isHiddenByDefault({ ...visible, support_status: 'error' })).toBe(false);
-    expect(isHiddenByDefault({ ...visible, support_status: 'partial' })).toBe(false);
-  });
-});
+const GENERATED_AT = '2026-10-01T00:00:00Z';
+const list = (filter: DnsProviderFilter, stack: string | null = null, source = providers()) =>
+  dnsProviderList(source, { stack, filter, generatedAt: GENERATED_AT });
 
 describe('dnsProviderList', () => {
-  it('hides the default-hidden rows and counts them, keeping export order', () => {
-    const list = dnsProviderList(providers(), { stack: null, showAll: false });
-    expect(ids(list.table.rows)).toEqual([1, 5, 2]);
-    expect(list.hiddenCount).toBe(3);
+  it('shows the DNS providers supporting a template by default, whatever their status', () => {
+    expect(DEFAULT_FILTER).toBe('supporting');
+    expect(ids(list('supporting').table.rows)).toEqual([1, 5, 2, 3]);
+  });
+
+  it('keeps a supporting DNS provider that was given up or has no domains', () => {
+    const source = providers();
+    source.rows = [
+      { ...source.rows[0]!, support_status: 'dead' },
+      { ...source.rows[1]!, domains: 0 },
+    ];
+    expect(ids(list('supporting', null, source).table.rows)).toEqual([1, 5]);
+  });
+
+  it('shows DNS providers with settings and support OK', () => {
+    expect(ids(list('responding').table.rows)).toEqual([1, 2]);
+  });
+
+  it('shows DNS providers with failed settings', () => {
+    expect(ids(list('no-settings').table.rows)).toEqual([3]);
+  });
+
+  it('shows DNS providers with OK settings and failed support, never-probed ones left out', () => {
+    expect(ids(list('no-support').table.rows)).toEqual([5]);
+  });
+
+  it('shows supporting DNS providers with failed settings or support', () => {
+    expect(ids(list('errors').table.rows)).toEqual([5, 3]);
+  });
+
+  it('leaves unknown statuses out of the failure filters', () => {
+    const source = providers();
+    source.rows = [{ ...source.rows[0]!, settings_status: null, support_status: null }];
+    expect(list('no-settings', null, source).table.rows).toEqual([]);
+    expect(list('no-support', null, source).table.rows).toEqual([]);
+    expect(list('errors', null, source).table.rows).toEqual([]);
+    expect(list('responding', null, source).table.rows).toEqual([]);
+  });
+
+  it('shows DNS providers first found within 30 days of the release', () => {
+    const source = withFirstSeen(providers(), {
+      '1': '2026-09-01 00:00:00',
+      '5': '2026-08-31 23:59:59',
+      '2': null,
+    });
+    expect(ids(list('new', null, source).table.rows)).toEqual([1]);
   });
 
   it('shows every row when asked', () => {
-    const list = dnsProviderList(providers(), { stack: null, showAll: true });
-    expect(ids(list.table.rows)).toEqual([1, 5, 2, 3, 4, 6]);
-    expect(list.hiddenCount).toBe(3);
+    expect(ids(list('all').table.rows)).toEqual([1, 5, 2, 3, 4, 6]);
   });
 
-  it("filters to one stack's deployments before hiding", () => {
-    expect(
-      ids(dnsProviderList(providers(), { stack: 'plesk.com', showAll: true }).table.rows),
-    ).toEqual([2, 3]);
-    const hidden = dnsProviderList(providers(), { stack: 'plesk.com', showAll: false });
-    expect(ids(hidden.table.rows)).toEqual([2]);
-    expect(hidden.hiddenCount).toBe(1);
-    expect(dnsProviderList(providers(), { stack: 'nope', showAll: true }).table.rows).toEqual([]);
+  it('counts the rows of every filter', () => {
+    expect(list('supporting').counts).toEqual({
+      supporting: 4,
+      responding: 2,
+      'no-settings': 1,
+      'no-support': 1,
+      errors: 2,
+      new: 0,
+      all: 6,
+    });
+  });
+
+  it("filters to one stack's deployments first", () => {
+    expect(ids(list('all', 'plesk.com').table.rows)).toEqual([2, 3]);
+    const failing = list('no-settings', 'plesk.com');
+    expect(ids(failing.table.rows)).toEqual([3]);
+    expect(failing.counts.all).toBe(2);
+    expect(list('all', 'nope').table.rows).toEqual([]);
   });
 
   it('keeps the counts and shares of the template answers as exported', () => {
-    const { table } = dnsProviderList(providers(), { stack: null, showAll: true });
+    const { table } = list('all');
     expect(table.columns).toEqual(providers().columns);
     expect(table.rows).toEqual(providers().rows);
   });
@@ -62,9 +101,38 @@ describe('dnsProviderList', () => {
     const source = providers();
     source.columns.push({ key: 'brand_new', header: 'NEW' });
     source.rows[0]!.brand_new = 'x';
-    const { table } = dnsProviderList(source, { stack: null, showAll: false });
+    const { table } = list('supporting', null, source);
     expect(table.columns.map((c) => c.key)).toContain('brand_new');
     expect(table.rows[0]!.brand_new).toBe('x');
+  });
+});
+
+describe('dnsProviderFilter', () => {
+  it('reads a known filter', () => {
+    expect(dnsProviderFilter('?filter=errors')).toBe('errors');
+  });
+
+  it('falls back to the default', () => {
+    expect(dnsProviderFilter('')).toBe(DEFAULT_FILTER);
+    expect(dnsProviderFilter('?filter=nope')).toBe(DEFAULT_FILTER);
+  });
+
+  it('reads all=1 as the all filter', () => {
+    expect(dnsProviderFilter('?all=1')).toBe('all');
+    expect(dnsProviderFilter('?all=1&filter=new')).toBe('new');
+  });
+});
+
+describe('withFirstSeen', () => {
+  it('adds the first found column and each date', () => {
+    const table = withFirstSeen(providers(), { '1': '2025-12-01 10:00:00' });
+    expect(table.columns.at(-1)).toEqual({ key: 'first_seen_at', header: 'FIRST FOUND' });
+    expect(table.rows[0]!.first_seen_at).toBe('2025-12-01 10:00:00');
+  });
+
+  it('leaves a date it does not know null', () => {
+    expect(withFirstSeen(providers(), {}).rows[0]!.first_seen_at).toBeNull();
+    expect(withFirstSeen(providers(), null).rows[0]!.first_seen_at).toBeNull();
   });
 });
 

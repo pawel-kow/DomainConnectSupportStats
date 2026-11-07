@@ -1,9 +1,10 @@
 import type { CellValue, Row, Table } from './data/types';
-import { formatExact } from './format';
+import { formatExact, parseTimestamp } from './format';
+import { flagParam, textParam } from './params';
 
 /**
- * The DNS providers list (EXPORT_FORMAT.md "dns-providers.json"): stack filter, rows hidden by
- * default, status badges and probe counts.
+ * The DNS providers list (EXPORT_FORMAT.md "dns-providers.json"): stack filter, predefined
+ * filters, first found, status badges and probe counts.
  */
 
 function num(row: Row | undefined, key: string): number | null {
@@ -16,31 +17,116 @@ export function isNeverProbed(row: Row): boolean {
   return row.support_status === null;
 }
 
-/** Given up, never probed, or no domains in the domain-share import (`null` domains is unknown). */
-export function isHiddenByDefault(row: Row): boolean {
-  return row.support_status === 'dead' || row.support_status === null || row.domains === 0;
+const hasSupport = (row: Row): boolean => (num(row, 'supported_count') ?? 0) > 0;
+
+/** Answered with something else than OK; `null` is unknown, not a failure. */
+const isFailed = (status: CellValue | undefined): boolean =>
+  status !== null && status !== undefined && status !== 'ok';
+
+const NEW_DAYS = 30;
+
+/** First found within `NEW_DAYS` of the release. */
+function isNew(row: Row, generatedAt: string): boolean {
+  const found = parseTimestamp(typeof row.first_seen_at === 'string' ? row.first_seen_at : null);
+  const release = parseTimestamp(generatedAt);
+  return (
+    found !== null &&
+    release !== null &&
+    release.getTime() - found.getTime() <= NEW_DAYS * 24 * 60 * 60 * 1000
+  );
+}
+
+/** The list's predefined filters, in display order. */
+export const DNS_PROVIDER_FILTERS = [
+  {
+    id: 'supporting',
+    label: 'At least one template',
+    description: 'DNS providers supporting at least one template, whatever their latest run.',
+  },
+  {
+    id: 'responding',
+    label: 'Responding OK',
+    description: 'Settings and support both OK in the latest completed runs.',
+  },
+  {
+    id: 'no-settings',
+    label: 'No settings response',
+    description: 'Settings failed in the latest completed run.',
+  },
+  {
+    id: 'no-support',
+    label: 'No support response',
+    description: 'Settings OK, support failed or partly failed in the latest completed sweep.',
+  },
+  {
+    id: 'errors',
+    label: 'Supporting, with errors',
+    description: 'Supporting at least one template, settings or support not OK.',
+  },
+  {
+    id: 'new',
+    label: `New in the last ${NEW_DAYS} days`,
+    description: `First found within ${NEW_DAYS} days of this release.`,
+  },
+  { id: 'all', label: 'All', description: 'Every known DNS provider.' },
+] as const;
+
+export type DnsProviderFilter = (typeof DNS_PROVIDER_FILTERS)[number]['id'];
+
+export const DEFAULT_FILTER: DnsProviderFilter = 'supporting';
+
+const MATCHES: Record<DnsProviderFilter, (row: Row, generatedAt: string) => boolean> = {
+  supporting: hasSupport,
+  responding: (r) => r.settings_status === 'ok' && r.support_status === 'ok',
+  'no-settings': (r) => isFailed(r.settings_status),
+  'no-support': (r) => r.settings_status === 'ok' && isFailed(r.support_status),
+  errors: (r) => hasSupport(r) && (isFailed(r.settings_status) || isFailed(r.support_status)),
+  new: isNew,
+  all: () => true,
+};
+
+/** The filter of a page's query: `filter=`, else `all=1`, else the default. */
+export function dnsProviderFilter(search: string): DnsProviderFilter {
+  const value = textParam(search, 'filter');
+  const known = DNS_PROVIDER_FILTERS.find((f) => f.id === value);
+  if (known) return known.id;
+  return flagParam(search, 'all') ? 'all' : DEFAULT_FILTER;
+}
+
+/** `table` with the derived `first_seen_at` of each row, `null` when unknown. */
+export function withFirstSeen(
+  table: Table,
+  firstSeen: Record<string, string | null> | null,
+): Table {
+  return {
+    ...table,
+    columns: [...table.columns, { key: 'first_seen_at', header: 'FIRST FOUND' }],
+    rows: table.rows.map((r) => ({
+      ...r,
+      first_seen_at: firstSeen?.[String(r.dns_provider_id)] ?? null,
+    })),
+  };
 }
 
 export interface DnsProviderList {
   /** The rows to show, in export order. */
   table: Table;
-  /** Rows of the stack (or of all) hidden by default. */
-  hiddenCount: number;
+  /** Rows of the stack (or of all) per filter. */
+  counts: Record<DnsProviderFilter, number>;
 }
 
-/** The list rows for `?stack=` and the show-all toggle; unknown columns and keys are kept. */
+/** The list rows for `?stack=` and the filter; unknown columns and keys are kept. */
 export function dnsProviderList(
   source: Table,
-  filters: { stack: string | null; showAll: boolean },
+  options: { stack: string | null; filter: DnsProviderFilter; generatedAt: string },
 ): DnsProviderList {
-  const inStack = source.rows.filter(
-    (r) => filters.stack === null || r.provider_id === filters.stack,
-  );
-  const shown = filters.showAll ? inStack : inStack.filter((r) => !isHiddenByDefault(r));
-  return {
-    table: { ...source, rows: shown },
-    hiddenCount: inStack.filter(isHiddenByDefault).length,
-  };
+  const { stack, filter, generatedAt } = options;
+  const inStack = source.rows.filter((r) => stack === null || r.provider_id === stack);
+  const matching = (id: DnsProviderFilter) => inStack.filter((r) => MATCHES[id](r, generatedAt));
+  const counts = Object.fromEntries(
+    DNS_PROVIDER_FILTERS.map((f) => [f.id, matching(f.id).length]),
+  ) as Record<DnsProviderFilter, number>;
+  return { table: { ...source, rows: matching(filter) }, counts };
 }
 
 export type BadgeTone = 'ok' | 'warn' | 'muted';

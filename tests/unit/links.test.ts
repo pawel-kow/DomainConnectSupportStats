@@ -20,11 +20,11 @@ describe('links', () => {
     expect(links.dnsProviders({ stack: 'plesk.com' })).toBe('./dns-providers.html?stack=plesk.com');
   });
 
-  it('carries the show-all toggle only when on', () => {
-    expect(links.dnsProviders({ q: 'plesk', all: true })).toBe(
-      './dns-providers.html?q=plesk&all=1',
+  it('carries the DNS providers filter unless it is the default', () => {
+    expect(links.dnsProviders({ q: 'plesk', filter: 'errors' })).toBe(
+      './dns-providers.html?q=plesk&filter=errors',
     );
-    expect(links.dnsProviders({ all: false })).toBe('./dns-providers.html');
+    expect(links.dnsProviders({ filter: 'supporting' })).toBe('./dns-providers.html');
   });
 
   it('carries the templates filters', () => {

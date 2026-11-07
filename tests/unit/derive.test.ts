@@ -2,8 +2,17 @@ import { cpSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:f
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterEach, describe, expect, it } from 'vitest';
-import { deriveEcosystem, deriveLeaderboards } from '../../scripts/derive';
+import { deriveDnsProviders, deriveEcosystem, deriveLeaderboards } from '../../scripts/derive';
 import { EXAMPLE_DIR } from '../fixtures';
+
+describe('deriveDnsProviders on the example export', () => {
+  it("collects each card's first_seen_at under the release's generated_at", () => {
+    const derived = deriveDnsProviders(EXAMPLE_DIR);
+    expect(derived.generated_at).toBe('2026-10-01T00:00:00Z');
+    expect(Object.keys(derived.first_seen).sort()).toEqual(['1', '2', '3', '4', '5', '6']);
+    expect(derived.first_seen['5']).toBe('2026-02-15 12:00:00');
+  });
+});
 
 describe('deriveLeaderboards on the example export', () => {
   const derived = deriveLeaderboards(EXAMPLE_DIR);

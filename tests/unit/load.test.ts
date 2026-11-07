@@ -98,4 +98,10 @@ describe('ExportClient', () => {
     const fetchFn = exampleFetch({ 'derived/ecosystem.json': ecosystem });
     await expect(new ExportClient(BASE, fetchFn).ecosystem()).resolves.toEqual(ecosystem);
   });
+
+  it('reads the derived DNS provider facts of the same release', async () => {
+    const facts = { generated_at: '2026-10-01T00:00:00Z', first_seen: {} };
+    const fetchFn = exampleFetch({ 'derived/dns-providers.json': facts });
+    await expect(new ExportClient(BASE, fetchFn).dnsProviderFacts()).resolves.toEqual(facts);
+  });
 });
