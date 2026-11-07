@@ -4,6 +4,24 @@ Changes per site version. Versions follow [SemVer](https://semver.org/): major f
 parameter removed or changed incompatibly, minor for new pages, features or content, patch for
 fixes, styling and dependencies.
 
+## [0.23.0] - 2026-11-07
+
+### Added
+
+- DNS providers list: predefined filters with their counts (`?filter=`): at least one template,
+  responding OK, no settings response, no support response, supporting with errors, new in the last
+  30 days, all. `?all=1` still shows all.
+- DNS providers list: First found column (hidden at phone width).
+
+### Changed
+
+- Stack deployment links open the DNS providers list with all of the stack's deployments.
+
+### Fixed
+
+- DNS providers list: a supporting DNS provider stays on the default list after a failed run. The
+  default list matches the overview's supporting DNS providers.
+
 ## [0.22.2] - 2026-10-20
 
 ### Changed
