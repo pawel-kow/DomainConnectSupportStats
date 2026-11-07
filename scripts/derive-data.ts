@@ -1,6 +1,6 @@
 /**
- * Write the derived data of an export release into `<outDir>/`: `leaderboards.json`
- * and `ecosystem.json`.
+ * Write the derived data of an export release into `<outDir>/`: `leaderboards.json`,
+ * `ecosystem.json` and `dns-providers.json`.
  * Usage: node scripts/derive-data.ts [releaseDir] [outDir]
  * releaseDir defaults to DATA_DIR, else the contract's example export; outDir to DERIVED_DIR, else
  * `.derived`. The deploy writes into
@@ -9,8 +9,10 @@
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import {
+  DNS_PROVIDERS_FILE,
   ECOSYSTEM_FILE,
   LEADERBOARDS_FILE,
+  deriveDnsProviders,
   deriveEcosystem,
   deriveLeaderboards,
 } from './derive.ts';
@@ -32,8 +34,9 @@ const write = (rel: string, data: unknown) => {
 const leaderboards = deriveLeaderboards(releaseDir);
 write(LEADERBOARDS_FILE, leaderboards);
 write(ECOSYSTEM_FILE, deriveEcosystem(releaseDir));
+write(DNS_PROVIDERS_FILE, deriveDnsProviders(releaseDir));
 console.log(
-  `derived ${LEADERBOARDS_FILE} and ${ECOSYSTEM_FILE} ` +
+  `derived ${LEADERBOARDS_FILE}, ${ECOSYSTEM_FILE} and ${DNS_PROVIDERS_FILE} ` +
     `from ${releaseDir} into ${outDir}: ` +
     `${leaderboards.first_support.length} DNS provider(s) with a first support`,
 );
