@@ -49,7 +49,7 @@
     {#if id !== name}<div class="mono muted id">{id ?? UNKNOWN}</div>{/if}
   {:else if column.key === 'deployments'}
     {@const n = num(row, 'deployments')}
-    {#if id && n}<a href={links.dnsProviders({ stack: id })}>{formatCount(n)}</a
+    {#if id && n}<a href={links.dnsProviders({ stack: id, filter: 'all' })}>{formatCount(n)}</a
       >{:else}{formatCount(n)}{/if}
   {:else if column.key === MIN_KEY}
     {@const range = supportRange(row)}

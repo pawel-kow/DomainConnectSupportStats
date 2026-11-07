@@ -8,28 +8,35 @@
   import { defaultClient } from '../lib/data/load';
   import { findTable } from '../lib/data/tables';
   import type { Column, Manifest, Row } from '../lib/data/types';
-  import { dnsProviderList, isNeverProbed, probeCounts } from '../lib/dns-providers';
+  import {
+    DNS_PROVIDER_FILTERS,
+    dnsProviderFilter,
+    dnsProviderList,
+    isNeverProbed,
+    probeCounts,
+    withFirstSeen,
+  } from '../lib/dns-providers';
   import { templateCount } from '../lib/supporting';
-  import { formatCount, formatPct, UNKNOWN } from '../lib/format';
+  import { formatCount, formatExact, formatPct, UNKNOWN } from '../lib/format';
   import { pageTitle } from '../lib/title';
   import { links } from '../lib/links';
   import DomainShare from '../lib/components/DomainShare.svelte';
   import type { Scan } from '../lib/domains';
   import { overviewFacts } from '../lib/overview-facts';
   import { withHash } from '../lib/share';
-  import { flagParam, textParam } from '../lib/params';
+  import { textParam } from '../lib/params';
 
   const search = window.location.search;
   const stack = textParam(search, 'stack');
   let query = $state(textParam(search, 'q') ?? '');
-  let showAll = $state(flagParam(search, 'all'));
+  let filter = $state(dnsProviderFilter(search));
 
-  // Keep the view a shareable link while the search and toggle change.
+  // Keep the view a shareable link while the search and filter change.
   $effect(() => {
     window.history.replaceState(
       null,
       '',
-      withHash(links.dnsProviders({ stack, q: query, all: showAll }), location.hash),
+      withHash(links.dnsProviders({ stack, q: query, filter }), location.hash),
     );
   });
 
@@ -40,12 +47,16 @@
   const loading = client.manifest().then((m) => {
     manifest = m;
     void overviewFacts(client, m).then((f) => (scan = f.scan));
-    return client.file('dns_providers');
+    return Promise.all([
+      client.file('dns_providers'),
+      // The list stands without it: first found is unknown and the new filter unavailable.
+      client.dnsProviderFacts().catch(() => null),
+    ]);
   });
 
   if (stack) document.title = pageTitle(stack, 'DNS providers');
 
-  const KEYS = [
+  const CUSTOM_KEYS = [
     'name',
     'provider_id',
     'settings_status',
@@ -55,7 +66,7 @@
     'undetermined_count',
     'domains',
   ];
-  const CUSTOM_KEYS = KEYS;
+  const KEYS = [...CUSTOM_KEYS, 'first_seen_at'];
 
   function num(row: Row, key: string): number | null {
     const v = row[key];
@@ -101,10 +112,11 @@
 <Layout current="dns-providers" {manifest}>
   {#await loading}
     <p class="no-data">Loading…</p>
-  {:then file}
-    {@const source = findTable(file, 'dns_providers')}
-    {#if source}
-      {@const list = dnsProviderList(source, { stack, showAll })}
+  {:then [file, facts]}
+    {@const exported = findTable(file, 'dns_providers')}
+    {#if exported}
+      {@const source = withFirstSeen(exported, facts?.first_seen ?? null)}
+      {@const list = dnsProviderList(source, { stack, filter, generatedAt: file.generated_at })}
       <Panel
         id="dns-providers"
         title={stack ? `DNS providers of stack ${stack}` : 'DNS providers'}
@@ -113,30 +125,44 @@
         {#if stack}
           <p class="filter" data-testid="stack-filter">
             Deployments of stack <a href={links.stack(stack)}>{stack}</a> ·
-            <a href={links.dnsProviders({ q: query, all: showAll })}>All DNS providers</a>
+            <a href={links.dnsProviders({ q: query, filter })}>All DNS providers</a>
           </p>
         {/if}
         <Notes notes={file.notes} />
-        <p class="toggle">
+        <p class="list-filter">
           <label>
-            <input type="checkbox" bind:checked={showAll} data-testid="show-all" />
-            Show all ({list.hiddenCount} hidden: given up, never probed or no domains)
+            Show
+            <select bind:value={filter} data-testid="list-filter">
+              {#each DNS_PROVIDER_FILTERS as option (option.id)}
+                {@const unavailable = option.id === 'new' && !facts}
+                <option value={option.id} disabled={unavailable}>
+                  {option.label} ({unavailable
+                    ? 'unavailable'
+                    : formatExact(list.counts[option.id])})
+                </option>
+              {/each}
+            </select>
           </label>
+          <span class="muted" data-testid="filter-description">
+            {DNS_PROVIDER_FILTERS.find((f) => f.id === filter)?.description}
+          </span>
         </p>
-        <DataTable
-          table={list.table}
-          keys={KEYS}
-          customKeys={CUSTOM_KEYS}
-          phoneKeys={['name', 'supported_count', 'domains']}
-          cell={providerCell}
-          searchable
-          pageSize={20}
-          bind:query
-          caption="DNS providers"
-          emptyText={stack
-            ? `No DNS provider of stack ${stack} to show`
-            : 'No DNS provider to show'}
-        />
+        <div class="providers">
+          <DataTable
+            table={list.table}
+            keys={KEYS}
+            customKeys={CUSTOM_KEYS}
+            phoneKeys={['name', 'supported_count', 'domains']}
+            cell={providerCell}
+            searchable
+            pageSize={20}
+            bind:query
+            caption="DNS providers"
+            emptyText={stack
+              ? `No DNS provider of stack ${stack} to show`
+              : 'No DNS provider to show'}
+          />
+        </div>
         <ul class="caveats" data-testid="caveats">
           <li>
             Supported and not supported: the latest conclusive probe of each template; undetermined:
@@ -169,12 +195,33 @@
 
 <style>
   .filter,
-  .toggle {
+  .list-filter {
     margin-bottom: var(--spacing-sm);
   }
 
-  .toggle input {
-    margin-right: var(--spacing-xs);
+  .list-filter {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--spacing-xs) var(--spacing-sm);
+  }
+
+  .list-filter label {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-xs);
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  .list-filter select {
+    font: inherit;
+    min-width: 0;
+    padding: 0.25rem 0.75rem;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-sm);
+    background-color: var(--bg-white);
+    color: var(--secondary-navy);
   }
 
   /* Wide screens: long labels and hosts wrap so the table fits. Phones: the table scrolls. */
@@ -187,6 +234,11 @@
     .host {
       white-space: normal;
       overflow-wrap: anywhere;
+    }
+
+    .providers :global(th),
+    .providers :global(td) {
+      padding-inline: var(--spacing-xs);
     }
   }
 

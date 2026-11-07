@@ -9,7 +9,7 @@ test.describe('DNS providers list (dns-providers.html)', () => {
     page,
   }) => {
     await page.goto('dns-providers.html');
-    await expect(names(page)).toHaveText(['Cloudflare', 'IONOS', 'Plesk']);
+    await expect(names(page)).toHaveText(['Cloudflare', 'IONOS', 'Plesk', 'Plesk']);
     const cloudflare = page.locator('tbody tr', { hasText: 'Cloudflare' });
     await expect(cloudflare).toContainText('api.cloudflare.com');
     await expect(cloudflare).toContainText(/3\s*60.0%/);
@@ -24,7 +24,7 @@ test.describe('DNS providers list (dns-providers.html)', () => {
 
   test('shows statuses as badges with the raw value on hover', async ({ page }, testInfo) => {
     test.skip(testInfo.project.name === 'mobile', 'status columns hidden at phone width');
-    await page.goto('dns-providers.html?all=1');
+    await page.goto('dns-providers.html?filter=all');
     const plesk3 = page.locator('tbody tr').nth(3);
     await expect(plesk3.locator('.badge', { hasText: 'Failed' })).toHaveAttribute(
       'title',
@@ -48,28 +48,67 @@ test.describe('DNS providers list (dns-providers.html)', () => {
     );
   });
 
-  test('hides given-up, never-probed and zero-domain providers behind a toggle in the URL', async ({
-    page,
-  }) => {
+  test('keeps a given-up supporting provider on the default list', async ({ page }) => {
     await page.goto('dns-providers.html');
-    const toggle = page.getByTestId('show-all');
-    await expect(page.getByText('Show all (3 hidden')).toBeVisible();
-    await toggle.check();
-    await expect(names(page)).toHaveCount(6);
-    await expect(page).toHaveURL(/dns-providers\.html\?all=1$/);
+    await expect(page.getByTestId('list-filter')).toHaveValue('supporting');
+    await expect(page.locator('tbody tr').nth(3)).toContainText('Plesk');
+    await expect(page.locator('tbody')).not.toContainText('Small Registrar');
+  });
+
+  test('offers predefined filters with their counts, kept in the URL', async ({ page }) => {
+    await page.goto('dns-providers.html');
+    const filter = page.getByTestId('list-filter');
+    await expect(filter.locator('option')).toHaveText([
+      'At least one template (4)',
+      'Responding OK (2)',
+      'No settings response (1)',
+      'No support response (1)',
+      'Supporting, with errors (2)',
+      'New in the last 30 days (0)',
+      'All (6)',
+    ]);
+    await filter.selectOption('errors');
+    await expect(names(page)).toHaveText(['IONOS', 'Plesk']);
+    await expect(page).toHaveURL(/dns-providers\.html\?filter=errors$/);
     await page.reload();
+    await expect(names(page)).toHaveText(['IONOS', 'Plesk']);
+    await expect(page.getByTestId('list-filter')).toHaveValue('errors');
+    await page.getByTestId('list-filter').selectOption('supporting');
+    await expect(page).toHaveURL(/dns-providers\.html$/);
+  });
+
+  test('reads the all flag of older links', async ({ page }) => {
+    await page.goto('dns-providers.html?all=1');
     await expect(names(page)).toHaveCount(6);
-    await expect(page.getByTestId('show-all')).toBeChecked();
+    await expect(page.getByTestId('list-filter')).toHaveValue('all');
+  });
+
+  test('shows when a DNS provider was first found', async ({ page }, testInfo) => {
+    test.skip(testInfo.project.name === 'mobile', 'first found hidden at phone width');
+    await page.route('**/config.js', (route) =>
+      route.fulfill({
+        contentType: 'text/javascript',
+        body: "window.DC_STATS_CONFIG = { scannerStartDate: '2026-01-01' };",
+      }),
+    );
+    await page.goto('dns-providers.html');
+    const ionos = page.locator('tbody tr', { hasText: 'IONOS' });
+    await expect(ionos.getByRole('cell', { name: '15-02-2026' })).toHaveAttribute(
+      'title',
+      '15-02-2026 12:00 UTC',
+    );
+    const cloudflare = page.locator('tbody tr', { hasText: 'Cloudflare' });
+    await expect(cloudflare.getByText('First scan')).toBeVisible();
   });
 
   test('filters to one stack and links back to all providers', async ({ page }) => {
-    await page.goto('dns-providers.html?stack=plesk.com&all=1');
+    await page.goto('dns-providers.html?stack=plesk.com&filter=all');
     await expect(names(page)).toHaveText(['Plesk', 'Plesk']);
     await expect(
       page.getByRole('heading', { name: 'DNS providers of stack plesk.com' }),
     ).toBeVisible();
     await page.getByTestId('stack-filter').getByRole('link', { name: 'All DNS providers' }).click();
-    await expect(page).toHaveURL(/dns-providers\.html\?all=1$/);
+    await expect(page).toHaveURL(/dns-providers\.html\?filter=all$/);
     await expect(names(page)).toHaveCount(6);
   });
 
@@ -89,7 +128,7 @@ test.describe('DNS providers list (dns-providers.html)', () => {
   });
 
   test('sorts by a column, largest first, then smallest first', async ({ page }) => {
-    await page.goto('dns-providers.html?all=1');
+    await page.goto('dns-providers.html?filter=all');
     const domains = page.getByRole('button', { name: /DOMAINS/ });
     await domains.click();
     await expect(names(page).first()).toHaveText('Cloudflare');
@@ -98,7 +137,7 @@ test.describe('DNS providers list (dns-providers.html)', () => {
   });
 
   test('shows a never-probed DNS provider as not probed yet', async ({ page }) => {
-    await page.goto('dns-providers.html?all=1');
+    await page.goto('dns-providers.html?filter=all');
     const never = page.locator('tbody tr', { hasText: 'Small Registrar' });
     await expect(never).toContainText('Not probed yet');
   });
@@ -117,7 +156,7 @@ test.describe('DNS providers list (dns-providers.html)', () => {
   });
 
   test('shows no stack link for a provider without a stack', async ({ page }) => {
-    await page.goto('dns-providers.html?all=1');
+    await page.goto('dns-providers.html?filter=all');
     const row = page.locator('tbody tr', { hasText: 'Small Registrar' });
     await expect(row.locator('td').nth(1)).toHaveText('–');
     await expect(row.locator('td').nth(1).getByRole('link')).toHaveCount(0);
@@ -181,6 +220,17 @@ test.describe('DNS providers list (dns-providers.html)', () => {
   test.describe('load failure', () => {
     test.use({ expectErrors: true });
 
+    test('still lists the DNS providers without the derived data', async ({ page }) => {
+      await page.route('**/data/derived/dns-providers.json', (route) =>
+        route.fulfill({ status: 500 }),
+      );
+      await page.goto('dns-providers.html');
+      await expect(names(page)).toHaveCount(4);
+      const option = page.getByTestId('list-filter').locator('option[value="new"]');
+      await expect(option).toHaveText('New in the last 30 days (unavailable)');
+      await expect(option).toHaveJSProperty('disabled', true);
+    });
+
     test('shows an error state when the list is unavailable', async ({ page }) => {
       await page.route('**/data/dns-providers.json', (route) => route.fulfill({ status: 500 }));
       await page.goto('dns-providers.html');
@@ -198,12 +248,12 @@ test.describe('DNS providers list (dns-providers.html)', () => {
         .evaluate((w) => w.scrollWidth - w.clientWidth);
       expect(overflow).toBeLessThanOrEqual(0);
     } else {
-      await expect(headers).toHaveCount(8);
+      await expect(headers).toHaveCount(9);
     }
   });
 
   test('fits the screen without horizontal page scroll', async ({ page }) => {
-    await page.goto('dns-providers.html?all=1');
+    await page.goto('dns-providers.html?filter=all');
     await expect(names(page)).toHaveCount(6);
     const overflow = await page.evaluate(
       () => document.documentElement.scrollWidth - window.innerWidth,

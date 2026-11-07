@@ -20,7 +20,7 @@ test.describe('Stack card (stack.html)', () => {
     ).toHaveText('9.6%');
     await expect(page.getByTestId('deployments-link')).toHaveAttribute(
       'href',
-      './dns-providers.html?stack=plesk.com',
+      './dns-providers.html?stack=plesk.com&filter=all',
     );
   });
 

@@ -19,8 +19,11 @@ function page(
 
 export const links = {
   overview: () => page('index'),
-  dnsProviders: (filters: { stack?: string | null; q?: string | null; all?: boolean } = {}) =>
-    page('dns-providers', filters),
+  dnsProviders: (filters: { stack?: string | null; q?: string | null; filter?: string } = {}) =>
+    page('dns-providers', {
+      ...filters,
+      filter: filters.filter === 'supporting' ? null : filters.filter,
+    }),
   stacks: () => page('stacks'),
   serviceProviders: (filters: { q?: string | null } = {}) => page('service-providers', filters),
   templates: (filters: { spid?: string | null; q?: string | null; all?: boolean } = {}) =>
