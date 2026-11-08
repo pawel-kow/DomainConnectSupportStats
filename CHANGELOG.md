@@ -4,6 +4,13 @@ Changes per site version. Versions follow [SemVer](https://semver.org/): major f
 parameter removed or changed incompatibly, minor for new pages, features or content, patch for
 fixes, styling and dependencies.
 
+## [0.23.1] - 2026-11-08
+
+### Fixed
+
+- DNS providers list: the new filter shows the overview's new supporting DNS providers (first
+  support within 30 days), labelled "New supporting (30 days)".
+
 ## [0.23.0] - 2026-11-07
 
 ### Added
