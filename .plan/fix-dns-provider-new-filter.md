@@ -1,10 +1,10 @@
 # DNS providers list: "new" = newly supporting
 
 ## Tasks
-- [~] Tests first: `new` from `newSupporting()` ids, label, unavailable without leaderboards
-- [ ] `dnsProviderList` takes the new supporters' ids; view loads `leaderboards()`
-- [ ] Docs, version 0.23.1, CHANGELOG
-- [ ] verify, real-release check, screenshots
+- [x] Tests first: `new` from `newSupporting()` ids, label, unavailable without leaderboards
+- [x] `dnsProviderList` takes the new supporters' ids; view loads `leaderboards()`
+- [x] Docs, version 0.23.1, CHANGELOG
+- [~] verify, real-release check, screenshots
 
 ## Findings
 - Release 2026-11-08: overview new supporters 11 (Plesk, first support sweep 2026-10-24); first found within 30 days: 0.
@@ -13,3 +13,4 @@
 ## Decisions
 - `new` uses `newSupporting()` (30 days before `generated_at`, not before `scannerStartDate`, first sweep left out): same rows as the overview. Accepted by the maintainer.
 - First found column stays.
+- Release 2026-11-08 after the fix: overview 11, filter 11, same DNS provider ids, desktop and phone; no page error.
