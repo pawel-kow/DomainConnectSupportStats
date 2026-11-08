@@ -14,9 +14,12 @@ import { exampleJson } from '../fixtures';
 const providers = () => exampleJson('dns-providers.json').tables.dns_providers as Table;
 const ids = (rows: Row[]) => rows.map((r) => r.dns_provider_id);
 
-const GENERATED_AT = '2026-10-01T00:00:00Z';
-const list = (filter: DnsProviderFilter, stack: string | null = null, source = providers()) =>
-  dnsProviderList(source, { stack, filter, generatedAt: GENERATED_AT });
+const list = (
+  filter: DnsProviderFilter,
+  stack: string | null = null,
+  source = providers(),
+  newSupporters: ReadonlySet<number> | null = new Set(),
+) => dnsProviderList(source, { stack, filter, newSupporters });
 
 describe('dnsProviderList', () => {
   it('shows the DNS providers supporting a template by default, whatever their status', () => {
@@ -58,13 +61,13 @@ describe('dnsProviderList', () => {
     expect(list('responding', null, source).table.rows).toEqual([]);
   });
 
-  it('shows DNS providers first found within 30 days of the release', () => {
-    const source = withFirstSeen(providers(), {
-      '1': '2026-09-01 00:00:00',
-      '5': '2026-08-31 23:59:59',
-      '2': null,
-    });
-    expect(ids(list('new', null, source).table.rows)).toEqual([1]);
+  it('shows the new supporting DNS providers, in export order', () => {
+    expect(ids(list('new', null, providers(), new Set([2, 5])).table.rows)).toEqual([5, 2]);
+    expect(list('new', null, providers(), new Set([2, 5])).counts.new).toBe(2);
+  });
+
+  it('shows no new supporting DNS provider when they are unknown', () => {
+    expect(list('new', null, providers(), null).table.rows).toEqual([]);
   });
 
   it('shows every row when asked', () => {

@@ -64,7 +64,7 @@ test.describe('DNS providers list (dns-providers.html)', () => {
       'No settings response (1)',
       'No support response (1)',
       'Supporting, with errors (2)',
-      'New in the last 30 days (0)',
+      'New supporting (30 days) (0)',
       'All (6)',
     ]);
     await filter.selectOption('errors');
@@ -75,6 +75,36 @@ test.describe('DNS providers list (dns-providers.html)', () => {
     await expect(page.getByTestId('list-filter')).toHaveValue('errors');
     await page.getByTestId('list-filter').selectOption('supporting');
     await expect(page).toHaveURL(/dns-providers\.html$/);
+  });
+
+  test('shows the new supporting DNS providers of the overview', async ({ page }) => {
+    await page.route('**/data/derived/leaderboards.json', (route) =>
+      route.fulfill({
+        json: {
+          generated_at: '2026-10-01T00:00:00Z',
+          first_sweep: { sweep_id: 1, started_at: '2026-03-02 02:00:00' },
+          first_support: [
+            {
+              dns_provider_id: 5,
+              sweep_id: 9,
+              started_at: '2026-09-28 02:00:00',
+              supported_templates: 1,
+            },
+            {
+              dns_provider_id: 2,
+              sweep_id: 2,
+              started_at: '2026-08-01 02:00:00',
+              supported_templates: 1,
+            },
+          ],
+        },
+      }),
+    );
+    await page.goto('dns-providers.html?filter=new');
+    await expect(names(page)).toHaveText(['IONOS']);
+    await expect(page.getByTestId('list-filter').locator('option[value="new"]')).toHaveText(
+      'New supporting (30 days) (1)',
+    );
   });
 
   test('reads the all flag of older links', async ({ page }) => {
@@ -224,10 +254,13 @@ test.describe('DNS providers list (dns-providers.html)', () => {
       await page.route('**/data/derived/dns-providers.json', (route) =>
         route.fulfill({ status: 500 }),
       );
+      await page.route('**/data/derived/leaderboards.json', (route) =>
+        route.fulfill({ status: 500 }),
+      );
       await page.goto('dns-providers.html');
       await expect(names(page)).toHaveCount(4);
       const option = page.getByTestId('list-filter').locator('option[value="new"]');
-      await expect(option).toHaveText('New in the last 30 days (unavailable)');
+      await expect(option).toHaveText('New supporting (30 days) (unavailable)');
       await expect(option).toHaveJSProperty('disabled', true);
     });
 

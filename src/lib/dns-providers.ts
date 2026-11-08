@@ -1,5 +1,6 @@
 import type { CellValue, Row, Table } from './data/types';
-import { formatExact, parseTimestamp } from './format';
+import { formatExact } from './format';
+import { NEW_SUPPORT_DAYS } from './leaderboards';
 import { flagParam, textParam } from './params';
 
 /**
@@ -22,19 +23,6 @@ const hasSupport = (row: Row): boolean => (num(row, 'supported_count') ?? 0) > 0
 /** Answered with something else than OK; `null` is unknown, not a failure. */
 const isFailed = (status: CellValue | undefined): boolean =>
   status !== null && status !== undefined && status !== 'ok';
-
-const NEW_DAYS = 30;
-
-/** First found within `NEW_DAYS` of the release. */
-function isNew(row: Row, generatedAt: string): boolean {
-  const found = parseTimestamp(typeof row.first_seen_at === 'string' ? row.first_seen_at : null);
-  const release = parseTimestamp(generatedAt);
-  return (
-    found !== null &&
-    release !== null &&
-    release.getTime() - found.getTime() <= NEW_DAYS * 24 * 60 * 60 * 1000
-  );
-}
 
 /** The list's predefined filters, in display order. */
 export const DNS_PROVIDER_FILTERS = [
@@ -65,8 +53,8 @@ export const DNS_PROVIDER_FILTERS = [
   },
   {
     id: 'new',
-    label: `New in the last ${NEW_DAYS} days`,
-    description: `First found within ${NEW_DAYS} days of this release.`,
+    label: `New supporting (${NEW_SUPPORT_DAYS} days)`,
+    description: `First supported a template within ${NEW_SUPPORT_DAYS} days of this release, as on the overview.`,
   },
   { id: 'all', label: 'All', description: 'Every known DNS provider.' },
 ] as const;
@@ -75,13 +63,16 @@ export type DnsProviderFilter = (typeof DNS_PROVIDER_FILTERS)[number]['id'];
 
 export const DEFAULT_FILTER: DnsProviderFilter = 'supporting';
 
-const MATCHES: Record<DnsProviderFilter, (row: Row, generatedAt: string) => boolean> = {
+const MATCHES: Record<
+  DnsProviderFilter,
+  (row: Row, newSupporters: ReadonlySet<number> | null) => boolean
+> = {
   supporting: hasSupport,
   responding: (r) => r.settings_status === 'ok' && r.support_status === 'ok',
   'no-settings': (r) => isFailed(r.settings_status),
   'no-support': (r) => r.settings_status === 'ok' && isFailed(r.support_status),
   errors: (r) => hasSupport(r) && (isFailed(r.settings_status) || isFailed(r.support_status)),
-  new: isNew,
+  new: (r, newSupporters) => newSupporters?.has(num(r, 'dns_provider_id') ?? NaN) ?? false,
   all: () => true,
 };
 
@@ -118,11 +109,16 @@ export interface DnsProviderList {
 /** The list rows for `?stack=` and the filter; unknown columns and keys are kept. */
 export function dnsProviderList(
   source: Table,
-  options: { stack: string | null; filter: DnsProviderFilter; generatedAt: string },
+  options: {
+    stack: string | null;
+    filter: DnsProviderFilter;
+    /** `dns_provider_id`s of the new supporting DNS providers (`newSupporting()`); null when unknown. */
+    newSupporters: ReadonlySet<number> | null;
+  },
 ): DnsProviderList {
-  const { stack, filter, generatedAt } = options;
+  const { stack, filter, newSupporters } = options;
   const inStack = source.rows.filter((r) => stack === null || r.provider_id === stack);
-  const matching = (id: DnsProviderFilter) => inStack.filter((r) => MATCHES[id](r, generatedAt));
+  const matching = (id: DnsProviderFilter) => inStack.filter((r) => MATCHES[id](r, newSupporters));
   const counts = Object.fromEntries(
     DNS_PROVIDER_FILTERS.map((f) => [f.id, matching(f.id).length]),
   ) as Record<DnsProviderFilter, number>;
