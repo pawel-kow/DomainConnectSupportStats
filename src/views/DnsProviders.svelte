@@ -23,6 +23,8 @@
   import DomainShare from '../lib/components/DomainShare.svelte';
   import type { Scan } from '../lib/domains';
   import { overviewFacts } from '../lib/overview-facts';
+  import { newSupporting } from '../lib/leaderboards';
+  import { scannerStart } from '../lib/data/config';
   import { withHash } from '../lib/share';
   import { textParam } from '../lib/params';
 
@@ -49,8 +51,9 @@
     void overviewFacts(client, m).then((f) => (scan = f.scan));
     return Promise.all([
       client.file('dns_providers'),
-      // The list stands without it: first found is unknown and the new filter unavailable.
+      // The list stands without them: first found is unknown, the new filter unavailable.
       client.dnsProviderFacts().catch(() => null),
+      client.leaderboards().catch(() => null),
     ]);
   });
 
@@ -112,11 +115,16 @@
 <Layout current="dns-providers" {manifest}>
   {#await loading}
     <p class="no-data">Loading…</p>
-  {:then [file, facts]}
+  {:then [file, facts, leaderboards]}
     {@const exported = findTable(file, 'dns_providers')}
     {#if exported}
       {@const source = withFirstSeen(exported, facts?.first_seen ?? null)}
-      {@const list = dnsProviderList(source, { stack, filter, generatedAt: file.generated_at })}
+      {@const newSupporters = leaderboards
+        ? new Set(
+            newSupporting(leaderboards, exported.rows, scannerStart()).map((n) => n.dnsProviderId),
+          )
+        : null}
+      {@const list = dnsProviderList(source, { stack, filter, newSupporters })}
       <Panel
         id="dns-providers"
         title={stack ? `DNS providers of stack ${stack}` : 'DNS providers'}
@@ -134,7 +142,7 @@
             Show
             <select bind:value={filter} data-testid="list-filter">
               {#each DNS_PROVIDER_FILTERS as option (option.id)}
-                {@const unavailable = option.id === 'new' && !facts}
+                {@const unavailable = option.id === 'new' && !newSupporters}
                 <option value={option.id} disabled={unavailable}>
                   {option.label} ({unavailable
                     ? 'unavailable'
